@@ -5,6 +5,7 @@ import { donateOptions, hasDonateOptions, proPerks, upiId, upiPayUri } from "@/l
 import UpiQrCard from "@/components/UpiQrCard";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/donate" },
   title: "Support the Guru — Keep it free for everyone",
   description:
     "Full Stack Interview Guru is free, login-free and ad-light. If it helped you land an interview, a small tip keeps it that way and funds new content.",

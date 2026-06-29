@@ -4,6 +4,7 @@ import CodeBlock from "@/components/CodeBlock";
 import AdSlot from "@/components/AdSlot";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/environment" },
   title: "Know Your Environment — Don't Guess. Verify.",
   description:
     "Identify your dev environment before an interview. Quick commands to check Java, Maven, Git, Python, Node, Docker versions — plus how to set JAVA_HOME, PATH and upgrade the JDK.",

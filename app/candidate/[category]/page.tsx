@@ -21,6 +21,7 @@ export async function generateMetadata({
   return {
     title: `${cat.name} Interview Questions`,
     description: `${cat.name} interview questions and answers — ${cat.blurb} ${cat.count}+ curated questions.`,
+    alternates: { canonical: `/candidate/${cat.id}` },
   };
 }
 

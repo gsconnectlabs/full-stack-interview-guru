@@ -3,6 +3,7 @@ import Link from "next/link";
 import AdSlot from "@/components/AdSlot";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/real-world" },
   title: "Real World vs Interview World",
   description:
     "The honest gap between textbook answers and how developers actually work — plus the commands and configs developers Google every single day.",

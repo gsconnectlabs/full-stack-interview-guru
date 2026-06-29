@@ -1,8 +1,7 @@
 import type { MetadataRoute } from "next";
 import { categories } from "@/lib/categories";
 import { questions } from "@/lib/questions";
-
-const BASE = "https://full-stack-interview-guru.vercel.app";
+import { siteUrl as BASE } from "@/lib/site";
 
 export default function sitemap(): MetadataRoute.Sitemap {
   const staticRoutes = [

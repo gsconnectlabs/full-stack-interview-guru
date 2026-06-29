@@ -10,6 +10,7 @@ import AdSlot from "@/components/AdSlot";
 import HelpfulVote from "@/components/HelpfulVote";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
+import { absoluteUrl } from "@/lib/site";
 import type { AnswerBlock } from "@/lib/types";
 
 export function generateStaticParams() {
@@ -24,11 +25,31 @@ export async function generateMetadata({
   const { slug } = await params;
   const q = getQuestion(slug);
   if (!q) return { title: "Not found" };
-  const plain = q.mindMap.find((b) => b.type === "text")?.content ?? q.question;
+  const plain = (q.mindMap.find((b) => b.type === "text")?.content ?? q.question)
+    .replace(/[*`]/g, "")
+    .trim();
   return {
     title: q.question,
     description: plain.slice(0, 155),
+    alternates: { canonical: `/q/${q.slug}` },
+    openGraph: {
+      type: "article",
+      url: `/q/${q.slug}`,
+      title: q.question,
+      description: plain.slice(0, 155),
+    },
   };
+}
+
+/** Plain-text answer assembled from the mind-map + what-if, for QAPage structured data. */
+function plainAnswer(q: NonNullable<ReturnType<typeof getQuestion>>): string {
+  const parts: string[] = [];
+  for (const b of q.mindMap) {
+    if (b.type === "text" && b.content) parts.push(b.content);
+    if (b.type === "kv" && b.rows) parts.push(b.rows.map((r) => `${r.k}: ${r.v}`).join("; "));
+  }
+  if (q.whatIf) parts.push(`${q.whatIf.q} ${q.whatIf.a}`);
+  return parts.join(" ").replace(/[*`]/g, "").trim();
 }
 
 function Section({
@@ -98,8 +119,24 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
   const cat = getCategory(q.categoryId);
   const related = (q.related ?? []).map(getQuestion).filter(Boolean);
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "QAPage",
+    mainEntity: {
+      "@type": "Question",
+      name: q.question,
+      url: absoluteUrl(`/q/${q.slug}`),
+      answerCount: 1,
+      acceptedAnswer: { "@type": "Answer", text: plainAnswer(q) },
+    },
+  };
+
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       {/* Breadcrumb */}
       <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
         <Link href="/candidate" className="hover:text-brand-300">

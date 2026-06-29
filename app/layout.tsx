@@ -3,11 +3,10 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Analytics from "@/components/Analytics";
-
-const SITE = "https://full-stack-interview-guru.vercel.app";
+import { siteUrl, siteName } from "@/lib/site";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(SITE),
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Full Stack Interview Guru — Interview Tomorrow? Start Here.",
     template: "%s · Full Stack Interview Guru",
@@ -24,14 +23,14 @@ export const metadata: Metadata = {
     "sql interview",
     "coding interview prep",
   ],
-  authors: [{ name: "Full Stack Interview Guru" }],
+  authors: [{ name: siteName }],
   openGraph: {
     type: "website",
-    url: SITE,
+    url: siteUrl,
     title: "Full Stack Interview Guru — Interview Tomorrow? Start Here.",
     description:
       "Prepare. Ask. Evaluate. Distraction-free interview prep for candidates and interviewers.",
-    siteName: "Full Stack Interview Guru",
+    siteName,
   },
   twitter: {
     card: "summary_large_image",
@@ -47,10 +46,31 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+const structuredData = [
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    name: siteName,
+    alternateName: "Interview Guru",
+    url: siteUrl,
+  },
+  {
+    "@context": "https://schema.org",
+    "@type": "Organization",
+    name: siteName,
+    url: siteUrl,
+    slogan: "Interview Tomorrow? Start Here.",
+  },
+];
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" className="dark">
       <body className="flex min-h-screen flex-col">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+        />
         <Navbar />
         <main className="flex-1">{children}</main>
         <Footer />

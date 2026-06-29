@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import FeedbackForm from "@/components/FeedbackForm";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/feedback" },
   title: "Feedback — Help shape the content",
   description:
     "Spotted a wrong answer, a typo, or a topic we're missing? Send quick feedback — no login, no spam. We read every message and ship fixes fast.",

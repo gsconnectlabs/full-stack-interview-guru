@@ -4,6 +4,7 @@ import SearchBar from "@/components/SearchBar";
 import { categories, totalQuestions } from "@/lib/categories";
 
 export const metadata: Metadata = {
+  alternates: { canonical: "/candidate" },
   title: "Candidate Mode — Browse Interview Questions",
   description:
     "Browse interview questions by topic: Core Java, Java 8+, Python, REST APIs, SQL, AWS, Docker, Kubernetes, AI and more.",

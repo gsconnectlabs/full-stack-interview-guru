@@ -4,6 +4,20 @@
  * donation links and a form endpoint are public by nature.
  */
 
+/** Single source of truth for the production domain. Override per-env with
+ *  NEXT_PUBLIC_SITE_URL; defaults to the custom domain. No trailing slash. */
+export const siteUrl = (process.env.NEXT_PUBLIC_SITE_URL || "https://fullstackinterviewguru.com").replace(
+  /\/+$/,
+  "",
+);
+
+/** Build an absolute URL on the production domain from a path. */
+export function absoluteUrl(path = "/"): string {
+  return `${siteUrl}${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+export const siteName = "Full Stack Interview Guru";
+
 export const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const feedbackEndpoint = process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT || "";
 export const upiId = process.env.NEXT_PUBLIC_UPI_ID || "mgurusankar21@pingpay";

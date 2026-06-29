@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
 import QuestionCard from "@/components/QuestionCard";
@@ -5,6 +6,10 @@ import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
 import { categories, totalQuestions } from "@/lib/categories";
 import { questionMap } from "@/lib/questions";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 const POPULAR = ["what-is-hashmap", "java-stream-api", "what-is-jwt", "two-sum", "rest-idempotency", "aws-lambda"];
 
