@@ -25,7 +25,7 @@ export async function generateMetadata({
   const { slug } = await params;
   const q = getQuestion(slug);
   if (!q) return { title: "Not found" };
-  const plain = (q.mindMap.find((b) => b.type === "text")?.content ?? q.question)
+  const plain = (q.shortAnswer ?? q.mindMap.find((b) => b.type === "text")?.content ?? q.question)
     .replace(/[*`]/g, "")
     .trim();
   return {
@@ -44,6 +44,7 @@ export async function generateMetadata({
 /** Plain-text answer assembled from the mind-map + what-if, for QAPage structured data. */
 function plainAnswer(q: NonNullable<ReturnType<typeof getQuestion>>): string {
   const parts: string[] = [];
+  if (q.shortAnswer) parts.push(q.shortAnswer);
   for (const b of q.mindMap) {
     if (b.type === "text" && b.content) parts.push(b.content);
     if (b.type === "kv" && b.rows) parts.push(b.rows.map((r) => `${r.k}: ${r.v}`).join("; "));
@@ -179,6 +180,25 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             ))}
           </div>
 
+          {/* Tags */}
+          {q.tags && q.tags.length > 0 && (
+            <div className="mt-3 flex flex-wrap gap-1.5">
+              {q.tags.map((t) => (
+                <span key={t} className="rounded-md bg-brand-500/10 px-2 py-0.5 text-[11px] font-medium text-brand-300">
+                  #{t}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* ⚡ TL;DR / Short Answer */}
+          {q.shortAnswer && (
+            <div className="mt-6 rounded-2xl border border-brand-500/30 bg-brand-500/[0.06] p-5">
+              <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">⚡ Short Answer</p>
+              <p className="mt-2 leading-relaxed text-slate-200">{q.shortAnswer}</p>
+            </div>
+          )}
+
           {/* ☕ Coffee Chat */}
           <Section emoji="☕" title="Coffee Chat Question">
             <div className="card border-l-2 border-l-brand-500/60 p-4">
@@ -199,6 +219,16 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
           {q.handsOn && (
             <Section emoji="⌨️" title="Hands-on Keyboard">
               <CodeBlock code={q.handsOn.code} lang={q.handsOn.lang} output={q.handsOn.output} />
+              {(q.handsOn.time || q.handsOn.space) && (
+                <div className="mt-3 flex flex-wrap gap-2">
+                  {q.handsOn.time && (
+                    <span className="chip">⏱️ Time: <span className="font-mono text-slate-200">{q.handsOn.time}</span></span>
+                  )}
+                  {q.handsOn.space && (
+                    <span className="chip">💾 Space: <span className="font-mono text-slate-200">{q.handsOn.space}</span></span>
+                  )}
+                </div>
+              )}
             </Section>
           )}
 
@@ -239,6 +269,83 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
                   ))}
                 </div>
               </div>
+            </Section>
+          )}
+
+          {/* ⚠️ Common Mistakes */}
+          {q.commonMistakes && q.commonMistakes.length > 0 && (
+            <Section emoji="⚠️" title="Common Mistakes">
+              <ul className="card space-y-2 p-5">
+                {q.commonMistakes.map((m, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-slate-300">
+                    <span className="select-none text-rose-400">✗</span>
+                    <span>{m}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* ✅ Best Practices */}
+          {q.bestPractices && q.bestPractices.length > 0 && (
+            <Section emoji="✅" title="Best Practices">
+              <ul className="card space-y-2 p-5">
+                {q.bestPractices.map((b, i) => (
+                  <li key={i} className="flex gap-2 text-sm text-slate-300">
+                    <span className="select-none text-emerald-400">✓</span>
+                    <span>{b}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* 🔁 Follow-up Questions */}
+          {q.followUps && q.followUps.length > 0 && (
+            <Section emoji="🔁" title="Follow-up Questions">
+              <ul className="card space-y-2.5 p-5">
+                {q.followUps.map((f, i) => (
+                  <li key={i} className="flex gap-2.5 text-sm text-slate-300">
+                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500/15 text-[11px] font-bold text-brand-300">
+                      {i + 1}
+                    </span>
+                    <span>{f}</span>
+                  </li>
+                ))}
+              </ul>
+            </Section>
+          )}
+
+          {/* 🧩 Related Technologies */}
+          {q.relatedTech && q.relatedTech.length > 0 && (
+            <Section emoji="🧩" title="Related Technologies">
+              <div className="flex flex-wrap gap-2">
+                {q.relatedTech.map((t) => (
+                  <span key={t} className="chip">
+                    {t}
+                  </span>
+                ))}
+              </div>
+            </Section>
+          )}
+
+          {/* 📚 References */}
+          {q.references && q.references.length > 0 && (
+            <Section emoji="📚" title="References">
+              <ul className="card space-y-2 p-5">
+                {q.references.map((r) => (
+                  <li key={r.url}>
+                    <a
+                      href={r.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-brand-300 underline underline-offset-2 hover:text-brand-200"
+                    >
+                      {r.label} ↗
+                    </a>
+                  </li>
+                ))}
+              </ul>
             </Section>
           )}
 

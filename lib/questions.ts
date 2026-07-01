@@ -1,6 +1,7 @@
 import type { Question } from "./types";
+import { extraQuestions } from "./questions-extra";
 
-export const questions: Question[] = [
+const baseQuestions: Question[] = [
   {
     slug: "what-is-hashmap",
     categoryId: "core-java",
@@ -1058,6 +1059,9 @@ new Thread(task, "chef-1").start();`,
     related: ["java-threads", "java-synchronization"],
   },
 ];
+
+/** Base bank + flagship expansion batches. New batches only touch lib/questions-extra. */
+export const questions: Question[] = [...baseQuestions, ...extraQuestions];
 
 export const questionMap = new Map(questions.map((q) => [q.slug, q]));
 

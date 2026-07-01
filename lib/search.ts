@@ -18,6 +18,8 @@ export const searchIndex: SearchDoc[] = questions.map((q) => {
     q.topic,
     cat?.name ?? "",
     q.askedIn.join(" "),
+    (q.tags ?? []).join(" "),
+    q.shortAnswer ?? "",
     ...q.mindMap.flatMap((b) => [b.content ?? "", ...(b.rows?.map((r) => `${r.k} ${r.v}`) ?? [])]),
     q.whatIf?.q ?? "",
   ].join(" ");

@@ -19,8 +19,8 @@ export interface Question {
   question: string;
   /** 🧠 Mind Map Answer */
   mindMap: AnswerBlock[];
-  /** ⌨ Hands-on Keyboard */
-  handsOn?: { code: string; lang: string; output?: string };
+  /** ⌨ Hands-on Keyboard — optional time/space complexity for coding questions */
+  handsOn?: { code: string; lang: string; output?: string; time?: string; space?: string };
   /** 🔥 What If? */
   whatIf?: { q: string; a: string };
   /** 😂 Real World — how developers actually use this on the job */
@@ -31,6 +31,22 @@ export interface Question {
   experience: Experience[];
   askedIn: string[];
   related?: string[]; // slugs
+
+  // --- Extended (optional) fields used by the expanded question bank ---
+  /** ⚡ TL;DR one-or-two line answer */
+  shortAnswer?: string;
+  /** Search/SEO tags */
+  tags?: string[];
+  /** 🔁 Follow-up questions an interviewer is likely to ask next */
+  followUps?: string[];
+  /** ⚠️ Common mistakes candidates make */
+  commonMistakes?: string[];
+  /** ✅ Best practices */
+  bestPractices?: string[];
+  /** 🧩 Related technologies / concepts */
+  relatedTech?: string[];
+  /** 📚 External references */
+  references?: { label: string; url: string }[];
 }
 
 export interface Category {
