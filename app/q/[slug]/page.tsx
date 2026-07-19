@@ -1,16 +1,23 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { questions, getQuestion } from "@/lib/questions";
+import { questions, getQuestion, getQuestionNav } from "@/lib/questions";
 import { getCategory } from "@/lib/categories";
+import PrevNextNav from "@/components/PrevNextNav";
 import DifficultyBadge from "@/components/DifficultyBadge";
 import CodeBlock from "@/components/CodeBlock";
+import CopyButton from "@/components/CopyButton";
+import ShareButton from "@/components/ShareButton";
+import { readingTimeMinutes } from "@/lib/reading-time";
 import QuestionCard from "@/components/QuestionCard";
 import AdSlot from "@/components/AdSlot";
 import HelpfulVote from "@/components/HelpfulVote";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
 import { absoluteUrl } from "@/lib/site";
+import Breadcrumb from "@/components/Breadcrumb";
+import AISection from "@/components/AISection";
+import { buildAiPrompts } from "@/lib/ai-prompts";
 import type { AnswerBlock } from "@/lib/types";
 
 export function generateStaticParams() {
@@ -41,6 +48,20 @@ export async function generateMetadata({
   };
 }
 
+const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** Format an ISO `YYYY-MM-DD` string as "Jul 19, 2026". Deterministic (no locale /
+ *  timezone dependence — parsed by regex, formatted from a fixed month table).
+ *  Returns null for malformed input so the chip is simply omitted. */
+function formatUpdated(iso: string): string | null {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso.trim());
+  if (!m) return null;
+  const [, year, month, day] = m;
+  const mi = Number(month) - 1;
+  if (mi < 0 || mi > 11) return null;
+  return `${MONTHS[mi]} ${Number(day)}, ${year}`;
+}
+
 /** Plain-text answer assembled from the mind-map + what-if, for QAPage structured data. */
 function plainAnswer(q: NonNullable<ReturnType<typeof getQuestion>>): string {
   const parts: string[] = [];
@@ -56,10 +77,12 @@ function plainAnswer(q: NonNullable<ReturnType<typeof getQuestion>>): string {
 function Section({
   emoji,
   title,
+  subtitle,
   children,
 }: {
   emoji: string;
   title: string;
+  subtitle?: string;
   children: React.ReactNode;
 }) {
   return (
@@ -68,6 +91,7 @@ function Section({
         <span className="text-xl">{emoji}</span>
         {title}
       </h2>
+      {subtitle && <p className="mt-1 text-sm font-medium text-slate-400">{subtitle}</p>}
       <div className="mt-3">{children}</div>
     </section>
   );
@@ -119,14 +143,22 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
   const cat = getCategory(q.categoryId);
   const related = (q.related ?? []).map(getQuestion).filter(Boolean);
+  const shareUrl = absoluteUrl(`/q/${q.slug}`);
+  const readMins = readingTimeMinutes(q);
+  const aiPrompts = buildAiPrompts(q, cat?.name);
+  const updatedLabel = q.updated ? formatUpdated(q.updated) : null;
+  const reportHref = `/feedback?context=${encodeURIComponent(`Question: "${q.question}" (/q/${q.slug})`)}`;
+  const nav = getQuestionNav(q.slug);
 
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "QAPage",
+    ...(q.updated && updatedLabel ? { dateModified: q.updated } : {}),
     mainEntity: {
       "@type": "Question",
       name: q.question,
       url: absoluteUrl(`/q/${q.slug}`),
+      ...(q.updated && updatedLabel ? { dateModified: q.updated } : {}),
       answerCount: 1,
       acceptedAnswer: { "@type": "Answer", text: plainAnswer(q) },
     },
@@ -139,21 +171,13 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
       {/* Breadcrumb */}
-      <nav className="flex flex-wrap items-center gap-2 text-sm text-slate-500">
-        <Link href="/candidate" className="hover:text-brand-300">
-          Candidate
-        </Link>
-        <span>/</span>
-        {cat && (
-          <>
-            <Link href={`/candidate/${cat.id}`} className="hover:text-brand-300">
-              {cat.name}
-            </Link>
-            <span>/</span>
-          </>
-        )}
-        <span className="text-slate-300">{q.topic}</span>
-      </nav>
+      <Breadcrumb
+        items={[
+          { name: "Candidate", href: "/candidate" },
+          ...(cat ? [{ name: cat.name, href: `/candidate/${cat.id}` }] : []),
+          { name: q.topic },
+        ]}
+      />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_300px]">
         {/* Main */}
@@ -166,6 +190,14 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
                 👤 {e}
               </span>
             ))}
+            <span className="chip">
+              <span aria-hidden="true">⏱️</span> {readMins} min read
+            </span>
+            {updatedLabel && (
+              <span className="chip">
+                <span aria-hidden="true">🗓️</span> Updated {updatedLabel}
+              </span>
+            )}
           </div>
 
           <h1 className="mt-4 text-2xl font-black leading-tight text-white sm:text-3xl">{q.question}</h1>
@@ -191,6 +223,32 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             </div>
           )}
 
+          {/* Share actions — copy link (Web Share fallback) + native share */}
+          <div className="mt-5 flex flex-wrap items-center gap-2">
+            <CopyButton
+              value={shareUrl}
+              className="btn-pill"
+              label={
+                <>
+                  <span aria-hidden="true">🔗 </span>Copy link
+                </>
+              }
+              copiedLabel={
+                <>
+                  <span aria-hidden="true">✓ </span>Link copied
+                </>
+              }
+            />
+            <ShareButton url={shareUrl} title={q.question} />
+            <Link
+              href={reportHref}
+              className="btn-pill"
+              aria-label="Report issue with this question"
+            >
+              <span aria-hidden="true">🚩</span> Report issue
+            </Link>
+          </div>
+
           {/* ⚡ TL;DR / Short Answer */}
           {q.shortAnswer && (
             <div className="mt-6 rounded-2xl border border-brand-500/30 bg-brand-500/[0.06] p-5">
@@ -200,14 +258,14 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
           )}
 
           {/* ☕ Coffee Chat */}
-          <Section emoji="☕" title="Coffee Chat Question">
+          <Section emoji="☕" title="Coffee Chat Question" subtitle="Concept Made Simple">
             <div className="card border-l-2 border-l-brand-500/60 p-4">
               <p className="text-slate-200">“{q.question}”</p>
             </div>
           </Section>
 
           {/* 🧠 Mind Map */}
-          <Section emoji="🧠" title="Mind Map Answer">
+          <Section emoji="🧠" title="Mind Map Answer" subtitle="Remember It Faster">
             <div className="card p-5">
               {q.mindMap.map((b, i) => (
                 <MindMapBlock key={i} block={b} />
@@ -217,7 +275,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
           {/* ⌨ Hands-on Keyboard */}
           {q.handsOn && (
-            <Section emoji="⌨️" title="Hands-on Keyboard">
+            <Section emoji="⌨️" title="Hands-on Keyboard" subtitle="Learn by Doing">
               <CodeBlock code={q.handsOn.code} lang={q.handsOn.lang} output={q.handsOn.output} />
               {(q.handsOn.time || q.handsOn.space) && (
                 <div className="mt-3 flex flex-wrap gap-2">
@@ -234,7 +292,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
           {/* 🔥 What If */}
           {q.whatIf && (
-            <Section emoji="🔥" title="What If?">
+            <Section emoji="🔥" title="What If?" subtitle="Think Beyond the Expected">
               <div className="card overflow-hidden">
                 <div className="border-b border-white/[0.06] bg-rose-500/[0.06] px-5 py-3">
                   <p className="font-semibold text-rose-200">{q.whatIf.q}</p>
@@ -349,6 +407,9 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             </Section>
           )}
 
+          {/* 🤖 Continue Learning with AI — single client island (prompts precomputed above) */}
+          <AISection prompts={aiPrompts} />
+
           {/* Was this helpful? — real-time content signal */}
           <HelpfulVote slug={q.slug} />
 
@@ -369,6 +430,9 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
               </div>
             </section>
           )}
+
+          {/* Previous / Next within the category + position + "View all" */}
+          {nav && (nav.prev || nav.next) && <PrevNextNav nav={nav} category={cat} />}
         </article>
 
         {/* Sidebar */}
@@ -382,6 +446,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
               {q.whatIf && <li>🔥 What If?</li>}
               {q.realWorld && <li>😂 Real World</li>}
               {q.interviewerExpectation && <li>🎯 Interviewer&apos;s Expectation</li>}
+              <li>🤖 Continue Learning with AI</li>
             </ul>
           </div>
 

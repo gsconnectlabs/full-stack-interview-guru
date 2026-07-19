@@ -20,7 +20,7 @@ export default function Footer() {
             </p>
           </div>
 
-          <div>
+          <nav aria-label="Footer">
             <div className="mb-6 flex flex-wrap gap-x-6 gap-y-2">
               {[
                 { href: "/candidate", label: "Candidate Mode" },
@@ -52,7 +52,7 @@ export default function Footer() {
                 </Link>
               ))}
             </div>
-          </div>
+          </nav>
         </div>
 
         <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] pt-6 text-xs text-slate-500 sm:flex-row">

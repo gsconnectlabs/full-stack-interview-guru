@@ -47,6 +47,9 @@ export interface Question {
   relatedTech?: string[];
   /** 📚 External references */
   references?: { label: string; url: string }[];
+  /** 🗓️ Content last-updated date (ISO `YYYY-MM-DD`). Optional; drives the
+   *  "Updated …" freshness chip and the QAPage `dateModified` signal. */
+  updated?: string;
 }
 
 export interface Category {

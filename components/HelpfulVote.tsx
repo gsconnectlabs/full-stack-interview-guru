@@ -64,7 +64,7 @@ export default function HelpfulVote({ slug }: { slug: string }) {
           <button
             onClick={() => vote("down")}
             className="btn-secondary px-4 py-2 text-sm"
-            aria-label="No, not helpful"
+            aria-label="Not really, this wasn't helpful"
           >
             👎 Not really
           </button>

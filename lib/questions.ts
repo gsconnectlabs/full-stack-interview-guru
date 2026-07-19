@@ -1072,3 +1072,29 @@ export function getQuestion(slug: string): Question | undefined {
 export function questionsByCategory(categoryId: string): Question[] {
   return questions.filter((q) => q.categoryId === categoryId);
 }
+
+/** Sequential position of a question within its category, plus its neighbours.
+ *  Order matches `questionsByCategory` (document order) — the same order the
+ *  category page renders — so "Question N of M" and prev/next stay consistent. */
+export interface QuestionNav {
+  /** 1-based position within the category */
+  index: number;
+  /** total live questions in the category */
+  total: number;
+  prev?: Question;
+  next?: Question;
+}
+
+export function getQuestionNav(slug: string): QuestionNav | undefined {
+  const q = questionMap.get(slug);
+  if (!q) return undefined;
+  const siblings = questionsByCategory(q.categoryId);
+  const i = siblings.findIndex((s) => s.slug === slug);
+  if (i === -1) return undefined;
+  return {
+    index: i + 1,
+    total: siblings.length,
+    prev: i > 0 ? siblings[i - 1] : undefined,
+    next: i < siblings.length - 1 ? siblings[i + 1] : undefined,
+  };
+}

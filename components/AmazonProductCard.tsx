@@ -113,8 +113,6 @@ export default function AmazonProductCard({
     return () => clearTimeout(t);
   }, [status]);
 
-  const ariaLabel = `View ${title ?? "product"} on Amazon (${displayUrl}) — opens in a new tab`;
-
   // --- Live preview path (only for non-blocked hosts, hidden behind a shimmer) ---
   if (embeddable && status !== "fallback") {
     return (
@@ -145,13 +143,13 @@ export default function AmazonProductCard({
           href={outUrl}
           target="_blank"
           rel="noopener noreferrer sponsored"
-          aria-label={ariaLabel}
           className="flex items-center justify-between gap-2 border-t border-white/[0.06] px-4 py-3 text-sm font-semibold text-amber-200 transition-colors hover:bg-amber-400/10"
         >
           <span className="inline-flex items-center gap-2">
             <AmazonMark className="h-4 w-4" /> View on Amazon
           </span>
           <span className="font-mono text-xs text-slate-500">{displayUrl}</span>
+          <span className="sr-only">, opens in a new tab</span>
         </a>
       </div>
     );
@@ -163,7 +161,6 @@ export default function AmazonProductCard({
       href={outUrl}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      aria-label={ariaLabel}
       className={`group relative flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900/70 backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-brand-900/40 hover:ring-1 hover:ring-brand-500/40 ${className}`}
     >
       {/* Branded visual panel */}
@@ -194,6 +191,7 @@ export default function AmazonProductCard({
           View Product on Amazon
           <span aria-hidden="true" className="transition-transform group-hover:translate-x-0.5">↗</span>
         </span>
+        <span className="sr-only">, opens in a new tab</span>
       </div>
     </a>
   );

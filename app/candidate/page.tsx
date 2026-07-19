@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import SearchBar from "@/components/SearchBar";
+import TopicCard from "@/components/TopicCard";
 import { categories, totalQuestions } from "@/lib/categories";
 
 export const metadata: Metadata = {
@@ -27,23 +27,7 @@ export default function CandidatePage() {
 
       <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {categories.map((c) => (
-          <Link key={c.id} href={`/candidate/${c.id}`} className="card card-hover group p-5">
-            <div className="flex items-start justify-between">
-              <span className={`grid h-11 w-11 place-items-center rounded-xl bg-gradient-to-br ${c.accent} text-xl`}>
-                {c.icon}
-              </span>
-              <span className="chip">{c.count} Qs</span>
-            </div>
-            <h2 className="mt-3 font-bold text-slate-100 group-hover:text-brand-200">{c.name}</h2>
-            <p className="mt-1 text-sm text-slate-400">{c.blurb}</p>
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {c.topics.map((t) => (
-                <span key={t} className="rounded-md bg-white/[0.04] px-2 py-0.5 text-[11px] text-slate-400">
-                  {t}
-                </span>
-              ))}
-            </div>
-          </Link>
+          <TopicCard key={c.id} category={c} />
         ))}
       </div>
     </div>

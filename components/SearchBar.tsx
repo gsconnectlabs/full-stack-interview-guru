@@ -15,6 +15,7 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
   const router = useRouter();
 
   const results = useMemo(() => searchQuestions(query, 8), [query]);
+  const showResults = open && query.trim() !== "" && results.length > 0;
 
   useEffect(() => {
     function onClick(e: MouseEvent) {
@@ -46,7 +47,12 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
   return (
     <div ref={wrapRef} className="relative w-full">
       <div className="relative">
-        <span className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500">🔍</span>
+        <span
+          aria-hidden="true"
+          className="pointer-events-none absolute left-4 top-1/2 -translate-y-1/2 text-slate-500"
+        >
+          🔍
+        </span>
         <input
           autoFocus={autoFocus}
           value={query}
@@ -58,6 +64,13 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
           onKeyDown={onKeyDown}
           placeholder="Search anything…"
           aria-label="Search interview questions"
+          role="combobox"
+          aria-expanded={showResults}
+          aria-controls="search-results"
+          aria-autocomplete="list"
+          aria-activedescendant={
+            showResults && results[active] ? `search-opt-${results[active].slug}` : undefined
+          }
           className="w-full rounded-2xl border border-white/10 bg-ink-900/80 py-4 pl-12 pr-4 text-base text-slate-100 shadow-xl shadow-black/20 outline-none ring-brand-500/0 transition placeholder:text-slate-500 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10"
         />
       </div>
@@ -70,10 +83,13 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
               <span className="text-brand-300">jwt</span>.
             </p>
           ) : (
-            <ul className="max-h-[60vh] overflow-y-auto py-2">
+            <ul id="search-results" role="listbox" aria-label="Search results" className="max-h-[60vh] overflow-y-auto py-2">
               {results.map((r, i) => (
-                <li key={r.slug}>
+                <li key={r.slug} role="presentation">
                   <Link
+                    id={`search-opt-${r.slug}`}
+                    role="option"
+                    aria-selected={i === active}
                     href={`/q/${r.slug}`}
                     onMouseEnter={() => setActive(i)}
                     onClick={() => setOpen(false)}
@@ -87,7 +103,7 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
                         {r.category} • {r.topic}
                       </span>
                     </span>
-                    <span className="shrink-0 text-xs text-slate-600">↵</span>
+                    <span aria-hidden="true" className="shrink-0 text-xs text-slate-600">↵</span>
                   </Link>
                 </li>
               ))}

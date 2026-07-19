@@ -5,6 +5,7 @@ import { categories, getCategory } from "@/lib/categories";
 import { questionsByCategory } from "@/lib/questions";
 import QuestionCard from "@/components/QuestionCard";
 import AdSlot from "@/components/AdSlot";
+import Breadcrumb from "@/components/Breadcrumb";
 
 export function generateStaticParams() {
   return categories.map((c) => ({ category: c.id }));
@@ -35,13 +36,12 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
   return (
     <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
       {/* Breadcrumb */}
-      <nav className="flex items-center gap-2 text-sm text-slate-500">
-        <Link href="/candidate" className="hover:text-brand-300">
-          Candidate
-        </Link>
-        <span>/</span>
-        <span className="text-slate-300">{cat.name}</span>
-      </nav>
+      <Breadcrumb
+        items={[
+          { name: "Candidate", href: "/candidate" },
+          { name: cat.name },
+        ]}
+      />
 
       {/* Header */}
       <div className="mt-6 flex flex-col gap-4 sm:flex-row sm:items-center">

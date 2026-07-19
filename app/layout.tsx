@@ -8,8 +8,8 @@ import { siteUrl, siteName } from "@/lib/site";
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
   title: {
-    default: "Full Stack Interview Guru — Interview Tomorrow? Start Here.",
-    template: "%s · Full Stack Interview Guru",
+    default: "FIG – Full Stack Interview Guru | Interview Tomorrow? Start Here.",
+    template: "FIG – %s",
   },
   description:
     "A distraction-free interview prep platform for candidates and interviewers. Java, Python, AWS, REST APIs, SQL, Docker, Kubernetes, System Design & AI — no login, no noise, just interviews.",
@@ -71,8 +71,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
         />
+        <a href="#main" className="skip-link">
+          Skip to main content
+        </a>
         <Navbar />
-        <main className="flex-1">{children}</main>
+        <main id="main" tabIndex={-1} className="flex-1 focus:outline-none">
+          {children}
+        </main>
         <Footer />
         <Analytics />
       </body>
