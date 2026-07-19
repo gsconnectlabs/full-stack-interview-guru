@@ -3,10 +3,16 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Analytics from "@/components/Analytics";
-import { siteUrl, siteName } from "@/lib/site";
+import { siteUrl, siteName, adsenseClientId } from "@/lib/site";
+
+// AdSense site-verification meta (google-adsense-account). Uses the shared publisher id
+// (env NEXT_PUBLIC_ADSENSE_ID, defaulting to the prod account). Complements the async
+// adsbygoogle.js loader in <Analytics />; the two are distinct and non-duplicating.
+const adsenseId = adsenseClientId;
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),
+  ...(adsenseId ? { other: { "google-adsense-account": adsenseId } } : {}),
   title: {
     default: "FIG – Full Stack Interview Guru | Interview Tomorrow? Start Here.",
     template: "FIG – %s",

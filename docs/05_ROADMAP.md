@@ -360,6 +360,34 @@ a URL change. Nothing here is implemented until the owner approves it, one featu
 
 ---
 
+## 🟣 Post-Phase-2 Releases (production maintenance)
+
+### AR1 — Compliance & AdSense Readiness
+- **Status:** ✅ **Completed 2026-07-19** — production maintenance release preparing the site for Google
+  AdSense approval (see CHANGELOG "AR1" and **DECISIONS #031**). **No redesign, no UX change, no URL removed.**
+  - **AdSense:** preserved the env-gated `adsbygoogle.js` loader (once, site-wide, async, non-blocking);
+    added an env-gated `google-adsense-account` verification `<meta>`. Client ID stays env-driven
+    (`NEXT_PUBLIC_ADSENSE_ID`) — **never hardcoded**.
+  - **New static pages:** `/about`, `/contact`, `/privacy` (cookies · GA · **AdSense cookies/opt-outs** ·
+    third-party · security · external links · updates · contact), `/terms` (governing law: India),
+    `/disclaimer`. Each: single `<h1>`, full metadata (title/description/canonical/OG/Twitter), and
+    `BreadcrumbList` JSON-LD.
+  - **New reusable components:** `LegalPage` (shared legal shell) + `ContactForm` (endpoint POST or mailto
+    fallback — no fake backend). New `.prose-legal` class in `globals.css`.
+  - **Footer:** added Company / Resources / Legal / Support columns (kept brand block + Browse Topics grid).
+    **"Blog" omitted** — no route exists; adding a dead link would break the "every link works" rule.
+  - **SEO:** `sitemap.ts` now lists the 5 new routes.
+  - **Verified:** TS + build green (**256 pages**, +5 static); legal/About pages **zero client JS**
+    (172 B route / 106 kB First Load); `/contact` 2.36 kB / 108 kB (only new island); **shared 102 kB
+    unchanged**; all 5 pages 200 + single H1 + canonical/OG/breadcrumb; **all 24 footer links 200**;
+    AdSense meta absent until ID set; mobile 375px no overflow; no console errors; existing
+    `WebSite`/`Organization`/`QAPage`/`BreadcrumbList` + all existing routes untouched.
+- **Owner follow-ups:** set `NEXT_PUBLIC_ADSENSE_ID` (+ optional `NEXT_PUBLIC_CONTACT_EMAIL` /
+  `NEXT_PUBLIC_FEEDBACK_ENDPOINT`); confirm the Terms governing-law jurisdiction.
+- **SEO affected:** Positive (more indexable pages, trust signals) — no URL/schema regression.
+
+---
+
 ## 🔮 Future Improvements
 
 > **Moved to the Ideas Backlog (2026-07-18).** This roadmap now contains **committed work only**.
@@ -391,7 +419,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 22:00 IST
+- **Last Updated:** 2026-07-19 23:45 IST
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

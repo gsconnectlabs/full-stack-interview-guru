@@ -812,6 +812,49 @@ regression for performance and CWV — for a purely stylistic change the design 
 
 ---
 
+# Decision #031
+
+## Title
+
+AdSense Readiness — Env-Driven Client ID, Legal Pages, and Honest Links (No Fake Functionality)
+
+### Status
+
+✅ Approved (Post-Phase-2 Compliance & AdSense Readiness release, 2026-07-19)
+
+### Reason
+
+Preparing for Google AdSense approval requires legal/company pages, discoverable footer navigation, and
+the AdSense script present site-wide. These must be added **as a production maintenance release** without
+redesigning the UI, changing existing UX, or breaking SEO/performance (Trust Before Revenue, #001).
+
+### Implementation
+
+- **AdSense publisher ID is config, defined once in `lib/site.ts`** (`adsenseClientId`). The **production
+  account `ca-pub-8326504635108554`** is the committed default, with `NEXT_PUBLIC_ADSENSE_ID` as a per-env
+  override. A publisher ID is **not a secret** — it renders in the page source of every AdSense site — so
+  committing it (like `siteUrl`/`upiId` already are) guarantees the snippet is present on every page for
+  approval, independent of any dashboard setting. Owner-supplied on 2026-07-19. The existing
+  `components/Analytics.tsx` loader (once, on every page via the root layout, `async`/`afterInteractive`,
+  `crossOrigin="anonymous"`, non-blocking) plus a distinct `google-adsense-account` verification `<meta>`
+  in `app/layout.tsx` (no duplication) both read this single value. **Do not commit GA IDs, secrets, or
+  API keys the same way** — only public identifiers.
+- **Legal pages are required and permanent:** `/about`, `/contact`, `/privacy`, `/terms`, `/disclaimer` —
+  static SSG, single `<h1>`, full metadata + `BreadcrumbList`. The **Privacy Policy must describe Google
+  AdSense cookie/DoubleClick usage and opt-outs**; these sections must not be removed.
+- **No fake functionality / no broken links:** the contact form has no dedicated backend — it POSTs to
+  `NEXT_PUBLIC_FEEDBACK_ENDPOINT` when set, else falls back to `mailto:` (same pattern as `FeedbackForm`).
+  The requested footer **"Blog"** link was **omitted** because no blog route exists and building one is
+  out of scope — adding a dead link would violate the "every link works" rule. "Topics" is served by the
+  retained Browse Topics grid.
+- **Governing law (Terms):** set to **India** (owner is India-based — UPI/INR/IST). Revisit if the
+  operating jurisdiction differs.
+- **Ad placement is preparation-only:** future ad slots are marked with developer comments (after H1/intro,
+  below content); **no live display ads** are inserted, preserving **CLS = 0** and the reading experience
+  (#001 / #021 / #026).
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -823,7 +866,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 22:00 IST
+- **Last Updated:** 2026-07-19 23:45 IST
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

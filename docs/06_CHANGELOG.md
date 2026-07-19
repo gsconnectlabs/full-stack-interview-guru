@@ -50,6 +50,68 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (AR1 addendum — AdSense publisher ID wired) — 2026-07-19
+Owner supplied the production AdSense account **`ca-pub-8326504635108554`**. Added `adsenseClientId` to
+`lib/site.ts` (this ID as the committed default; `NEXT_PUBLIC_ADSENSE_ID` still overrides) and pointed
+both `components/Analytics.tsx` (the `adsbygoogle.js` loader) and `app/layout.tsx` (the
+`google-adsense-account` meta) at it. **Verified in-browser:** the `<script … adsbygoogle.js?client=ca-pub-8326504635108554 … crossorigin="anonymous">`
+snippet **and** the verification meta now render in the server HTML of **every page type** (home,
+`/q/[slug]`, `/candidate/[category]`, legal, contact). Build green (**256 pages**), shared JS **102 kB
+unchanged**, no console errors. Publisher IDs are public (not secrets), so committing it is safe — see
+DECISIONS #031 (updated).
+
+### Added (Post-Phase-2 — Compliance & AdSense Readiness release, AR1) — 2026-07-19 — SEO-sensitive
+Prepared the site for Google AdSense approval as a **production maintenance release** — legal/company
+pages, footer navigation, and AdSense wiring. **No redesign, no existing UX changed, no URL removed.**
+
+- **AdSense integration (#1):** the async `adsbygoogle.js` loader **already existed** in
+  `components/Analytics.tsx` (env-gated by `NEXT_PUBLIC_ADSENSE_ID`, rendered once via the root layout
+  on every page, `afterInteractive`, `crossOrigin="anonymous"`, non-render-blocking) — **preserved as-is**.
+  Added an **env-gated `google-adsense-account` verification `<meta>`** in `app/layout.tsx`
+  (`metadata.other`, emitted only when the ID is set; distinct from the script → no duplication). **No
+  client ID hardcoded** — it stays env-driven per the project's config architecture (DECISIONS #031).
+- **New legal/company pages (all static SSG, single `<h1>`, breadcrumb + `BreadcrumbList` JSON-LD):**
+  `app/about/page.tsx` (mission, vision, philosophy, why FIG exists, content standards, audience,
+  commitment), `app/contact/page.tsx` (contact form + plain-language "how it works" note),
+  `app/privacy/page.tsx` (cookies, Google Analytics, **Google AdSense cookie/DoubleClick usage + opt-outs**,
+  third-party services, user privacy, data security, external links, children, policy updates, contact),
+  `app/terms/page.tsx` (educational purpose, IP, acceptable use, no interview/employment guarantee,
+  limitation of liability, external links, advertising, **governing law — India**), `app/disclaimer/page.tsx`
+  (educational content, questions vary, accuracy, company trademarks belong to owners, no employment
+  guarantee, external links/ads, consent).
+- **New reusable components:** `components/LegalPage.tsx` (shared shell: chip + H1 + last-updated stamp +
+  breadcrumb + `.prose-legal` body — used by privacy/terms/disclaimer, DRY per DECISIONS #022) and
+  `components/ContactForm.tsx` (`"use client"`; Name/Email/Subject/Message with labeled, `required`
+  fields + client validation; POSTs to `NEXT_PUBLIC_FEEDBACK_ENDPOINT` when set, else **mailto fallback**
+  — same no-backend pattern as `FeedbackForm`, **no fake functionality**).
+- **New `.prose-legal` component class** in `app/globals.css` (h2/h3/p/ul/li/a/strong long-form
+  typography; body text slate-300 ≈ 13:1, AA-passing).
+- **Footer (#3) — restructured, not redesigned** (`components/Footer.tsx`): added **Company** (About Us,
+  Contact Us), **Resources** (Interview Questions, Interviewer Mode, Real World, Know Your Environment,
+  Transition Hub), **Legal** (Privacy Policy, Terms & Conditions, Disclaimer), **Support** (Feedback,
+  Donate) link columns; **kept** the brand block and the Browse Topics grid. **"Blog" omitted** — no
+  blog route exists and building one is out of scope (avoids a broken link; "Topics" is served by the
+  retained Browse Topics grid). All existing footer destinations preserved.
+- **SEO (#9):** every new page has a branded `<title>` (`FIG – …`), meta description (≤~155 chars),
+  absolute `alternates.canonical`, Open Graph (title/description/url/type) + inherited Twitter card,
+  and semantic heading hierarchy. `app/sitemap.ts` now includes `/about`, `/contact`, `/privacy`,
+  `/terms`, `/disclaimer`.
+- **Ad placement (#15) — preparation only:** developer comments mark recommended future ad slots
+  (after the H1/intro, below content) in `LegalPage` and the contact page. **No live display ads
+  inserted;** CLS preserved.
+- **Verified:** TypeScript clean; production build green — **256 pages** (was 251; +5 static routes,
+  all `○`). New legal/About pages ship **zero client JS** (route JS **172 B**, First Load **106 kB**);
+  `/contact` route JS **2.36 kB** / First Load **108 kB** (the only new client island, `ContactForm`);
+  **shared First Load JS unchanged at 102 kB**. Verified in-browser: all 5 pages HTTP 200, **exactly
+  one `<h1>`** each, canonical/OG/Twitter/`BreadcrumbList` present; **all 24 footer links resolve
+  (200)** — no broken links; AdSense meta correctly **absent** when the env ID is unset; contact form
+  has 4 labeled/`required` fields with submit disabled until valid; **no console errors**; mobile 375px
+  has **no horizontal overflow**. Existing `WebSite`/`Organization`/`QAPage`/`BreadcrumbList` schema
+  and all existing routes untouched.
+- **Owner follow-ups to go live:** set `NEXT_PUBLIC_ADSENSE_ID` (activates the loader + verification
+  meta) and optionally `NEXT_PUBLIC_CONTACT_EMAIL` / `NEXT_PUBLIC_FEEDBACK_ENDPOINT`; confirm the Terms
+  **governing-law jurisdiction (currently India)**.
+
 ### Verified + Changed (ROADMAP M6 — Lighthouse & performance verification) — 2026-07-19
 Ran **Lighthouse 12 (desktop preset)** against the **production build** (`next start`).
 
@@ -381,7 +443,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 22:00 IST
+- **Last Updated:** 2026-07-19 23:45 IST
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

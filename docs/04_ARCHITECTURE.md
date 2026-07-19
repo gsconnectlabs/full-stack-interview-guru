@@ -41,13 +41,16 @@ app/                         Routes (App Router)
   real-world/                "Real World vs Interview World"
   donate/                    Donate (UPI QR generated at build time)
   feedback/                  Feedback form (dynamic — reads ?context=)
+  about/                     About Us (static) — mission/vision/standards; Breadcrumb JSON-LD
+  contact/                   Contact Us (static) — ContactForm island; Breadcrumb JSON-LD
+  privacy/, terms/, disclaimer/  Legal pages (static) — via LegalPage; Breadcrumb JSON-LD (AdSense readiness)
   not-found.tsx              404
   sitemap.ts, robots.ts      SEO routes (driven by lib data + NEXT_PUBLIC_SITE_URL)
   icon.svg, apple-icon.tsx   Browser branding — FIG monogram (Teal + Gold)
   manifest.ts                Web app manifest (auto-linked at /manifest.webmanifest)
   globals.css                Tailwind layers + design tokens/components
 
-components/                  Reusable UI (21 components)
+components/                  Reusable UI (23 components)
   Navbar, Footer, SearchBar, QuestionCard, TopicCard (server; category card reused by
   homepage + candidate index), DifficultyBadge,
   PrevNextNav (server; sequential prev/next + "Question N of M" + "View all"),
@@ -57,6 +60,8 @@ components/                  Reusable UI (21 components)
   AISection (client island; "Continue Learning with AI" — level selector, copy, open-in),
   HelpfulVote, FeaturedProducts, AmazonProductCard, AdvertisementPlaceholder,
   AdSlot, Analytics, FeedbackForm, UpiQrCard,
+  ContactForm (client; Name/Email/Subject/Message — endpoint POST or mailto fallback),
+  LegalPage (server; shared shell for privacy/terms/disclaimer — header + breadcrumb + .prose-legal),
   Breadcrumb (visible trail + BreadcrumbList JSON-LD), JsonLd (schema.org emitter)
 
 hooks/                       Client hooks
@@ -106,6 +111,7 @@ Business logic lives in `lib/`, not in pages — pages compose data + components
 | `/candidate/{category}` | Category detail |
 | `/q/{slug}` | Question detail |
 | `/interviewer`, `/transition`, `/environment`, `/real-world`, `/donate`, `/feedback` | Feature pages |
+| `/about`, `/contact`, `/privacy`, `/terms`, `/disclaimer` | Company/legal pages (AdSense readiness) |
 
 Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_URL`
 (default `https://fullstackinterviewguru.com`) via `lib/site.ts`.
@@ -120,8 +126,13 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   keeps the full name for SEO. `openGraph.title` is set independently (template does not apply to it).
 - Open Graph + Twitter card metadata (root defaults; per-page title/description).
 - **Structured data:** `WebSite` + `Organization` (root layout), `QAPage` per question,
-  and `BreadcrumbList` on question + category pages (via reusable `Breadcrumb` + `JsonLd`).
-- `sitemap.ts` (all static + category + question routes) and `robots.ts`.
+  and `BreadcrumbList` on question + category pages **and the company/legal pages** (via reusable
+  `Breadcrumb` + `JsonLd`).
+- `sitemap.ts` (all static + company/legal + category + question routes) and `robots.ts`.
+- **Advertising:** `adsbygoogle.js` loaded once site-wide via `components/Analytics.tsx` and a
+  `google-adsense-account` verification `<meta>` in the root layout — both read `adsenseClientId` from
+  `lib/site.ts` (production `ca-pub-…` committed as the default; `NEXT_PUBLIC_ADSENSE_ID` overrides
+  per-env), so the snippet renders on **every page**. No live display ad units yet. See DECISIONS #031.
 - **Browser branding:** SVG favicon, Apple Touch Icon (generated via `next/og`), and web
   app manifest — FIG monogram in Teal + Gold. (Emoji-only favicon gap closed.)
 
@@ -188,7 +199,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 22:00 IST
+- **Last Updated:** 2026-07-19 23:45 IST
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -99,6 +99,39 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 
 # Monetization Ideas
 
+### `ads.txt` for AdSense seller authorization
+- **Description:** Serve an `ads.txt` (e.g. `public/ads.txt` or an env-driven route) declaring
+  `google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0` once the AdSense publisher ID is issued.
+- **Why it is valuable:** Google recommends `ads.txt` to authorize sellers and protect ad revenue; needed
+  for serving (not strictly for approval). Deferred from the AR1 release since it needs the real pub ID and
+  wasn't in the AR1 scope list.
+- **Status:** Idea *(surfaced during AR1 — AdSense readiness, 2026-07-19)*
+- **Date Added:** 2026-07-19
+
+### Real contact/feedback backend (Formspree / Resend / route handler)
+- **Description:** Replace the current mailto/`NEXT_PUBLIC_FEEDBACK_ENDPOINT` fallback with a hosted form
+  backend so Contact and Feedback submissions are captured server-side (with spam protection).
+- **Why it is valuable:** More reliable than mailto; enables analytics on inbound messages. Must stay
+  privacy-respecting and not introduce auth/DB churn against the static-first model.
+- **Status:** Idea *(surfaced during AR1, 2026-07-19)*
+- **Date Added:** 2026-07-19
+
+### Cookie-consent / CMP for AdSense (EEA/UK)
+- **Description:** Add a Google-certified consent management platform (or IAB TCF CMP) to gate advertising
+  cookies for EEA/UK visitors once ads actually serve.
+- **Why it is valuable:** Required for compliant personalized ads in the EEA/UK; the current Privacy Policy
+  documents cookie usage but there is no consent gate yet (none needed until live ads run).
+- **Status:** Idea *(surfaced during AR1, 2026-07-19)*
+- **Date Added:** 2026-07-19
+
+### `/blog` section
+- **Description:** A real blog/articles section; would let the footer "Blog" link (intentionally omitted in
+  AR1 to avoid a dead link) become live.
+- **Why it is valuable:** Fresh, indexable content for SEO and return visits (DECISIONS #002). Out of scope
+  for AR1; needs its own content model + approval.
+- **Status:** Idea *(surfaced during AR1, 2026-07-19)*
+- **Date Added:** 2026-07-19
+
 ### Razorpay / Ko-fi donation options
 - **Description:** Add Razorpay and/or Ko-fi alongside the current UPI-QR donation method.
 - **Why it is valuable:** More donation channels. **Blocked:** both need GST + a business account the owner doesn't yet have; Razorpay also hides the raw VPA behind checkout. Revisit when the business account exists.
@@ -136,7 +169,7 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-18 23:30 IST
+- **Last Updated:** 2026-07-19 23:45 IST
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

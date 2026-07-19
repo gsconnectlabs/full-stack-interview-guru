@@ -1,13 +1,14 @@
 import Script from "next/script";
+import { adsenseClientId } from "@/lib/site";
 
 /**
  * Google Analytics (GA4) + AdSense loader.
- * Set NEXT_PUBLIC_GA_ID and NEXT_PUBLIC_ADSENSE_ID in Vercel env vars to activate.
- * Nothing loads (and zero network cost) until the IDs are present.
+ * GA activates when NEXT_PUBLIC_GA_ID is set. AdSense loads on every page using the
+ * publisher id from lib/site (env NEXT_PUBLIC_ADSENSE_ID, defaulting to the prod account).
  */
 export default function Analytics() {
   const gaId = process.env.NEXT_PUBLIC_GA_ID;
-  const adsenseId = process.env.NEXT_PUBLIC_ADSENSE_ID;
+  const adsenseId = adsenseClientId;
 
   return (
     <>

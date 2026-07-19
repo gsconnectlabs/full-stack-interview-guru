@@ -82,4 +82,27 @@
   .prose-answer code {
     @apply rounded-md bg-ink-800 px-1.5 py-0.5 font-mono text-[0.85em] text-brand-200;
   }
+  /* Long-form legal/company copy (Privacy, Terms, Disclaimer, About). Semantic,
+     readable typography with AA-passing body text (slate-300 ≈ 13:1 on ink-950). */
+  .prose-legal h2 {
+    @apply mt-10 mb-3 text-xl font-bold text-white sm:text-2xl;
+  }
+  .prose-legal h3 {
+    @apply mt-6 mb-2 text-base font-semibold text-slate-100;
+  }
+  .prose-legal p {
+    @apply mb-4 leading-relaxed text-slate-300;
+  }
+  .prose-legal ul {
+    @apply mb-4 list-disc space-y-1.5 pl-5 text-slate-300 marker:text-brand-400;
+  }
+  .prose-legal li {
+    @apply leading-relaxed;
+  }
+  .prose-legal a {
+    @apply text-brand-300 underline underline-offset-2 hover:text-brand-200;
+  }
+  .prose-legal strong {
+    @apply font-semibold text-white;
+  }
 }

@@ -13,6 +13,11 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/real-world",
     "/donate",
     "/feedback",
+    "/about",
+    "/contact",
+    "/privacy",
+    "/terms",
+    "/disclaimer",
   ].map((path) => ({
     url: `${BASE}${path}`,
     lastModified: new Date(),

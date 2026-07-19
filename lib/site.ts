@@ -22,6 +22,12 @@ export const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const feedbackEndpoint = process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT || "";
 export const upiId = process.env.NEXT_PUBLIC_UPI_ID || "mgurusankar21@pingpay";
 
+/** Google AdSense publisher id (ca-pub-…). Public by nature — it renders in the page
+ *  source of every AdSense site, so it is not a secret. Override per-env with
+ *  NEXT_PUBLIC_ADSENSE_ID; defaults to the production account so the loader + the
+ *  google-adsense-account verification meta render on every page. */
+export const adsenseClientId = process.env.NEXT_PUBLIC_ADSENSE_ID || "ca-pub-8326504635108554";
+
 /** Standard UPI deep link / QR payload. Payee id left raw (as UPI QRs expect); name encoded. */
 export function upiPayUri(id: string = upiId, payee = "Full Stack Interview Guru"): string {
   if (!id) return "";
