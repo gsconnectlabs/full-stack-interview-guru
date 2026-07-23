@@ -388,6 +388,40 @@ a URL change. Nothing here is implemented until the owner approves it, one featu
 
 ---
 
+## 📚 Content Expansion (Phase 2)
+
+Incremental, additive question-bank growth. **No route, UI, SEO, or schema change** — new
+questions are typed objects appended to `lib/questions-extra/*` and merged automatically by
+`lib/questions.ts` (search, sitemap, category pages, prev/next, AI prompts, structured data all
+pick them up with zero extra wiring — see [04_ARCHITECTURE.md](./04_ARCHITECTURE.md) "Content Model").
+
+### CE1 — Python question bank (25 questions)
+- **Status:** ✅ **Completed 2026-07-23** — added **25** beginner→intermediate Python interview
+  questions in the new `lib/questions-extra/python.ts` (`pythonExtra`), wired into
+  `lib/questions-extra/index.ts`. Coverage: data types & mutability, `is`/`==`, lists
+  (append/extend, slicing/reverse), tuples (packing/namedtuple), dicts (get/setdefault/Counter),
+  sets, strings, functions (default-mutable-arg trap, `*args`/`**kwargs`), lambda, list
+  comprehension, generators/`yield`, iterators vs iterables, exceptions, file handling, OOP
+  (`__init__`/`self`, inheritance/`super()`, polymorphism/duck typing, encapsulation), modules,
+  virtual environments, the GIL, and multithreading vs multiprocessing. Full FIG schema per
+  question (short answer, mind-map, hands-on code, what-if, real-world, interviewer expectation,
+  key points, follow-ups, common mistakes, best practices, related tech, tags, related questions);
+  the four "Continue Learning with AI" prompts are auto-generated. **No duplicate** of the two
+  existing base Python questions (`python-list-vs-tuple`, `python-decorators`). Python category now
+  shows **27 live** (2 base + 25). Verified: TypeScript clean; production build green
+  (**281 pages**, +25 `/q/[slug]`, was 256); **no duplicate slugs**; all 52 `related` refs resolve;
+  category page "27 LIVE"; prev/next "Question N of 27"; search returns new questions; shared JS
+  **102 kB unchanged**, `/q/[slug]` First Load **111 kB unchanged**; canonical/`QAPage`/
+  `BreadcrumbList`/titles intact — **no SEO/URL/UI regression**.
+- **Reason:** Phase 2 content growth; Python is a flagship category (topic pills + homepage
+  "Top 25 Python Questions" already existed with only 2 live questions).
+- **Benefits:** More indexable long-tail question pages; a genuinely useful Python track.
+- **Complexity:** M (content authoring; no code/architecture change).
+- **Files:** new `lib/questions-extra/python.ts`; `lib/questions-extra/index.ts` (import + spread).
+- **SEO affected:** Positive (more content) — no URL/schema change.
+
+---
+
 ## 🔮 Future Improvements
 
 > **Moved to the Ideas Backlog (2026-07-18).** This roadmap now contains **committed work only**.
@@ -419,7 +453,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 23:45 IST
+- **Last Updated:** 2026-07-23 (CE1 — Python content expansion)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

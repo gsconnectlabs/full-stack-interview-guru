@@ -8,6 +8,7 @@ import { restApisExtra } from "./rest-apis";
 import { microservicesExtra } from "./microservices";
 import { awsExtra } from "./aws";
 import { systemDesignExtra } from "./system-design";
+import { pythonExtra } from "./python";
 
 /**
  * Aggregated expansion batches. Each flagship category adds its own file here and
@@ -15,9 +16,12 @@ import { systemDesignExtra } from "./system-design";
  * exported `questions` array, so search, sitemap, structured data and category pages
  * all pick up new content automatically — no other wiring required.
  *
- * Completed batches (all 9 flagship categories, 180 questions):
+ * Completed batches (9 flagship categories, 180 questions):
  * Core Java, Java Collections, Multithreading, JVM, SQL, REST API, Microservices,
  * AWS, System Design — 20 each.
+ *
+ * Content-expansion batches:
+ * Python — 25 questions (Phase 2 content expansion).
  */
 export const extraQuestions: Question[] = [
   ...coreJavaExtra,
@@ -29,4 +33,5 @@ export const extraQuestions: Question[] = [
   ...microservicesExtra,
   ...awsExtra,
   ...systemDesignExtra,
+  ...pythonExtra,
 ];

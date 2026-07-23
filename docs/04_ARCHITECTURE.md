@@ -72,7 +72,8 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
   categories.ts              Category catalog (19 categories)
   questions.ts               Base question bank (32) + merges questions-extra; getQuestion,
                              questionsByCategory, getQuestionNav (category position + prev/next)
-  questions-extra/           Flagship expansion (180 questions, 9 files + index)
+  questions-extra/           Expansion bank (205 questions, 10 files + index):
+                             9 flagship categories × 20 + Python × 25 (content expansion)
   search.ts                  Prebuilt client-side search index
   reading-time.ts            Pure build-time reading-time estimate (core Q&A content only)
   ai-prompts.ts              "Continue Learning with AI": buildAiPrompts (4 levels, build-time) + AI_PROVIDERS (ChatGPT/Gemini/Claude)
@@ -199,7 +200,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 23:45 IST
+- **Last Updated:** 2026-07-23 (CE1 — Python content expansion; expansion bank 180 → 205)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
