@@ -19,7 +19,7 @@ are tracked as work items in [05_ROADMAP.md](./05_ROADMAP.md).
 | Styling | Tailwind CSS v3 (utility-first, design tokens in `tailwind.config.ts`) |
 | Rendering | Fully static (SSG) — all routes prerendered |
 | Hosting target | Vercel |
-| Analytics/Ads | Google Analytics + AdSense (env-gated, off until IDs set) |
+| Analytics/Ads | GA4 via `@next/third-parties/google` + AdSense loader (both env-gated, off until IDs set) |
 
 Rendering is **100% static** — no backend, no database, no auth (by design).
 
@@ -130,6 +130,11 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   and `BreadcrumbList` on question + category pages **and the company/legal pages** (via reusable
   `Breadcrumb` + `JsonLd`).
 - `sitemap.ts` (all static + company/legal + category + question routes) and `robots.ts`.
+- **Analytics:** **GA4 via the official `@next/third-parties/google` integration** —
+  `components/Analytics.tsx` renders `<GoogleAnalytics gaId={gaId} />` once (site-wide, through the root
+  layout), which loads `gtag.js` a single time and tracks App Router route changes as `page_view`. It is
+  gated on `gaId` (`lib/site.ts` = `NEXT_PUBLIC_GA_ID`, **no committed default** — off until set, per
+  DECISIONS #031/#032). No custom GA4 events yet — see [14_ANALYTICS.md](./14_ANALYTICS.md).
 - **Advertising:** `adsbygoogle.js` loaded once site-wide via `components/Analytics.tsx` and a
   `google-adsense-account` verification `<meta>` in the root layout — both read `adsenseClientId` from
   `lib/site.ts` (production `ca-pub-…` committed as the default; `NEXT_PUBLIC_ADSENSE_ID` overrides
@@ -200,7 +205,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-23 (CE1 — Python content expansion; expansion bank 180 → 205)
+- **Last Updated:** 2026-07-30 (AR2 — GA4 via @next/third-parties; analytics section added)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

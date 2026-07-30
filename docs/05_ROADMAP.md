@@ -386,6 +386,24 @@ a URL change. Nothing here is implemented until the owner approves it, one featu
   `NEXT_PUBLIC_FEEDBACK_ENDPOINT`); confirm the Terms governing-law jurisdiction.
 - **SEO affected:** Positive (more indexable pages, trust signals) — no URL/schema regression.
 
+### AR2 — Google Analytics 4 (official integration) & Project Standards
+- **Status:** ✅ **Completed 2026-07-30** — migrated GA4 to the **official `@next/third-parties/google`**
+  integration and established a root `CLAUDE.md` (see CHANGELOG "AR2" and **DECISIONS #032**). **No route,
+  UI, SEO, or schema change.**
+  - **GA4:** replaced the manual `gtag.js` `<Script>` block in `components/Analytics.tsx` with
+    `<GoogleAnalytics gaId={gaId} />`; added `gaId` (env `NEXT_PUBLIC_GA_ID`, **no committed default**) to
+    `lib/site.ts`. Loads once, tracks route-change page views, **no duplicate init**. **AdSense untouched.**
+  - **Dependency:** `@next/third-parties@15.5.19` (matches `next`).
+  - **Docs:** new `docs/14_ANALYTICS.md` (integration, config, testing, troubleshooting, future events) +
+    root **`CLAUDE.md`** (authoritative guide for future Claude Code sessions); DECISIONS #032, ARCHITECTURE,
+    CHANGELOG, README, `.env.example` updated.
+  - **Verified:** TS clean; build green (**281 pages**); shared JS **102 kB unchanged** (GA env-gated off in
+    the build); in-browser with the ID set — exactly one `gtag/js` script, `gtag`/`dataLayer` live, zero GTM,
+    AdSense still loads, no hydration/console errors.
+- **Owner follow-ups:** set `NEXT_PUBLIC_GA_ID=G-Q6XEJD7V69` in Vercel to activate GA on production. Custom
+  GA4 events remain **pending approval** (catalogued in `14_ANALYTICS.md`).
+- **SEO affected:** None — non-visual, env-gated instrumentation only.
+
 ---
 
 ## 📚 Content Expansion (Phase 2)
@@ -453,7 +471,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-23 (CE1 — Python content expansion)
+- **Last Updated:** 2026-07-30 (AR2 — GA4 official integration & project standards)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -11,7 +11,7 @@ No login, no popups, no cookie banners, no dark patterns — just interviews.
 - **TailwindCSS** (dark mode by default)
 - Static, content-driven pages — **no backend, no database, no auth**
 - Deploys to **Vercel** out of the box
-- Google Analytics + AdSense are wired up but **off until you set IDs**
+- **GA4** (via `@next/third-parties/google`) + AdSense are wired up but **off until you set IDs**
 
 ## Getting started
 
@@ -57,6 +57,11 @@ Set in `.env.local` or Vercel env vars:
 NEXT_PUBLIC_GA_ID=G-XXXXXXX
 NEXT_PUBLIC_ADSENSE_ID=ca-pub-XXXXXXXXXXXXXXXX
 ```
+
+**GA4** loads via the official `@next/third-parties/google` integration (`<GoogleAnalytics>` in
+`components/Analytics.tsx`) — once, site-wide, tracking route-change page views. It stays **off
+until `NEXT_PUBLIC_GA_ID` is set** (the ID is never committed). Full details, testing, and the
+planned event list are in [docs/14_ANALYTICS.md](docs/14_ANALYTICS.md).
 
 Ads only render **below articles** and **in the sidebar** — never inside content.
 

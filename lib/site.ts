@@ -22,6 +22,12 @@ export const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const feedbackEndpoint = process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT || "";
 export const upiId = process.env.NEXT_PUBLIC_UPI_ID || "mgurusankar21@pingpay";
 
+/** Google Analytics 4 measurement id (G-…). Set per-env via NEXT_PUBLIC_GA_ID (Vercel /
+ *  .env.local); intentionally has no committed default — GA stays off until an id is present,
+ *  per DECISIONS #031 (do not commit GA ids). When set, it drives <GoogleAnalytics> in
+ *  components/Analytics.tsx (official @next/third-parties integration). */
+export const gaId = process.env.NEXT_PUBLIC_GA_ID || "";
+
 /** Google AdSense publisher id (ca-pub-…). Public by nature — it renders in the page
  *  source of every AdSense site, so it is not a secret. Override per-env with
  *  NEXT_PUBLIC_ADSENSE_ID; defaults to the production account so the loader + the

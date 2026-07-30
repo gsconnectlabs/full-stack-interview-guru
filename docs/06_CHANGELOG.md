@@ -50,6 +50,39 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (ROADMAP AR2 — GA4 via `@next/third-parties`) + project standards — 2026-07-30
+Migrated Google Analytics 4 to the **official Next.js integration** and established a root
+`CLAUDE.md`. **No route, UI, SEO, or schema change** — instrumentation + documentation only. See
+**DECISIONS #032** (and #031, unchanged).
+
+- **GA4 integration (`@next/third-parties/google`):** `components/Analytics.tsx` previously loaded GA
+  with a **hand-rolled `gtag.js` + `gtag('config', …)` `<Script>` block** (env-gated, inactive). Replaced
+  it with **`<GoogleAnalytics gaId={gaId} />`** from `@next/third-parties/google` — the framework's
+  recommended approach: loads `gtag.js` **once**, tracks App Router route changes as `page_view`, and drops
+  the inline script. The manual block is fully removed, so there is **no duplicate GA initialization**. GA4
+  anonymizes IP by default, so the old explicit `anonymize_ip` flag was dropped (no behavior change).
+- **Config:** new **`gaId`** export in `lib/site.ts` = `process.env.NEXT_PUBLIC_GA_ID || ""` — **no
+  committed default** (unlike `adsenseClientId`), so GA stays **off until `NEXT_PUBLIC_GA_ID` is set**,
+  honoring DECISIONS #031 (never commit GA IDs). `.env.example` already documents the var.
+- **Dependency:** added **`@next/third-parties@15.5.19`** (versioned in lockstep with `next 15.5.19`).
+- **AdSense preserved:** the `adsbygoogle.js` loader in the same component and the `google-adsense-account`
+  meta in `app/layout.tsx` are **unchanged** — GA and AdSense stay distinct and non-duplicating.
+- **No custom GA4 events** in this release. Planned events (question views, search, category selection,
+  feedback, donation/affiliate/outbound clicks, scroll depth, engagement) are catalogued in
+  `docs/14_ANALYTICS.md` + `CLAUDE.md`, **pending separate owner approval**.
+- **Documentation:** new **`docs/14_ANALYTICS.md`** (purpose, integration, ID config, file locations,
+  deployment, testing, troubleshooting, future events) and a new root **`CLAUDE.md`** (authoritative
+  project guide for future Claude Code sessions). Updated: `02_DECISIONS.md` (#032), `04_ARCHITECTURE.md`
+  (Analytics section), `05_ROADMAP.md` (AR2), `07_SESSION_HANDOVER.md`, `README.md`, `.env.example`.
+- **Verified:** `tsc --noEmit` clean; production build green — **281 pages** (unchanged); **shared First
+  Load JS 102 kB unchanged** (GA env-gated off in the build). In-browser with `NEXT_PUBLIC_GA_ID=G-Q6XEJD7V69`
+  set: exactly **one** `googletagmanager.com/gtag/js?id=G-Q6XEJD7V69` script, `gtag` is a function,
+  `dataLayer` populated, **0** GTM tags, AdSense loader still present (`ca-pub-8326504635108554`); **no
+  hydration warnings, no console errors** (the pre-existing benign AdSense `data-nscript` warning aside).
+- **Files:** `package.json` (+`@next/third-parties`), `package-lock.json`, `lib/site.ts` (+`gaId`),
+  `components/Analytics.tsx` (GA migrated, AdSense untouched); docs above + new `docs/14_ANALYTICS.md` +
+  root `CLAUDE.md`.
+
 ### Added (ROADMAP CE1 — Python question bank, 25 questions) — 2026-07-23
 Content expansion only — **no route, UI, SEO, or schema change**.
 
@@ -476,7 +509,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-23 (CE1 — Python content expansion)
+- **Last Updated:** 2026-07-30 (AR2 — GA4 via @next/third-parties & project standards)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

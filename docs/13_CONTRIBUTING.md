@@ -80,7 +80,8 @@ change, wait for approval, then update the relevant `/docs` file (and `06_CHANGE
 - **Numeric-prefix filenames.** All docs in `/docs` use `NN_NAME.md` so they sort into a logical
   reading order. Current set:
   `01_PROJECT_CONTEXT` · `02_DECISIONS` · `03_CLAUDE_INSTRUCTIONS` · `04_ARCHITECTURE` ·
-  `05_ROADMAP` · `06_CHANGELOG` · `07_SESSION_HANDOVER` · `13_CONTRIBUTING` · `99_IDEAS_BACKLOG`.
+  `05_ROADMAP` · `06_CHANGELOG` · `07_SESSION_HANDOVER` · `13_CONTRIBUTING` · `14_ANALYTICS` ·
+  `99_IDEAS_BACKLOG`.
   Reserved (create with these exact names when needed): `08_DEPLOYMENT`, `09_TECH_STACK`,
   `10_ENVIRONMENT`, `11_BUSINESS_VISION`, `12_OWNER_MANUAL`. **Any new doc must follow this
   convention**, and internal cross-links must use the numbered filename.
@@ -102,7 +103,7 @@ change, wait for approval, then update the relevant `/docs` file (and `06_CHANGE
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-18 23:30 IST
+- **Last Updated:** 2026-07-30 (registered 14_ANALYTICS in the docs index)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

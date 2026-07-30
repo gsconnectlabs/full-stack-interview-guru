@@ -10,6 +10,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@next/third-parties": "^15.5.19",
     "next": "15.5.19",
     "qrcode": "^1.5.4",
     "react": "19.0.0",

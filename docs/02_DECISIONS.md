@@ -855,6 +855,55 @@ redesigning the UI, changing existing UX, or breaking SEO/performance (Trust Bef
 
 ---
 
+# Decision #032
+
+## Title
+
+Google Analytics 4 via the Official `@next/third-parties` Integration — GA ID Stays Env-Driven
+
+### Status
+
+✅ Approved (GA4 integration & project-standards release, 2026-07-30)
+
+### Reason
+
+GA4 was already scaffolded as a **manual gtag loader** in `components/Analytics.tsx` (env-gated,
+inactive with no ID set). Next.js 15 ships the **official `@next/third-parties/google` integration**,
+which is the recommended way to load Google Analytics on the App Router: it injects `gtag.js` once,
+tracks client-side route changes as `page_view` events, and removes hand-maintained inline script.
+Adopting it reduces custom code and aligns with the framework's supported path, at the cost of a single
+first-party dependency (`@next/third-parties`, versioned in lockstep with `next`).
+
+The GA **measurement ID** (`G-…`) is public (it renders in page source), but per **DECISIONS #031**
+GA IDs are **not committed** as defaults the way the AdSense publisher ID is. This release preserves
+that rule: the ID is supplied per-environment via `NEXT_PUBLIC_GA_ID` (Vercel / `.env.local`), so GA
+stays **off until an ID is set**. #031 is unchanged, not superseded.
+
+### Implementation
+
+- **Dependency:** `@next/third-parties@15.5.19` (matches `next`), added to `package.json`.
+- **Loader:** `components/Analytics.tsx` renders `<GoogleAnalytics gaId={gaId} />` (from
+  `@next/third-parties/google`) **only when `gaId` is set** — replacing the manual `gtag.js` +
+  `gtag('config', …)` `<Script>` block. The manual block is fully removed, so there is **no duplicate
+  GA initialization**. GA4 anonymizes IP by default, so the old explicit `anonymize_ip` flag is dropped
+  (no behavior change).
+- **Config:** new `gaId` export in `lib/site.ts` = `process.env.NEXT_PUBLIC_GA_ID || ""` — **no committed
+  default** (contrast `adsenseClientId`, which does have one). Centralizes config next to `adsenseClientId`.
+- **AdSense unchanged:** the `adsbygoogle.js` loader in the same component and the `google-adsense-account`
+  meta in `app/layout.tsx` are untouched — GA and AdSense remain distinct and non-duplicating.
+- **Events:** **no custom GA4 events** are implemented in this release. Planned events (question views,
+  search, category selection, feedback, donation/affiliate/outbound clicks, scroll depth, engagement)
+  are catalogued in `docs/14_ANALYTICS.md` and `CLAUDE.md`, pending separate owner approval.
+- **Verified in-browser** (dev, `NEXT_PUBLIC_GA_ID` set): exactly **one** `gtag/js?id=G-…` script, `gtag`
+  is a function, `dataLayer` populated, **zero GTM tags**, AdSense loader still present; no hydration
+  warnings, no console errors.
+
+### Owner follow-up
+
+- Set `NEXT_PUBLIC_GA_ID=G-Q6XEJD7V69` in Vercel (Production/Preview) to activate GA on the live site.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -866,7 +915,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 23:45 IST
+- **Last Updated:** 2026-07-30 (Decision #032 — GA4 via @next/third-parties, ID stays env-driven)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
