@@ -11,6 +11,12 @@
   `heading`) so the copy can be tuned per page without touching the other 278 pages. **No URL, route,
   layout, business-logic, or structured-data change.** Verified with `tsc` + a real production build
   and by inspecting the rendered HTML. See **DECISIONS #033**.
+- **Release Status:** ✅ **Released to production 2026-07-31.** The approved work (commits `51201c9` +
+  `9f09f5a`) was fast-forward merged into `main` and pushed to `origin/main` (`d39ffec..9f09f5a`). Vercel
+  production deployment **completed successfully** (commit status `Vercel → success`). Live production
+  verified: homepage + all three optimized pages return **HTTP 200** with the released titles/descriptions
+  (Two Sum now correctly shows **"(Python)"**), canonicals unchanged, and all newly-added internal links
+  resolve (200). Production URL: **https://fullstackinterviewguru.com**.
 
 ---
 
@@ -141,10 +147,11 @@ were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md
 - **Copy note (resolved 2026-07-31 review follow-up):** the Two Sum `seoTitle`/`seoDescription`
   previously said "Java" while the page's Hands-on code sample is Python. Corrected to "Python" so the
   metadata matches the content (page content unchanged; no Java implementation added).
-- **Impact is measured externally** — CTR improvement shows up in Google Search Console over time after
-  redeploy + re-crawl; nothing to verify locally beyond the rendered metadata.
-- **Deploy note:** `NEXT_PUBLIC_*` values inline at build time; a Vercel redeploy is needed for the new
-  metadata to go live. **Build vs dev:** don't `npm run build` while a dev/preview server is live.
+- **Impact is measured externally** — the code is live (see Release Status); CTR improvement now shows up
+  in Google Search Console over time as pages are re-crawled. Nothing further to verify locally.
+- **Deploy note:** ✅ Deployed — Vercel auto-built from the `main` push and the production deployment
+  succeeded; new metadata is live on https://fullstackinterviewguru.com. **Build vs dev:** don't
+  `npm run build` while a dev/preview server is live.
 
 ---
 
@@ -188,7 +195,7 @@ implementation.**
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (SEO — CTR optimization + Two Sum metadata consistency fix; DECISIONS #033)
+- **Last Updated:** 2026-07-31 (SEO CTR optimization + Two Sum fix — released to production; DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
