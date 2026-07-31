@@ -904,6 +904,53 @@ stays **off until an ID is set**. #031 is unchanged, not superseded.
 
 ---
 
+# Decision #033
+
+## Title
+
+Per-Page SEO Overrides (`seoTitle` / `seoDescription` / `heading`) for High-Impression Pages
+
+### Status
+
+✅ Approved (Owner-directed 2026-07-31 — GSC CTR optimization)
+
+### Reason
+
+Google Search Console shows a handful of question pages earning high impressions but low CTR. The
+default title (`FIG – {question}`), the derived meta description, and the conversational `<h1>` are
+tuned for the on-site learning experience, not for search-result CTR. Owner supplied hand-written,
+keyword-led title / description / H1 copy for the top three pages (REST Idempotency, Two Sum, Amazon
+DynamoDB). We needed a way to apply that copy **without changing URLs, layouts, or structured data**,
+and without regressing the 278 pages that should keep the branded template.
+
+### Implementation
+
+- **Three optional fields on `Question` (`lib/types.ts`):** `seoTitle`, `seoDescription`, `heading` —
+  all optional, so every existing page is unaffected (append-only content model, per DECISIONS #028).
+- **`app/q/[slug]/page.tsx`:**
+  - `generateMetadata` emits `title: { absolute: q.seoTitle }` when `seoTitle` is set — this **bypasses
+    the root `"FIG – %s"` template** (the supplied titles carry their own branding), otherwise it falls
+    back to `q.question` (template still applies). `seoDescription` overrides the derived description;
+    both `openGraph.title`/`description` follow the same fallbacks.
+  - The visible `<h1>` renders `q.heading ?? q.question`.
+- **Structured data unchanged:** the `QAPage` JSON-LD `name`, the ☕ Coffee Chat block, and the Report-
+  issue context all keep using the real conversational `question`. `heading` is presentation-only.
+- **Relationship to the branded-title convention (ARCHITECTURE "SEO Implementation"):** the `"FIG – %s"`
+  template remains the **default** for all pages; `seoTitle` is a deliberate, per-page opt-out for
+  SEO-critical pages only. Not a blanket change.
+- **Internal links:** added via the existing `related` slug mechanism (renders as Related Questions
+  cards) — only to pages that already exist. Requested targets with **no existing page** (Spring Boot
+  REST, Time Complexity, Amazon CloudWatch) were intentionally **not** linked, to avoid dead links
+  (No-dead-links rule, #026). Candidates for future content — logged in `99_IDEAS_BACKLOG.md`.
+
+### Scope
+
+Applied to exactly three pages this session: `/q/rest-idempotency`, `/q/two-sum`,
+`/q/dynamodb-single-table`. Further pages require separate owner approval before the same fields are
+added.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -915,7 +962,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-30 (Decision #032 — GA4 via @next/third-parties, ID stays env-driven)
+- **Last Updated:** 2026-07-31 (Decision #033 — per-page SEO overrides for high-impression pages)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -96,7 +96,8 @@ Business logic lives in `lib/`, not in pages — pages compose data + components
   `mindMap`, `handsOn?` (with `time?`/`space?`), `whatIf?`, `realWorld?`,
   `interviewerExpectation?`, `shortAnswer?`, `tags?`, `followUps?`, `commonMistakes?`,
   `bestPractices?`, `relatedTech?`, `references?`, `updated?` (ISO `YYYY-MM-DD` — drives the
-  "Updated" freshness chip + `QAPage.dateModified`), `difficulty`, `experience`, `askedIn`,
+  "Updated" freshness chip + `QAPage.dateModified`), `seoTitle?`/`seoDescription?`/`heading?`
+  (optional per-page SEO overrides — DECISIONS #033), `difficulty`, `experience`, `askedIn`,
   `related?`.
 - **Adding content** = append typed objects to a `lib/questions-extra/*` file. No UI or
   route changes required.
@@ -125,6 +126,11 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
 - **Title format (DECISIONS #014):** root `title.template` = `"FIG – %s"` (branded prefix); child
   pages supply the descriptive text → e.g. "FIG – Core Java Interview Questions". Homepage `default`
   keeps the full name for SEO. `openGraph.title` is set independently (template does not apply to it).
+- **Per-page SEO overrides (DECISIONS #033):** a question may set optional `seoTitle`, `seoDescription`,
+  and `heading` (`lib/types.ts`). `seoTitle` is emitted as `title: { absolute }` — a deliberate opt-out
+  of the `"FIG – %s"` template for SEO-critical, high-impression pages — while `seoDescription` overrides
+  the derived description and `heading` overrides the visible `<h1>`. All optional; the `QAPage` schema
+  and ☕ Coffee Chat block keep using the conversational `question`. Applied to three pages so far.
 - Open Graph + Twitter card metadata (root defaults; per-page title/description).
 - **Structured data:** `WebSite` + `Organization` (root layout), `QAPage` per question,
   and `BreadcrumbList` on question + category pages **and the company/legal pages** (via reusable
@@ -205,7 +211,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-30 (AR2 — GA4 via @next/third-parties; analytics section added)
+- **Last Updated:** 2026-07-31 (SEO — per-page seoTitle/seoDescription/heading overrides; DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

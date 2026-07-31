@@ -35,15 +35,16 @@ export async function generateMetadata({
   const plain = (q.shortAnswer ?? q.mindMap.find((b) => b.type === "text")?.content ?? q.question)
     .replace(/[*`]/g, "")
     .trim();
+  const description = q.seoDescription ?? plain.slice(0, 155);
   return {
-    title: q.question,
-    description: plain.slice(0, 155),
+    title: q.seoTitle ? { absolute: q.seoTitle } : q.question,
+    description,
     alternates: { canonical: `/q/${q.slug}` },
     openGraph: {
       type: "article",
       url: `/q/${q.slug}`,
-      title: q.question,
-      description: plain.slice(0, 155),
+      title: q.seoTitle ?? q.question,
+      description,
     },
   };
 }
@@ -200,7 +201,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             )}
           </div>
 
-          <h1 className="mt-4 text-2xl font-black leading-tight text-white sm:text-3xl">{q.question}</h1>
+          <h1 className="mt-4 text-2xl font-black leading-tight text-white sm:text-3xl">{q.heading ?? q.question}</h1>
 
           {/* Asked In */}
           <div className="mt-4 flex flex-wrap items-center gap-2">

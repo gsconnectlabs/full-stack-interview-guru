@@ -50,6 +50,37 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (SEO — CTR optimization for high-impression pages) — 2026-07-31
+Optimized on-page SEO for the three highest-impression / low-CTR question pages from Google Search
+Console — **REST Idempotency, Two Sum, Amazon DynamoDB** — with hand-written, keyword-led titles,
+meta descriptions, and H1s, plus relevant internal links. **No URL, route, layout, business-logic, or
+structured-data change.** See **DECISIONS #033**.
+
+- **New optional `Question` fields (`lib/types.ts`):** `seoTitle`, `seoDescription`, `heading` — all
+  optional, so the other 278 pages are unaffected (append-only content model).
+- **`app/q/[slug]/page.tsx`:** `generateMetadata` uses `title: { absolute: seoTitle }` (bypasses the
+  `"FIG – %s"` template when set) and `seoDescription` when provided; both fall back to the previous
+  behavior. The visible `<h1>` now renders `heading ?? question`. The `QAPage` JSON-LD, ☕ Coffee Chat
+  block, and Report-issue context still use the real conversational `question` — **schema unchanged**.
+- **Metadata applied** (pages `/q/rest-idempotency`, `/q/two-sum`, `/q/dynamodb-single-table`):
+  - **REST Idempotency** — title "REST Idempotency Interview Questions & Answers (2026) | Full Stack
+    Interview Guru"; H1 "REST Idempotency Interview Questions".
+  - **Two Sum** — title "Two Sum Interview Question (Java) – Optimal Solution with Explanation";
+    H1 "Two Sum Interview Question".
+  - **Amazon DynamoDB** — title "Amazon DynamoDB Interview Questions & Answers (2026)";
+    H1 "Amazon DynamoDB Interview Questions".
+- **Internal links** (via the existing `related` slug mechanism → Related Questions cards):
+  - REST Idempotency → `rest-waiter`, `idempotency-keys`, `consumer-idempotency` (added; kept existing
+    `rest-status-codes`, `what-is-jwt`).
+  - Two Sum → `choosing-the-right-collection`, `what-is-arraylist` (added; kept `what-is-hashmap`).
+  - Amazon DynamoDB → `aws-lambda`, `api-gateway`, `sqs-sns-eventbridge` (added; kept
+    `dynamodb-partition-key`, `rds-vs-dynamodb`).
+  - Requested targets with **no existing page** (Spring Boot REST, Time Complexity, Amazon CloudWatch)
+    were **not** linked (no dead links) — logged as content ideas in `99_IDEAS_BACKLOG.md`.
+- **Verified:** `tsc` clean; production build green — **281 static pages** (unchanged); shared First
+  Load JS **102 kB** (unchanged); rendered title/description/H1/canonical/links confirmed in the built
+  HTML; canonicals and slugs unchanged.
+
 ### Changed (ROADMAP AR2 — GA4 via `@next/third-parties`) + project standards — 2026-07-30
 Migrated Google Analytics 4 to the **official Next.js integration** and established a root
 `CLAUDE.md`. **No route, UI, SEO, or schema change** — instrumentation + documentation only. See
@@ -509,7 +540,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-30 (AR2 — GA4 via @next/third-parties & project standards)
+- **Last Updated:** 2026-07-31 (SEO — CTR optimization for high-impression pages; DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

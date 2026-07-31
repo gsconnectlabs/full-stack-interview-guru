@@ -50,6 +50,16 @@ export interface Question {
   /** 🗓️ Content last-updated date (ISO `YYYY-MM-DD`). Optional; drives the
    *  "Updated …" freshness chip and the QAPage `dateModified` signal. */
   updated?: string;
+
+  // --- SEO overrides (optional) — used to tune high-impression pages for CTR ---
+  /** Absolute `<title>` override that bypasses the root `"FIG – %s"` template
+   *  (the supplied title carries its own branding). Falls back to `question`. */
+  seoTitle?: string;
+  /** Meta-description override (hand-written for CTR). Falls back to a derived summary. */
+  seoDescription?: string;
+  /** Visible `<h1>` override (keyword-led heading). The ☕ Coffee Chat block and the
+   *  `QAPage` structured data keep using the conversational `question`. Falls back to `question`. */
+  heading?: string;
 }
 
 export interface Category {

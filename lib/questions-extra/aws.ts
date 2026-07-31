@@ -778,6 +778,10 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "What is DynamoDB single-table design, and why do experts use it?",
+    seoTitle: "Amazon DynamoDB Interview Questions & Answers (2026)",
+    seoDescription:
+      "Prepare for DynamoDB interviews with partition keys, sort keys, GSIs, LSIs, single-table design, scalability, and real-world interview questions with detailed answers.",
+    heading: "Amazon DynamoDB Interview Questions",
     tags: ["dynamodb", "single-table design", "access patterns", "gsi", "nosql modeling"],
     shortAnswer:
       "Single-table design stores multiple entity types in ONE table, using composite keys (PK/SK) and GSIs crafted so each known access pattern is served by a single efficient query — no joins, no multiple round-trips. It trades modeling complexity and rigidity for low latency and cost at scale.",
@@ -818,7 +822,7 @@ export const awsExtra: Question[] = [
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Google", "Microsoft"],
-    related: ["dynamodb-partition-key", "rds-vs-dynamodb"],
+    related: ["dynamodb-partition-key", "rds-vs-dynamodb", "aws-lambda", "api-gateway", "sqs-sns-eventbridge"],
   },
   {
     slug: "well-architected-framework",

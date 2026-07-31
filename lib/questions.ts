@@ -292,6 +292,10 @@ print(greet("john"))`,
     categoryId: "rest-apis",
     topic: "Idempotency",
     question: "Which HTTP methods are idempotent and why does it matter?",
+    seoTitle: "REST Idempotency Interview Questions & Answers (2026) | Full Stack Interview Guru",
+    seoDescription:
+      "Learn REST Idempotency with interview questions, real-world examples, HTTP methods, PUT vs POST, idempotent APIs, and expert answers. Perfect for Java, Spring Boot, and backend developer interviews.",
+    heading: "REST Idempotency Interview Questions",
     mindMap: [
       { type: "text", content: "Idempotent = calling it once or many times has the same effect on the server. It matters for safe retries on flaky networks." },
       {
@@ -318,7 +322,7 @@ print(greet("john"))`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Deloitte", "Accenture"],
-    related: ["rest-status-codes", "what-is-jwt"],
+    related: ["rest-status-codes", "what-is-jwt", "rest-waiter", "idempotency-keys", "consumer-idempotency"],
   },
   {
     slug: "rest-status-codes",
@@ -724,6 +728,10 @@ ls -l deploy.sh
     categoryId: "coding-challenges",
     topic: "HashMaps",
     question: "Solve Two Sum — return indices of two numbers adding to a target.",
+    seoTitle: "Two Sum Interview Question (Java) – Optimal Solution with Explanation",
+    seoDescription:
+      "Master the Two Sum interview problem with Java solutions, brute force vs HashMap approach, time complexity analysis, dry run, and common interview follow-up questions.",
+    heading: "Two Sum Interview Question",
     mindMap: [
       { type: "text", content: "Brute force is O(n²) with nested loops. The trick: as you scan, remember what you have seen in a HashMap so you can look up the complement in O(1)." },
       {
@@ -756,7 +764,7 @@ print(two_sum([2, 7, 11, 15], 9))`,
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Amazon", "Accenture", "Deloitte"],
-    related: ["what-is-hashmap"],
+    related: ["what-is-hashmap", "choosing-the-right-collection", "what-is-arraylist"],
   },
   {
     slug: "behavioral-conflict",

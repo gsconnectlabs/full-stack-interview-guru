@@ -29,6 +29,12 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 - **Status:** Idea *(previously discussed during the flagship expansion; not yet committed)*
 - **Date Added:** 2026-07-18
 
+### Content gaps found during SEO CTR pass (missing internal-link targets)
+- **Description:** The 2026-07-31 SEO pass (DECISIONS #033) wanted internal links to three topics that have **no dedicated question page yet**: a **Spring Boot REST** question (requested from REST Idempotency), a **Time Complexity / Big-O** question (requested from Two Sum), and an **Amazon CloudWatch** question (requested from Amazon DynamoDB). They were **not** linked, to avoid dead links (#026).
+- **Why it is valuable:** Creating these pages would let the high-impression pages link out to them, strengthening internal linking and covering common interview topics that are currently absent.
+- **Status:** Idea *(discovered, not implemented — out of scope for the SEO pass)*
+- **Date Added:** 2026-07-31
+
 ---
 
 # UX Improvements
@@ -169,7 +175,7 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-19 23:45 IST
+- **Last Updated:** 2026-07-31 (logged content gaps from the SEO CTR pass — DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
