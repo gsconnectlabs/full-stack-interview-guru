@@ -50,6 +50,19 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (SEO — Two Sum metadata consistency) — 2026-07-31
+Review follow-up to the SEO CTR pass below. The Two Sum page's `seoTitle`/`seoDescription` referenced
+**"Java"**, but the page's Hands-on code sample is **Python**. Corrected the metadata to say **Python**
+so it accurately reflects the existing content — **page content unchanged; no Java implementation added**.
+
+- **`lib/questions.ts` (`two-sum`):** `seoTitle` "… (Java) …" → "… (Python) …"; `seoDescription`
+  "… Java solutions …" → "… Python solutions …". No other fields touched.
+- **Docs:** corrected the quoted Two Sum title in the SEO entry below and in `07_SESSION_HANDOVER.md`;
+  the previously-noted Java/Python copy discrepancy is now **resolved**.
+- **Verified:** `tsc` clean; production build green — **281 static pages** (unchanged), shared First
+  Load JS **102 kB** (unchanged); corrected `<title>`/`<meta description>` confirmed in the built HTML;
+  overrides remain optional (only 3 pages use them); all internal links resolve.
+
 ### Changed (SEO — CTR optimization for high-impression pages) — 2026-07-31
 Optimized on-page SEO for the three highest-impression / low-CTR question pages from Google Search
 Console — **REST Idempotency, Two Sum, Amazon DynamoDB** — with hand-written, keyword-led titles,
@@ -65,7 +78,7 @@ structured-data change.** See **DECISIONS #033**.
 - **Metadata applied** (pages `/q/rest-idempotency`, `/q/two-sum`, `/q/dynamodb-single-table`):
   - **REST Idempotency** — title "REST Idempotency Interview Questions & Answers (2026) | Full Stack
     Interview Guru"; H1 "REST Idempotency Interview Questions".
-  - **Two Sum** — title "Two Sum Interview Question (Java) – Optimal Solution with Explanation";
+  - **Two Sum** — title "Two Sum Interview Question (Python) – Optimal Solution with Explanation";
     H1 "Two Sum Interview Question".
   - **Amazon DynamoDB** — title "Amazon DynamoDB Interview Questions & Answers (2026)";
     H1 "Amazon DynamoDB Interview Questions".
@@ -540,7 +553,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (SEO — CTR optimization for high-impression pages; DECISIONS #033)
+- **Last Updated:** 2026-07-31 (SEO — Two Sum metadata consistency fix; CTR optimization; DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

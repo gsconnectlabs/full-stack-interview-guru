@@ -35,7 +35,7 @@ Applied SEO copy:
 | Page (URL) | Title | H1 |
 |---|---|---|
 | `/q/rest-idempotency` | REST Idempotency Interview Questions & Answers (2026) \| Full Stack Interview Guru | REST Idempotency Interview Questions |
-| `/q/two-sum` | Two Sum Interview Question (Java) – Optimal Solution with Explanation | Two Sum Interview Question |
+| `/q/two-sum` | Two Sum Interview Question (Python) – Optimal Solution with Explanation | Two Sum Interview Question |
 | `/q/dynamodb-single-table` | Amazon DynamoDB Interview Questions & Answers (2026) | Amazon DynamoDB Interview Questions |
 
 Internal links added (kept existing):
@@ -138,9 +138,9 @@ were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md
   needs separate owner approval before the same fields are added (DECISIONS #033).
 - **Missing internal-link targets** — Spring Boot REST, Time Complexity/Big-O, and Amazon CloudWatch have
   no question page yet; logged in `99_IDEAS_BACKLOG.md`. Creating them would let these pages link out.
-- **Copy note (owner-supplied, kept verbatim):** the Two Sum description says "Java solutions" while the
-  page's Hands-on code sample is Python. Left as provided; flag if a Java sample or reworded description
-  is preferred.
+- **Copy note (resolved 2026-07-31 review follow-up):** the Two Sum `seoTitle`/`seoDescription`
+  previously said "Java" while the page's Hands-on code sample is Python. Corrected to "Python" so the
+  metadata matches the content (page content unchanged; no Java implementation added).
 - **Impact is measured externally** — CTR improvement shows up in Google Search Console over time after
   redeploy + re-crawl; nothing to verify locally beyond the rendered metadata.
 - **Deploy note:** `NEXT_PUBLIC_*` values inline at build time; a Vercel redeploy is needed for the new
@@ -188,7 +188,7 @@ implementation.**
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (SEO — CTR optimization for high-impression pages; DECISIONS #033)
+- **Last Updated:** 2026-07-31 (SEO — CTR optimization + Two Sum metadata consistency fix; DECISIONS #033)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

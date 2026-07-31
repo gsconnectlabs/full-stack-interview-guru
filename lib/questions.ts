@@ -728,9 +728,9 @@ ls -l deploy.sh
     categoryId: "coding-challenges",
     topic: "HashMaps",
     question: "Solve Two Sum — return indices of two numbers adding to a target.",
-    seoTitle: "Two Sum Interview Question (Java) – Optimal Solution with Explanation",
+    seoTitle: "Two Sum Interview Question (Python) – Optimal Solution with Explanation",
     seoDescription:
-      "Master the Two Sum interview problem with Java solutions, brute force vs HashMap approach, time complexity analysis, dry run, and common interview follow-up questions.",
+      "Master the Two Sum interview problem with Python solutions, brute force vs HashMap approach, time complexity analysis, dry run, and common interview follow-up questions.",
     heading: "Two Sum Interview Question",
     mindMap: [
       { type: "text", content: "Brute force is O(n²) with nested loops. The trick: as you scan, remember what you have seen in a HashMap so you can look up the complement in O(1)." },
