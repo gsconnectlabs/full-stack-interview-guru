@@ -486,7 +486,7 @@ System.out.println(a.getClass() == b.getClass()); // true — both ArrayList`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Google"],
-    related: ["classcast-generics-legacy", "immutable-class-design"],
+    related: ["immutable-class-design"],
   },
   {
     slug: "enum-with-behavior",

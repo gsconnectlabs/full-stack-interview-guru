@@ -135,18 +135,20 @@ Both new pages link to the existing ones (and vice-versa is not modified — exi
 # Current Project Health
 
 - ✅ TypeScript clean · ✅ Build green (**306 pages**) · ✅ Shared JS unchanged (102 kB) · ✅ No duplicate
-  slugs (262 unique) · ✅ Internal links resolve · ✅ SEO/structured data intact · ✅ Canonicals/URLs
-  unchanged · ✅ Docs synchronized + timestamped.
+  slugs (262 unique) · ✅ **0 broken `related` refs** (600 references all resolve) · ✅ Internal links
+  resolve · ✅ SEO/structured data intact · ✅ Canonicals/URLs unchanged · ✅ Docs synchronized + timestamped.
 
 ---
 
 # Known Limitations / Follow-ups
 
-- **Pre-existing broken `related` ref (NOT from this session):** `lib/questions-extra/core-java.ts`
-  references `related: ["classcast-generics-legacy"]`, a slug that does not exist. It's harmless at
-  runtime (the question page filters unresolved related via `.filter(Boolean)`), so no broken route —
-  but the link silently renders nothing. **Discovered, not fixed** (out of this batch's scope). Fix =
-  either add the missing question or drop the ref. Suggested as a separate follow-up.
+- **Pre-existing broken `related` ref — ✅ RESOLVED (maintenance fix, 2026-08-01):**
+  `lib/questions-extra/core-java.ts` (`generics-type-erasure`) referenced `"classcast-generics-legacy"`,
+  a slug that was **never defined** (companion question pre-wired in `related` but never authored —
+  confirmed via `git log -S`). Removed the dangling slug (`related` now `["immutable-class-design"]`).
+  Per scope, no new question was created. Verified: `tsc` clean, build green (306 pages), full bank
+  scan shows **0 broken `related` refs** (was 1). See CHANGELOG "Fixed (core-java …)". **Committed on a
+  separate maintenance branch; not merged/pushed — awaiting approval.**
 - **JSON category `count` marketing number** left at **50** (matches the pattern of other categories,
   whose `count` is an aspirational catalog figure, not the live count). The category page shows the
   real "26 LIVE" independently. Not changed — no owner instruction to.
@@ -176,9 +178,9 @@ Both new pages link to the existing ones (and vice-versa is not modified — exi
 
 Owner-selected, per the workflow. Options: **(a)** continue content expansion (**CE3**) with another
 listed-but-thin category (e.g. Docker, Kubernetes, Git, Linux, Behavioral) following this exact CE2
-pattern; **(b)** fix the pre-existing `classcast-generics-legacy` dangling ref in `core-java.ts`; or
-**(c)** resume the committed roadmap with **H3 + H4** (light-default theme + Teal/Gold palette), then
-**L1**. **All tasks require explicit owner approval before implementation.**
+pattern; or **(b)** resume the committed roadmap with **H3 + H4** (light-default theme + Teal/Gold
+palette), then **L1**. (The pre-existing `classcast-generics-legacy` dangling ref was resolved in the
+2026-08-01 maintenance fix.) **All tasks require explicit owner approval before implementation.**
 
 ---
 
@@ -201,7 +203,7 @@ pattern; **(b)** fix the pre-existing `classcast-generics-legacy` dangling ref i
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; released to production)
+- **Last Updated:** 2026-08-01 (Maintenance — removed dangling core-java `related` ref; CE2 released earlier same day)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -50,6 +50,23 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (core-java — dangling related reference) — 2026-08-01
+Maintenance fix — **data-only, no code/UI/schema/route change**.
+
+- **`lib/questions-extra/core-java.ts` (`generics-type-erasure`):** removed the dangling `related` slug
+  `"classcast-generics-legacy"` (`related` is now `["immutable-class-design"]`).
+- **Root cause:** the slug was **never defined** as a question — `git log -S 'slug: "classcast-generics-legacy"'`
+  returns nothing across all history. It only ever existed as a `related` reference, introduced in the
+  same commit that created `generics-type-erasure` (`c19f365`, the 180-question flagship batch). A
+  companion "ClassCastException from generics/legacy raw types" question was pre-wired in `related` but
+  never authored (not obsolete, renamed, or deleted). It was harmless at runtime — the question page
+  resolves `related` via `getQuestion` then `.filter(Boolean)`, so the missing slug silently rendered
+  nothing (no broken route) — but it was dead intent. Per the maintenance scope, **no new question was
+  created**; the obsolete reference was removed.
+- **Verified:** TypeScript clean (`tsc --noEmit`); production build green — **306 pages** (unchanged);
+  full bank scan shows **0 broken `related` refs** (was 1) across 600 references, **262 unique slugs**
+  (no duplicates), and no new dangling references introduced. Existing functionality unchanged.
+
 ### Added (ROADMAP CE2 — JSON question bank, 25 questions) — 2026-08-01
 Content expansion — **no route, UI, layout, or schema change**. Unlike CE1 (Python), this batch also
 populates the existing optional SEO override fields (`seoTitle` / `seoDescription` / `heading`,
@@ -591,7 +608,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; 237 → 262 questions, 306 pages)
+- **Last Updated:** 2026-08-01 (Maintenance — removed dangling core-java `related` ref; CE2 JSON bank)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
