@@ -147,8 +147,10 @@ Both new pages link to the existing ones (and vice-versa is not modified — exi
   a slug that was **never defined** (companion question pre-wired in `related` but never authored —
   confirmed via `git log -S`). Removed the dangling slug (`related` now `["immutable-class-design"]`).
   Per scope, no new question was created. Verified: `tsc` clean, build green (306 pages), full bank
-  scan shows **0 broken `related` refs** (was 1). See CHANGELOG "Fixed (core-java …)". **Committed on a
-  separate maintenance branch; not merged/pushed — awaiting approval.**
+  scan shows **0 broken `related` refs** (was 1). See CHANGELOG "Fixed (core-java …)". **✅ Released to
+  production 2026-08-01** — `1c738ab` merged to `main` (`3f8550a..1c738ab`) + pushed; Vercel deploy
+  succeeded; smoke test passed (`/q/generics-type-erasure` 200 with the `immutable-class-design`
+  related link resolving, dead slug absent from served HTML, no regressions).
 - **JSON category `count` marketing number** left at **50** (matches the pattern of other categories,
   whose `count` is an aspirational catalog figure, not the live count). The category page shows the
   real "26 LIVE" independently. Not changed — no owner instruction to.
@@ -203,7 +205,7 @@ palette), then **L1**. (The pre-existing `classcast-generics-legacy` dangling re
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (Maintenance — removed dangling core-java `related` ref; CE2 released earlier same day)
+- **Last Updated:** 2026-08-01 (Maintenance — removed dangling core-java `related` ref; released to production)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
