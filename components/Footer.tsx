@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { categories } from "@/lib/categories";
+import { listedCategories } from "@/lib/category-visibility";
 
 /**
  * Footer link columns. Every href resolves to a real route (verified against the
@@ -42,7 +42,7 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
 ];
 
 export default function Footer() {
-  const topics = categories.slice(0, 12);
+  const topics = listedCategories.slice(0, 12);
   return (
     <footer className="mt-24 border-t border-white/[0.06] bg-ink-950/60">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">

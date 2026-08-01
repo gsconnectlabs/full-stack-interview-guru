@@ -3,12 +3,19 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { categories, getCategory } from "@/lib/categories";
 import { questionsByCategory } from "@/lib/questions";
+import { isListed } from "@/lib/category-visibility";
 import QuestionCard from "@/components/QuestionCard";
 import AdSlot from "@/components/AdSlot";
 import Breadcrumb from "@/components/Breadcrumb";
 
+/** Only categories that have at least one live question get a route (so every breadcrumb
+ *  from a live question resolves); empty categories 404 instead of showing a placeholder. */
+export const dynamicParams = false;
+
 export function generateStaticParams() {
-  return categories.map((c) => ({ category: c.id }));
+  return categories
+    .filter((c) => questionsByCategory(c.id).length > 0)
+    .map((c) => ({ category: c.id }));
 }
 
 export async function generateMetadata({
@@ -19,10 +26,13 @@ export async function generateMetadata({
   const { category } = await params;
   const cat = getCategory(category);
   if (!cat) return { title: "Not found" };
+  const live = questionsByCategory(cat.id).length;
   return {
     title: `${cat.name} Interview Questions`,
-    description: `${cat.name} interview questions and answers — ${cat.blurb} ${cat.count}+ curated questions.`,
+    description: `${cat.name} interview questions and answers — ${cat.blurb} ${live} curated questions.`,
     alternates: { canonical: `/candidate/${cat.id}` },
+    // Keep thin (below-threshold) category listings out of the index until they are filled out.
+    ...(isListed(cat.id) ? {} : { robots: { index: false, follow: true } }),
   };
 }
 
@@ -52,7 +62,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           <h1 className="text-3xl font-black text-white">{cat.name}</h1>
           <p className="mt-1 text-slate-400">{cat.blurb}</p>
         </div>
-        <span className="chip sm:ml-auto">{cat.count} questions</span>
+        <span className="chip sm:ml-auto">{qs.length} question{qs.length === 1 ? "" : "s"}</span>
       </div>
 
       {/* Topic pills */}

@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { categories } from "@/lib/categories";
+import { listedCategories } from "@/lib/category-visibility";
 import { questions } from "@/lib/questions";
 import { siteUrl as BASE } from "@/lib/site";
 
@@ -25,7 +25,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     priority: path === "" ? 1 : 0.8,
   }));
 
-  const categoryRoutes = categories.map((c) => ({
+  const categoryRoutes = listedCategories.map((c) => ({
     url: `${BASE}/candidate/${c.id}`,
     lastModified: new Date(),
     changeFrequency: "weekly" as const,

@@ -74,6 +74,8 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
                              questionsByCategory, getQuestionNav (category position + prev/next)
   questions-extra/           Expansion bank (230 questions, 11 files + index):
                              9 flagship categories × 20 + Python × 25 + JSON × 25 (content expansion)
+  category-visibility.ts     Live-count helpers: MIN_LIVE_TO_LIST, liveCount, isListed,
+                             listedCategories, totalLiveQuestions (drives browse/sitemap — DECISIONS #034)
   search.ts                  Prebuilt client-side search index
   reading-time.ts            Pure build-time reading-time estimate (core Q&A content only)
   ai-prompts.ts              "Continue Learning with AI": buildAiPrompts (4 levels, build-time) + AI_PROVIDERS (ChatGPT/Gemini/Claude)
@@ -101,6 +103,12 @@ Business logic lives in `lib/`, not in pages — pages compose data + components
   `related?`.
 - **Adding content** = append typed objects to a `lib/questions-extra/*` file. No UI or
   route changes required.
+- **Category visibility (DECISIONS #034):** the `count` field is an aspirational catalog target, not the
+  live total. The public browse surface (home, candidate index, footer, sitemap) is driven by
+  `lib/category-visibility.ts` — only categories with ≥ `MIN_LIVE_TO_LIST` (10) live questions are
+  listed/indexed, and cards/headers show the real `liveCount`. Empty categories 404
+  (`generateStaticParams` + `dynamicParams=false`); below-threshold non-empty ones render `noindex` so
+  breadcrumbs still resolve. Filling a category past the threshold re-lists it automatically.
 
 ---
 
@@ -211,7 +219,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; expansion bank 205 → 230)
+- **Last Updated:** 2026-08-01 (SEO — category visibility / live counts, `category-visibility.ts`; DECISIONS #034)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

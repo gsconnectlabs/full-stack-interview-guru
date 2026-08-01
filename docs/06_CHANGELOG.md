@@ -50,6 +50,35 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (SEO — advertise only substantial categories; honest live counts) — 2026-08-01
+AdSense **"Low value content"** remediation (DECISIONS **#034**). The site advertised **1,970 questions
+across 23 categories** while only **262** existed (12 categories had <10 live; Azure/GCP had 0), producing
+thin / "under construction" pages. The public browse surface now reflects **live** content. **No question
+URLs/slugs changed; content is non-destructive (append-only, #028).**
+
+- **New `lib/category-visibility.ts`** — `MIN_LIVE_TO_LIST = 10`, `liveCount`, `isListed`,
+  `listedCategories` (catalog order preserved), `totalLiveQuestions`. Live counts derive from
+  `questionsByCategory`, so they self-update as content grows.
+- **Browse surface → live counts + only ≥10-live categories (11 of 23):** `app/page.tsx` (metrics +
+  Explore Topics), `app/candidate/page.tsx`, `components/TopicCard.tsx` (chip), `components/Footer.tsx`.
+  Home now reads **"262+ questions" / "11 Topics"** (was 1,970+ / 23) with real per-card counts
+  (Core Java 27, Python 27, REST 24, JSON 26, AWS 22, SQL 22, System Design 21, Collections/MT/JVM/
+  Microservices 20).
+- **`app/sitemap.ts`:** category URLs limited to `listedCategories` (11); all 262 question routes retained.
+- **`app/candidate/[category]/page.tsx`:** `generateStaticParams` now only emits categories with **≥1
+  live question** and sets `dynamicParams = false`, so **empty** categories (Azure/GCP) return **404**
+  instead of the "being written" placeholder; below-threshold-but-non-empty categories still render (so
+  breadcrumbs resolve) but are **`noindex, follow`** and show the real live count in the header/metadata.
+- **`app/q/[slug]/page.tsx`:** the "More {category}" sidebar card shows the live count (pluralized).
+- **`lib/categories.ts` unchanged** — the aspirational `count`/`topics` data is retained as the catalog
+  target; it is simply no longer shown as if it were live. Interviewer mode's picker is unchanged
+  (it generates kits, not crawlable pages).
+- **Verified:** TypeScript clean; production build green — **304 pages** (was 306; −2 = the two
+  0-question category routes no longer generated); in-browser: home/candidate show 262+ across 11
+  categories with real counts, delisted categories absent from browse + sitemap, `/candidate/aws`
+  `index,follow`, `/candidate/docker` renders `noindex,follow`, sitemap lists exactly 11 categories.
+  No question URL, structured-data, or First-Load-JS change.
+
 ### Fixed (core-java — dangling related reference) — 2026-08-01
 Maintenance fix — **data-only, no code/UI/schema/route change**.
 
@@ -608,7 +637,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (Maintenance — removed dangling core-java `related` ref; CE2 JSON bank)
+- **Last Updated:** 2026-08-01 (SEO — advertise only substantial categories / live counts; DECISIONS #034)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -951,6 +951,61 @@ added.
 
 ---
 
+# Decision #034
+
+## Title
+
+Advertise Only Substantial Categories — Live Counts, Not Aspirational Catalog Counts
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-01 — AdSense "Low value content" remediation)
+
+### Reason
+
+AdSense rejected the site with **"Low value content."** Root cause: the `count` field in
+`lib/categories.ts` is an **aspirational catalog target**, not the number of published questions, and it
+was shown verbatim across the browse surface. The site advertised **1,970 questions across 23
+categories** while only **262** existed, and **12 of 23 categories had fewer than 10 live questions**
+(Azure/GCP had **0**, Coding Challenges advertised **200** with **1** live). Clicking such a card led to
+an empty or near-empty page — and the category page even rendered an explicit "questions are being
+written" placeholder. To reviewers (and search engines) this reads as thin / misleading / "under
+construction" content. We needed the public surface to reflect **real, live content** without deleting
+data or breaking any existing URL, breadcrumb, or the individual (genuinely valuable) question pages
+that happen to live in otherwise-thin categories.
+
+### Implementation
+
+- **New `lib/category-visibility.ts`** — single source of truth for visibility:
+  `MIN_LIVE_TO_LIST = 10`, `liveCount(id)`, `isListed(id)`, `listedCategories` (catalog order preserved),
+  `totalLiveQuestions`. Live counts derive from `questionsByCategory`, so they stay correct automatically
+  as content grows (no manual bookkeeping; the aspirational `count` field is left untouched as data).
+- **Browse surface shows live counts and only listed (≥10) categories:** home metrics + Explore Topics
+  grid (`app/page.tsx`), candidate index (`app/candidate/page.tsx`), `TopicCard` chips, and the footer
+  topic links now use `listedCategories` / `liveCount` — **11 categories**, real per-card counts.
+- **Sitemap (`app/sitemap.ts`):** category URLs limited to `listedCategories`; all question routes stay.
+- **Category route (`app/candidate/[category]/page.tsx`):** `generateStaticParams` generates only
+  categories with **≥1 live question** and `dynamicParams = false`, so **empty** categories (Azure/GCP)
+  return **404** instead of a placeholder. Below-threshold-but-non-empty categories still render (so
+  breadcrumbs from their live question(s) resolve) but are **`noindex, follow`**, and their header shows
+  the real live count. The "questions are being written" empty state is now unreachable (kept only as a
+  defensive fallback).
+- **Question page sidebar (`app/q/[slug]/page.tsx`):** "More {category}" card shows the live count
+  (pluralized), not `count`.
+- **Not changed:** `lib/categories.ts` (the `count`/`topics` data is retained as the catalog target),
+  Interviewer mode's tech picker (it generates kits, not crawlable content pages), and all question
+  slugs/URLs. Append-only, non-destructive (per #028); no URL changes (#SEO rules).
+
+### Scope
+
+Public browse/index surface only. Re-populating the delisted categories (Docker, Kubernetes, Git, Linux,
+AI Basics, Prompt Engineering, Behavioral, Coding Challenges, Java 8+, Advanced Java, Azure, GCP) past
+the threshold will re-list them automatically — no code change needed. Threshold (`MIN_LIVE_TO_LIST`) is
+a single tunable constant. Requesting the AdSense re-review is an owner action **after** this deploys and
+Google re-crawls.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -962,7 +1017,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (Decision #033 — per-page SEO overrides for high-impression pages)
+- **Last Updated:** 2026-08-01 (Decision #034 — advertise only substantial categories; live counts)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

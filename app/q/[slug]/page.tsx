@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { questions, getQuestion, getQuestionNav } from "@/lib/questions";
+import { questions, getQuestion, getQuestionNav, questionsByCategory } from "@/lib/questions";
 import { getCategory } from "@/lib/categories";
 import PrevNextNav from "@/components/PrevNextNav";
 import DifficultyBadge from "@/components/DifficultyBadge";
@@ -143,6 +143,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
   if (!q) notFound();
 
   const cat = getCategory(q.categoryId);
+  const catCount = cat ? questionsByCategory(cat.id).length : 0;
   const related = (q.related ?? []).map(getQuestion).filter(Boolean);
   const shareUrl = absoluteUrl(`/q/${q.slug}`);
   const readMins = readingTimeMinutes(q);
@@ -457,7 +458,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
                 {cat.icon}
               </span>
               <h3 className="mt-3 text-sm font-semibold text-white">More {cat.name}</h3>
-              <p className="mt-1 text-xs text-slate-400">{cat.count} questions in this topic →</p>
+              <p className="mt-1 text-xs text-slate-400">{catCount} question{catCount === 1 ? "" : "s"} in this topic →</p>
             </Link>
           )}
 

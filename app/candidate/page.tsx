@@ -1,13 +1,13 @@
 import type { Metadata } from "next";
 import SearchBar from "@/components/SearchBar";
 import TopicCard from "@/components/TopicCard";
-import { categories, totalQuestions } from "@/lib/categories";
+import { listedCategories, totalLiveQuestions } from "@/lib/category-visibility";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/candidate" },
   title: "Candidate Mode — Browse Interview Questions",
   description:
-    "Browse interview questions by topic: Core Java, Java 8+, Python, REST APIs, SQL, AWS, Docker, Kubernetes, AI and more.",
+    "Browse interview questions by topic: Core Java, Java Collections, Multithreading, JVM, Python, REST APIs, Microservices, JSON, SQL, AWS and System Design.",
 };
 
 export default function CandidatePage() {
@@ -17,7 +17,7 @@ export default function CandidatePage() {
         <span className="chip mx-auto">🎯 Candidate Mode</span>
         <h1 className="mt-4 text-3xl font-black text-white sm:text-4xl">Browse by Topic</h1>
         <p className="mx-auto mt-3 max-w-lg text-slate-400">
-          {totalQuestions.toLocaleString()}+ questions across {categories.length} categories. Pick a topic, or
+          {totalLiveQuestions.toLocaleString()}+ questions across {listedCategories.length} categories. Pick a topic, or
           search to jump straight to an answer.
         </p>
         <div className="mx-auto mt-8 max-w-2xl">
@@ -26,7 +26,7 @@ export default function CandidatePage() {
       </div>
 
       <div className="mt-12 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-        {categories.map((c) => (
+        {listedCategories.map((c) => (
           <TopicCard key={c.id} category={c} />
         ))}
       </div>

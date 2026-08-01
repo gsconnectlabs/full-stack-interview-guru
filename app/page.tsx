@@ -5,7 +5,7 @@ import QuestionCard from "@/components/QuestionCard";
 import TopicCard from "@/components/TopicCard";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
-import { categories, totalQuestions } from "@/lib/categories";
+import { listedCategories, totalLiveQuestions } from "@/lib/category-visibility";
 import { questionMap } from "@/lib/questions";
 
 export const metadata: Metadata = {
@@ -88,8 +88,8 @@ export default function Home() {
       {/* METRICS */}
       <section className="grid grid-cols-2 gap-3 sm:grid-cols-4">
         {[
-          { value: `${totalQuestions.toLocaleString()}+`, label: "Questions" },
-          { value: `${categories.length}`, label: "Topics" },
+          { value: `${totalLiveQuestions.toLocaleString()}+`, label: "Questions" },
+          { value: `${listedCategories.length}`, label: "Topics" },
           { value: "24h", label: "Revision Mode" },
           { value: "Zero", label: "Login Required" },
         ].map((m) => (
@@ -196,7 +196,7 @@ export default function Home() {
         <div className="flex items-end justify-between">
           <div>
             <h2 className="text-2xl font-bold text-white">📚 Explore Topics</h2>
-            <p className="mt-1 text-sm text-slate-400">Every category, with topics and counts.</p>
+            <p className="mt-1 text-sm text-slate-400">Browse topics with live question counts.</p>
           </div>
           {/* Difficulty legend */}
           <div className="hidden items-center gap-3 text-xs text-slate-400 sm:flex">
@@ -213,7 +213,7 @@ export default function Home() {
         </div>
 
         <div className="mt-6 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {categories.map((c) => (
+          {listedCategories.map((c) => (
             <TopicCard key={c.id} category={c} headingLevel="h3" maxTopics={4} />
           ))}
         </div>

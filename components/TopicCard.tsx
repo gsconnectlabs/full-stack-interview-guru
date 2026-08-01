@@ -1,5 +1,6 @@
 import Link from "next/link";
 import type { Category } from "@/lib/types";
+import { liveCount } from "@/lib/category-visibility";
 
 /**
  * Category ("topic") card linking to a category page. Consolidates the identical markup
@@ -29,7 +30,7 @@ export default function TopicCard({
         >
           {category.icon}
         </span>
-        <span className="chip">{category.count} Qs</span>
+        <span className="chip">{liveCount(category.id)} Qs</span>
       </div>
       <Heading className="mt-3 font-bold text-slate-100 group-hover:text-brand-200">{category.name}</Heading>
       <p className="mt-1 text-sm text-slate-400">{category.blurb}</p>
