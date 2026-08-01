@@ -13,9 +13,11 @@
   from **1 → 26 live** questions. **No URL, route, layout, business-logic, component, or schema
   change** — pure additive content. Verified with `tsc`, a real production build, a duplicate-slug +
   related-link check, and in-browser spot checks.
-- **Release Status:** 🟡 **Release-ready, NOT pushed.** Implementation + validation complete and a
-  clean commit is prepared locally. **Not committed/pushed/merged** — awaiting owner approval per the
-  standard workflow. Production URL (unchanged): **https://fullstackinterviewguru.com**.
+- **Release Status:** ✅ **Released to production 2026-08-01.** Owner approved; commit `7cc0450`
+  fast-forward merged into `main` (`892cfd7..7cc0450`) and pushed to `origin/main`. Vercel production
+  deployment **completed successfully** (commit status `Vercel → success`). Post-deployment smoke test
+  passed on **https://fullstackinterviewguru.com** — see Verification Summary. The pre-existing
+  dangling-ref cleanup was **deliberately excluded** from this release (separate maintenance release).
 
 ---
 
@@ -94,6 +96,13 @@ Both new pages link to the existing ones (and vice-versa is not modified — exi
   ("JSON Schema — Interview Questions"); every FIG section renders.
 - ✅ **Category page:** `/candidate/json` shows **"26 LIVE"** with all questions (topics, difficulty,
   companies).
+- ✅ **Post-deployment smoke test (production, 2026-08-01):** all **25** new `/q/{slug}` pages return
+  **200**; `/`, `/candidate/json`, and `/sitemap.xml` return 200; sitemap includes the new slugs;
+  `/q/json-schema` serves the `seoTitle` `<title>`, the `heading` `<h1>`, the correct canonical, and
+  its meta description; `QAPage` JSON-LD present; the `json-schema → json-validation` related link
+  resolves (200); cross-link targets (`json-vs-xml`, `what-is-jwt`, `rest-status-codes`, `rest-waiter`)
+  return 200. **No regression:** existing pages (`what-is-hashmap`, `two-sum`, `python-gil`,
+  `candidate/python`) return 200 and `two-sum` still shows the "(Python)" title from the prior release.
 
 ---
 
@@ -141,8 +150,9 @@ Both new pages link to the existing ones (and vice-versa is not modified — exi
 - **JSON category `count` marketing number** left at **50** (matches the pattern of other categories,
   whose `count` is an aspirational catalog figure, not the live count). The category page shows the
   real "26 LIVE" independently. Not changed — no owner instruction to.
-- **Release not pushed** — a clean commit is prepared but **not committed/pushed/merged**; awaiting
-  owner approval. **Build vs dev:** don't `npm run build` while a dev/preview server is live.
+- **Released to production 2026-08-01** — `7cc0450` merged to `main`, pushed, Vercel deploy succeeded,
+  smoke test passed (see Verification Summary). **Build vs dev:** don't `npm run build` while a
+  dev/preview server is live.
 
 ---
 
@@ -191,7 +201,7 @@ pattern; **(b)** fix the pre-existing `classcast-generics-legacy` dangling ref i
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; release-ready, not pushed)
+- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; released to production)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
