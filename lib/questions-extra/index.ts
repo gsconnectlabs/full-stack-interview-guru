@@ -9,6 +9,7 @@ import { microservicesExtra } from "./microservices";
 import { awsExtra } from "./aws";
 import { systemDesignExtra } from "./system-design";
 import { pythonExtra } from "./python";
+import { jsonExtra } from "./json";
 
 /**
  * Aggregated expansion batches. Each flagship category adds its own file here and
@@ -21,7 +22,8 @@ import { pythonExtra } from "./python";
  * AWS, System Design — 20 each.
  *
  * Content-expansion batches:
- * Python — 25 questions (Phase 2 content expansion).
+ * Python — 25 questions (Phase 2 content expansion, CE1).
+ * JSON — 25 questions (Phase 2 content expansion, CE2).
  */
 export const extraQuestions: Question[] = [
   ...coreJavaExtra,
@@ -34,4 +36,5 @@ export const extraQuestions: Question[] = [
   ...awsExtra,
   ...systemDesignExtra,
   ...pythonExtra,
+  ...jsonExtra,
 ];

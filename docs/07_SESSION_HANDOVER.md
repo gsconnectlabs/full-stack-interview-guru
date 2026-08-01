@@ -2,106 +2,98 @@
 
 # Session Summary
 
-- **Session Name:** SEO — CTR optimization for high-impression pages
-- **Date:** 2026-07-31
-- **Overall Progress:** Optimized on-page SEO for the three highest-impression / low-CTR question
-  pages identified in Google Search Console — **REST Idempotency**, **Two Sum**, and **Amazon
-  DynamoDB** — with owner-supplied, keyword-led titles, meta descriptions, and H1s, plus relevant
-  internal links. Introduced three optional `Question` fields (`seoTitle`, `seoDescription`,
-  `heading`) so the copy can be tuned per page without touching the other 278 pages. **No URL, route,
-  layout, business-logic, or structured-data change.** Verified with `tsc` + a real production build
-  and by inspecting the rendered HTML. See **DECISIONS #033**.
-- **Release Status:** ✅ **Released to production 2026-07-31.** The approved work (commits `51201c9` +
-  `9f09f5a`) was fast-forward merged into `main` and pushed to `origin/main` (`d39ffec..9f09f5a`). Vercel
-  production deployment **completed successfully** (commit status `Vercel → success`). Live production
-  verified: homepage + all three optimized pages return **HTTP 200** with the released titles/descriptions
-  (Two Sum now correctly shows **"(Python)"**), canonicals unchanged, and all newly-added internal links
-  resolve (200). Production URL: **https://fullstackinterviewguru.com**.
+- **Session Name:** CE2 — JSON question bank (25 questions)
+- **Date:** 2026-08-01
+- **Overall Progress:** Added **25 production-quality JSON interview questions** as a new content
+  batch (`lib/questions-extra/json.ts`, `jsonExtra`), wired into `lib/questions-extra/index.ts`. Each
+  question uses the **full FIG schema** (short answer, mind-map, hands-on, what-if, real-world,
+  interviewer expectation, follow-ups, common mistakes, best practices, related tech, tags,
+  experience, asked-in, related) **plus** keyword-led `seoTitle` / `seoDescription` / `heading`
+  overrides (reusing the DECISIONS #033 fields — **not** a new SEO system). The JSON category went
+  from **1 → 26 live** questions. **No URL, route, layout, business-logic, component, or schema
+  change** — pure additive content. Verified with `tsc`, a real production build, a duplicate-slug +
+  related-link check, and in-browser spot checks.
+- **Release Status:** 🟡 **Release-ready, NOT pushed.** Implementation + validation complete and a
+  clean commit is prepared locally. **Not committed/pushed/merged** — awaiting owner approval per the
+  standard workflow. Production URL (unchanged): **https://fullstackinterviewguru.com**.
 
 ---
 
 # Implementation Summary
 
-- **Type model (`lib/types.ts`):** added optional `seoTitle`, `seoDescription`, `heading` to
-  `Question`. All optional → existing pages unaffected (append-only content model, DECISIONS #028).
-- **Question page (`app/q/[slug]/page.tsx`):**
-  - `generateMetadata` now emits `title: { absolute: q.seoTitle }` when `seoTitle` is set (bypasses the
-    root `"FIG – %s"` template — the supplied titles carry their own branding), else falls back to
-    `q.question`. `seoDescription` overrides the derived meta description; `openGraph.title`/`description`
-    follow the same fallbacks.
-  - The visible `<h1>` renders `q.heading ?? q.question`.
-  - **Unchanged:** the `QAPage` JSON-LD `name`, the ☕ Coffee Chat block, and the Report-issue context
-    still use the real conversational `question` → **structured data untouched**.
-- **Content (`lib/questions.ts`, `lib/questions-extra/aws.ts`):** set the SEO fields on the three target
-  questions and extended each `related` array with existing, relevant slugs (internal links render as
-  Related Questions cards). Existing `related` entries were preserved (non-destructive).
+- **Content (`lib/questions-extra/json.ts`, NEW):** 25 typed `Question` objects, `categoryId: "json"`,
+  ordered by five learning sections (Basics → Objects & Arrays → Parsing & Serialization → REST APIs →
+  Advanced). Difficulty mix **14 Easy · 10 Medium · 1 Hard**. Each sets `seoTitle` (format
+  `"<Topic> Interview Questions & Answers … | Full Stack Interview Guru"`), a hand-written
+  `seoDescription`, and a keyword-led `heading` (H1) — while the ☕ Coffee Chat block and the `QAPage`
+  structured data keep the conversational `question` (same contract as DECISIONS #033).
+- **Wiring (`lib/questions-extra/index.ts`):** imported `jsonExtra` and spread it into `extraQuestions`
+  (the only wiring needed). Everything downstream — category page, `/q/{slug}` pages, search index,
+  sitemap, `QAPage`/`BreadcrumbList` JSON-LD, prev/next nav, AI prompts, related questions — updates
+  automatically.
+- **No code/type/UI change:** `lib/types.ts`, `app/q/[slug]/page.tsx`, and all components are untouched
+  — the `seoTitle`/`seoDescription`/`heading` fields already exist (DECISIONS #033).
 
-Applied SEO copy:
+### Duplicate avoidance (deliberate)
 
-| Page (URL) | Title | H1 |
+The requested list contained **"JSON vs XML"**, which already exists as base-bank `json-vs-xml`
+("why JSON largely replaced XML for APIs"). To honor "no duplicate questions," a **complementary**
+question was added instead and **cross-linked**:
+
+| Requested topic | Existing page | Added instead (new) |
 |---|---|---|
-| `/q/rest-idempotency` | REST Idempotency Interview Questions & Answers (2026) \| Full Stack Interview Guru | REST Idempotency Interview Questions |
-| `/q/two-sum` | Two Sum Interview Question (Python) – Optimal Solution with Explanation | Two Sum Interview Question |
-| `/q/dynamodb-single-table` | Amazon DynamoDB Interview Questions & Answers (2026) | Amazon DynamoDB Interview Questions |
+| JSON vs XML | `json-vs-xml` (adoption angle) | `json-vs-xml-differences` (structural comparison) |
+| JWT JSON Structure | `what-is-jwt` (REST/auth angle) | `json-jwt-structure` (JSON structure angle) |
 
-Internal links added (kept existing):
-
-- **REST Idempotency** → `rest-waiter`, `idempotency-keys`, `consumer-idempotency` (kept
-  `rest-status-codes`, `what-is-jwt`).
-- **Two Sum** → `choosing-the-right-collection`, `what-is-arraylist` (kept `what-is-hashmap`).
-- **Amazon DynamoDB** → `aws-lambda`, `api-gateway`, `sqs-sns-eventbridge` (kept
-  `dynamodb-partition-key`, `rds-vs-dynamodb`).
-
-Requested targets with **no existing page** — Spring Boot REST, Time Complexity, Amazon CloudWatch —
-were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md`.
+Both new pages link to the existing ones (and vice-versa is not modified — existing pages untouched).
 
 ---
 
 # Files Created
 
-- None.
+- `lib/questions-extra/json.ts` — 25 JSON questions (`jsonExtra`).
 
 # Files Modified
 
-- `lib/types.ts` — added optional `seoTitle` / `seoDescription` / `heading` to `Question`.
-- `app/q/[slug]/page.tsx` — `generateMetadata` honors the SEO overrides (`title.absolute`); `<h1>` uses
-  `heading ?? question`.
-- `lib/questions.ts` — SEO fields + extended `related` for `rest-idempotency` and `two-sum`.
-- `lib/questions-extra/aws.ts` — SEO fields + extended `related` for `dynamodb-single-table`.
-- `docs/02_DECISIONS.md` (**#033**), `docs/04_ARCHITECTURE.md` (SEO section + schema list),
-  `docs/06_CHANGELOG.md` (SEO entry at top of Unreleased), `docs/99_IDEAS_BACKLOG.md` (content gaps),
-  `docs/07_SESSION_HANDOVER.md` (this file).
+- `lib/questions-extra/index.ts` — import `jsonExtra` + spread into `extraQuestions`; header comment
+  updated (CE1/CE2 note).
+- `docs/04_ARCHITECTURE.md` — expansion-bank tally (205 → 230 questions, 10 → 11 files; + JSON × 25).
+- `docs/05_ROADMAP.md` — new **CE2** entry under Content Expansion (✅ Completed).
+- `docs/06_CHANGELOG.md` — **Added (CE2 …)** entry at the top of Unreleased.
+- `docs/07_SESSION_HANDOVER.md` — this file (rewritten for the CE2 session).
+- `CLAUDE.md` (repo root) — Testing Checklist page count **281 → 306**.
 
 ---
 
 # Documentation Updated
 
-- **`02_DECISIONS.md`** — Decision **#033** (per-page SEO overrides; deliberate opt-out of the branded
-  title template for high-impression pages; internal links only to existing pages).
-- **`04_ARCHITECTURE.md`** — SEO Implementation bullet + Content Model schema list updated.
-- **`06_CHANGELOG.md`** — "Changed (SEO — CTR optimization …)" entry at the top of Unreleased.
-- **`99_IDEAS_BACKLOG.md`** — logged the three missing internal-link target pages as content ideas.
+- **`06_CHANGELOG.md`** — "Added (ROADMAP CE2 — JSON question bank, 25 questions)" at the top of Unreleased.
+- **`05_ROADMAP.md`** — CE2 entry (mirrors the CE1 format) marked ✅ Completed 2026-08-01.
+- **`04_ARCHITECTURE.md`** — `lib/questions-extra/` count updated to 230 questions / 11 files.
 - **`07_SESSION_HANDOVER.md`** — this file.
-- **Timestamps:** refreshed to **2026-07-31** on every modified doc.
-- **README.md** — not changed (no stack/config/behavior change; the mechanism is internal content data).
+- **`CLAUDE.md`** — Testing Checklist expected page count refreshed to 306.
+- **Timestamps:** refreshed to **2026-08-01** on every modified doc.
+- **Not changed:** `README.md` (no stack/config/behavior change), `02_DECISIONS.md` (no new decision —
+  reuses #028 append-only content model + #033 SEO override fields), `14_ANALYTICS.md`,
+  `99_IDEAS_BACKLOG.md`.
 
 ---
 
 # Verification Summary
 
 - ✅ **TypeScript:** clean (`npx tsc --noEmit`, no output).
-- ✅ **Production build:** green — **281 static pages** (unchanged); **shared First Load JS 102 kB
-  unchanged**; **no new warnings/errors** (`✓ Compiled successfully`).
-- ✅ **Rendered HTML (built output) confirmed** for all three pages:
-  - `<title>` matches the owner copy exactly with **no `FIG – ` prefix** (`title.absolute` works);
-  - `<meta name="description">` matches;
-  - `<h1>` shows the new heading;
-  - `<link rel="canonical">` **unchanged** (same slugs → no URL change);
-  - all added `related` internal links resolve to real `/q/...` pages.
-- ✅ **Structured data unchanged** — `QAPage` `mainEntity.name` still the conversational question
-  (e.g. "Which HTTP methods are idempotent and why does it matter?").
-- ✅ **No SEO/URL/UI regression** — metadata + content data only; the other 278 pages keep the
-  `"FIG – %s"` branded title template.
+- ✅ **Production build:** green — **306 static pages** (was 281; **+25** `/q/[slug]`);
+  `✓ Compiled successfully`, `✓ Generating static pages (306/306)`.
+- ✅ **No regression:** shared First Load JS **102 kB unchanged**; `/q/[slug]` First Load **111 kB
+  unchanged**; canonical / `QAPage` / `BreadcrumbList` / branded titles intact.
+- ✅ **No duplicate slugs:** 262 unique slugs across the whole bank (was 237; +25).
+- ✅ **Internal links resolve:** all new `related` refs point to real slugs; cross-link targets
+  `json-vs-xml`, `what-is-jwt`, `rest-status-codes`, `rest-waiter` all return **200**.
+- ✅ **Metadata verified in-browser:** `/q/json-schema` tab title = the `seoTitle`
+  ("JSON Schema Interview Questions & Answers (2026) | Full Stack Interview Guru"); H1 = the `heading`
+  ("JSON Schema — Interview Questions"); every FIG section renders.
+- ✅ **Category page:** `/candidate/json` shows **"26 LIVE"** with all questions (topics, difficulty,
+  companies).
 
 ---
 
@@ -109,11 +101,12 @@ were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md
 
 - **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · fully static
   (SSG). No backend/DB/auth (by design).
+- **Content:** 20 categories; **262 questions** (32 base + 230 expansion across 11 `questions-extra`
+  files). JSON category now **26 live**.
 - **SEO:** per-page canonicals/OG/Twitter, `WebSite`+`Organization`+`QAPage`+`BreadcrumbList` JSON-LD,
-  sitemap/robots — all unchanged. **New:** optional per-page `seoTitle`/`seoDescription`/`heading`
-  overrides (DECISIONS #033), currently applied to three high-impression pages.
-- **Analytics/Ads:** unchanged since AR2 (GA4 via `@next/third-parties`, env-gated; AdSense loader
-  env-gated).
+  sitemap/robots — all unchanged. Optional per-page `seoTitle`/`seoDescription`/`heading` overrides
+  (DECISIONS #033) now also applied across the 25 new JSON pages.
+- **Analytics/Ads:** unchanged since AR2 (GA4 via `@next/third-parties`, env-gated; AdSense loader env-gated).
 - **Theme:** still **dark-only** — light-default + `prefers-color-scheme` (H3) and Teal/Gold palette
   (H4) remain the open Phase-2 items.
 
@@ -122,36 +115,34 @@ were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md
 # Current Roadmap Status
 
 - **Phase 2:** QW1–QW5, H1, H2, M1–M6 complete; L2/L3 resolved via #027/#026.
-- **Post-Phase-2:** **AR1 ✅** · **AR2 ✅** · **SEO CTR pass (this session) ✅** (ad-hoc SEO tuning, not a
-  numbered roadmap item — tracked via CHANGELOG + DECISIONS #033).
-- **Content Expansion:** **CE1 (Python, 25) ✅**.
+- **Post-Phase-2:** **AR1 ✅** · **AR2 ✅** · **SEO CTR pass ✅** (DECISIONS #033).
+- **Content Expansion:** **CE1 (Python, 25) ✅** · **CE2 (JSON, 25) ✅ (this session)**.
 - **Remaining (committed roadmap):** **H3** (light/dark theme system) + **H4** (Teal + Gold palette);
   **L1** (homepage tone alignment).
-- **Uncommitted / exploratory:** `99_IDEAS_BACKLOG.md` (now includes the three missing link-target pages).
+- **Uncommitted / exploratory:** `99_IDEAS_BACKLOG.md`.
 
 ---
 
 # Current Project Health
 
-- ✅ TypeScript clean · ✅ Build green (**281 pages**) · ✅ Shared JS unchanged (102 kB) · ✅ SEO/structured
-  data intact · ✅ Canonicals/URLs unchanged · ✅ Docs synchronized + timestamped.
+- ✅ TypeScript clean · ✅ Build green (**306 pages**) · ✅ Shared JS unchanged (102 kB) · ✅ No duplicate
+  slugs (262 unique) · ✅ Internal links resolve · ✅ SEO/structured data intact · ✅ Canonicals/URLs
+  unchanged · ✅ Docs synchronized + timestamped.
 
 ---
 
 # Known Limitations / Follow-ups
 
-- **SEO is per-page copy, not new pages** — only the three approved pages were tuned. Any further page
-  needs separate owner approval before the same fields are added (DECISIONS #033).
-- **Missing internal-link targets** — Spring Boot REST, Time Complexity/Big-O, and Amazon CloudWatch have
-  no question page yet; logged in `99_IDEAS_BACKLOG.md`. Creating them would let these pages link out.
-- **Copy note (resolved 2026-07-31 review follow-up):** the Two Sum `seoTitle`/`seoDescription`
-  previously said "Java" while the page's Hands-on code sample is Python. Corrected to "Python" so the
-  metadata matches the content (page content unchanged; no Java implementation added).
-- **Impact is measured externally** — the code is live (see Release Status); CTR improvement now shows up
-  in Google Search Console over time as pages are re-crawled. Nothing further to verify locally.
-- **Deploy note:** ✅ Deployed — Vercel auto-built from the `main` push and the production deployment
-  succeeded; new metadata is live on https://fullstackinterviewguru.com. **Build vs dev:** don't
-  `npm run build` while a dev/preview server is live.
+- **Pre-existing broken `related` ref (NOT from this session):** `lib/questions-extra/core-java.ts`
+  references `related: ["classcast-generics-legacy"]`, a slug that does not exist. It's harmless at
+  runtime (the question page filters unresolved related via `.filter(Boolean)`), so no broken route —
+  but the link silently renders nothing. **Discovered, not fixed** (out of this batch's scope). Fix =
+  either add the missing question or drop the ref. Suggested as a separate follow-up.
+- **JSON category `count` marketing number** left at **50** (matches the pattern of other categories,
+  whose `count` is an aspirational catalog figure, not the live count). The category page shows the
+  real "26 LIVE" independently. Not changed — no owner instruction to.
+- **Release not pushed** — a clean commit is prepared but **not committed/pushed/merged**; awaiting
+  owner approval. **Build vs dev:** don't `npm run build` while a dev/preview server is live.
 
 ---
 
@@ -159,24 +150,25 @@ were **not** linked (no dead links, #026) and are logged in `99_IDEAS_BACKLOG.md
 
 - **Never change URLs** without approval. **Never break SEO.** **Never remove existing features.**
 - **`"FIG – %s"` stays the default title template**; `seoTitle` (`title.absolute`) is a deliberate,
-  per-page opt-out for SEO-critical pages only — **not** a blanket change (DECISIONS #033).
+  per-page opt-out (DECISIONS #033) — used here for the new JSON pages, not a blanket change.
 - **No fake functionality / no dead links** (#026) — internal links only to pages that exist.
+- **Append-only content model** (#028): new questions are typed objects in `lib/questions-extra/*`,
+  merged automatically — no per-question wiring, no UI/route change.
 - **GA IDs are never committed**; AdSense publisher ID lives in `lib/site.ts` (#031/#032).
 - **Legal pages are permanent**; **Ads stay non-intrusive; CLS = 0** (#001/#021/#026).
 - **Accessibility mandatory (#013). Trust before revenue (#001).**
-- **Workflow:** one feature at a time → verify (TS + build + a11y + SEO) → **stop for approval**.
+- **Workflow:** one feature/batch at a time → verify (TS + build + a11y + SEO) → **stop for approval**.
 - **Docs convention:** `NN_NAME.md`; ideas → `99_IDEAS_BACKLOG.md`; roadmap = committed work only.
 
 ---
 
 # Recommended First Task For The Next Session
 
-Either **(a)** apply the same `seoTitle`/`seoDescription`/`heading` treatment to the **next tier of
-high-impression / low-CTR pages** from Search Console (owner supplies the copy; requires approval) —
-optionally creating the missing link-target pages (Spring Boot REST, Time Complexity, Amazon CloudWatch)
-first — or **(b)** resume the committed roadmap with **H3 + H4** (light-default theme + Teal/Gold
-palette), then **L1**. **The owner selects the next item; all tasks require explicit approval before
-implementation.**
+Owner-selected, per the workflow. Options: **(a)** continue content expansion (**CE3**) with another
+listed-but-thin category (e.g. Docker, Kubernetes, Git, Linux, Behavioral) following this exact CE2
+pattern; **(b)** fix the pre-existing `classcast-generics-legacy` dangling ref in `core-java.ts`; or
+**(c)** resume the committed roadmap with **H3 + H4** (light-default theme + Teal/Gold palette), then
+**L1**. **All tasks require explicit owner approval before implementation.**
 
 ---
 
@@ -185,6 +177,10 @@ implementation.**
 - **Read `CLAUDE.md` (repo root) first**, then `/docs` (single source of truth). Follow
   `docs/templates/START_NEW_SESSION.md` at the start and `docs/templates/END_SESSION.md` at the end; run
   the `docs/checklists/` before done.
+- **Adding a content batch (CE pattern):** create `lib/questions-extra/<category>.ts` exporting
+  `<name>Extra: Question[]`, then import + spread it in `lib/questions-extra/index.ts`. Nothing else is
+  required — search, sitemap, category pages, prev/next, AI prompts, and structured data pick it up.
+  Validate before commit: `tsc --noEmit`, `npm run build`, and a duplicate-slug + related-ref check.
 - **Per-page SEO overrides:** set `seoTitle` / `seoDescription` / `heading` on a `Question`
   (`lib/types.ts`); consumed only by `app/q/[slug]/page.tsx`. `seoTitle` bypasses the branded template
   via `title.absolute`. Keep the `QAPage` schema and Coffee Chat on the real `question`.
@@ -195,7 +191,7 @@ implementation.**
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (SEO CTR optimization + Two Sum fix — released to production; DECISIONS #033)
+- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions; release-ready, not pushed)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

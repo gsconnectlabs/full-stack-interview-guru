@@ -438,6 +438,30 @@ pick them up with zero extra wiring — see [04_ARCHITECTURE.md](./04_ARCHITECTU
 - **Files:** new `lib/questions-extra/python.ts`; `lib/questions-extra/index.ts` (import + spread).
 - **SEO affected:** Positive (more content) — no URL/schema change.
 
+### CE2 — JSON question bank (25 questions)
+- **Status:** ✅ **Completed 2026-08-01** — added **25** JSON interview questions in the new
+  `lib/questions-extra/json.ts` (`jsonExtra`), wired into `lib/questions-extra/index.ts`. Coverage:
+  basics (what/why JSON, JSON vs XML structural, data types, syntax rules), objects & arrays (object
+  vs array, nested objects, arrays, accessing nested, flattening), parsing & serialization (parsing,
+  serialize vs deserialize, common errors, invalid input, pretty-printing), REST (JSON in REST,
+  request vs response, HTTP status codes, validation, JSON Schema), and advanced (large-payload
+  performance, security, JSON vs BSON, JWT JSON structure, interview scenarios). Full FIG schema per
+  question **plus** keyword-led `seoTitle`/`seoDescription`/`heading` overrides (reusing the DECISIONS
+  #033 fields — no new SEO system); AI prompts auto-generated. **No duplicate** of the base-bank
+  `json-vs-xml` — a complementary `json-vs-xml-differences` was added and cross-linked instead;
+  `json-jwt-structure` cross-links the existing `what-is-jwt`. JSON category now shows **26 live**
+  (1 base + 25). Verified: TypeScript clean; production build green (**306 pages**, +25 `/q/[slug]`,
+  was 281); **no duplicate slugs** (262 unique); all new `related` refs resolve; category page
+  "26 LIVE"; new pages render every FIG section with the SEO title/H1; cross-link targets return 200;
+  shared JS **102 kB unchanged**, `/q/[slug]` **111 kB unchanged** — **no SEO/URL/UI regression**.
+- **Reason:** Phase 2 content growth; JSON is a listed category (topic pills + homepage) that had only
+  1 live question, and JSON is a high-frequency full-stack interview topic.
+- **Benefits:** More indexable long-tail question pages; a genuinely useful JSON track; keyword-led
+  SEO titles on a fresh set of pages.
+- **Complexity:** M (content authoring; no code/architecture change).
+- **Files:** new `lib/questions-extra/json.ts`; `lib/questions-extra/index.ts` (import + spread).
+- **SEO affected:** Positive (more content + per-page keyword-led titles) — no URL/schema change.
+
 ---
 
 ## 🔮 Future Improvements
@@ -471,7 +495,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-30 (AR2 — GA4 official integration & project standards)
+- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
