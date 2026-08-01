@@ -14,10 +14,13 @@
   counts** and list **only the 11 categories with ≥10 live questions**; empty categories now **404** and
   below-threshold non-empty ones render **`noindex`**. **No question URLs/slugs changed; append-only,
   non-destructive** (DECISIONS **#034**).
-- **Release Status:** 🟡 **Release-ready, NOT pushed.** Implementation + validation complete and a clean
-  commit is prepared on a maintenance branch. **Not merged/pushed** — awaiting owner approval.
-  Production URL (unchanged): **https://fullstackinterviewguru.com**. (Requesting the AdSense re-review
-  is an owner action *after* this deploys and Google re-crawls.)
+- **Release Status:** ✅ **Released to production 2026-08-01.** Owner approved; commit `2c0794e`
+  fast-forward merged into `main` (`636435b..2c0794e`) + pushed; Vercel production deploy **succeeded**
+  (`Vercel → success`). Post-deployment smoke test passed on **https://fullstackinterviewguru.com** —
+  `/candidate` shows "262+ questions across 11 categories" with real per-card counts, Azure/GCP now
+  **404**, Docker/Git/Behavioral render **`noindex,follow`**, AWS `index,follow`, sitemap lists exactly
+  **11** categories, question pages unchanged (200). **Next: the AdSense re-review is an owner action,
+  after Google re-crawls (a few days) — don't spam re-requests.**
 
 ---
 
@@ -140,7 +143,8 @@ to them → safe to 404 (removes the empty placeholder entirely).
   content and re-populating delisted categories to ≥10 so they re-list automatically.
 - **`count` field retained but now display-unused** for the browse surface; kept as the catalog target.
   If it drifts confusingly from reality later, consider repurposing or removing it (separate cleanup).
-- **Release not pushed** — clean commit prepared on branch; **not merged/pushed**; awaiting approval.
+- **Released to production 2026-08-01** — `2c0794e` merged to `main`, pushed, Vercel deploy succeeded,
+  smoke test passed (Azure/GCP 404, thin categories noindex, sitemap = 11, home/candidate honest counts).
   Don't `npm run build` while a dev/preview server is live.
 
 ---
@@ -183,7 +187,7 @@ L1). **All require explicit owner approval before implementation.**
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (SEO — AdSense low-value remediation / category visibility; DECISIONS #034)
+- **Last Updated:** 2026-08-01 (SEO — AdSense low-value remediation / category visibility; released to production; DECISIONS #034)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
