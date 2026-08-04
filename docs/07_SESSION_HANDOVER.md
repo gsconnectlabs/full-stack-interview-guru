@@ -2,102 +2,119 @@
 
 # Session Summary
 
-- **Session Name:** SEO — AdSense "Low value content" remediation (category visibility / live counts)
-- **Date:** 2026-08-01
-- **Overall Progress:** AdSense rejected the site with **"Low value content."** Root cause: the
-  `count` field in `lib/categories.ts` is an **aspirational catalog target**, not the live question
-  total, and it was displayed verbatim everywhere — so the site advertised **1,970 questions across 23
-  categories** while only **262** existed, with **12 categories under 10 live questions** (Azure/GCP had
-  **0**, Coding Challenges advertised **200** with **1**), and clicking those cards led to empty /
-  "under construction" pages. Fixed by making the public browse surface reflect **live** content: a new
-  `lib/category-visibility.ts` drives home, candidate index, footer, and sitemap to show **real live
-  counts** and list **only the 11 categories with ≥10 live questions**; empty categories now **404** and
-  below-threshold non-empty ones render **`noindex`**. **No question URLs/slugs changed; append-only,
-  non-destructive** (DECISIONS **#034**).
-- **Release Status:** ✅ **Released to production 2026-08-01.** Owner approved; commit `2c0794e`
-  fast-forward merged into `main` (`636435b..2c0794e`) + pushed; Vercel production deploy **succeeded**
-  (`Vercel → success`). Post-deployment smoke test passed on **https://fullstackinterviewguru.com** —
-  `/candidate` shows "262+ questions across 11 categories" with real per-card counts, Azure/GCP now
-  **404**, Docker/Git/Behavioral render **`noindex,follow`**, AWS `index,follow`, sitemap lists exactly
-  **11** categories, question pages unchanged (200). **Next: the AdSense re-review is an owner action,
-  after Google re-crawls (a few days) — don't spam re-requests.**
+- **Session Name:** CE3 / Release 10 — Advanced Java question bank (25 questions)
+- **Date:** 2026-08-04
+- **Overall Progress:** Added **25** senior-level Advanced Java interview questions in the new
+  `lib/questions-extra/advanced-java.ts` (`advancedJavaExtra`), wired into
+  `lib/questions-extra/index.ts` — the same append-only CE pattern used for CE1 (Python) and CE2 (JSON).
+  This takes the `advanced-java` category from **3 → 28 live** questions, crossing
+  `MIN_LIVE_TO_LIST = 10`, so the category **flips from `noindex`/unlisted to listed + indexed + in the
+  sitemap** automatically (DECISIONS #034). **Key content decision:** ~20 of the 25 briefed topics
+  already own a canonical page under `jvm`/`core-java`/`java-collections`/`multithreading`
+  (e.g. `jvm-jre-jdk`, `java-memory-model`, `reference-types`, `comparable-vs-comparator`,
+  `java-equals-hashcode`, `immutable-class-design`, `generics-type-erasure`, `fail-fast-vs-fail-safe`,
+  `executorservice-thread-pools`, `completablefuture-async`, `forkjoinpool-work-stealing`,
+  `threadlocal-memory-leak`, `virtual-threads`). To honour the "No duplicate content" requirement and
+  avoid keyword cannibalisation, **each new question takes a distinct, deeper advanced facet and
+  cross-links to the existing base question** via `related` — scaling the CE2
+  `json-vs-xml-differences` → `json-vs-xml` precedent. The five genuinely-missing topics (Serialization
+  vs Externalization, `transient`, Reflection API, Dynamic Proxy, Records & Sealed Classes) are covered
+  head-on. **No route, URL, UI, layout, or schema change.**
+- **Release Status:** ⏳ **Built & verified; awaiting owner approval — NOT deployed.** Per the brief
+  ("Do NOT deploy automatically") and CLAUDE.md governance, work stops here for review. No commit,
+  merge, or push has been made. Next step is owner approval, then the standard release flow.
 
 ---
 
 # Implementation Summary
 
-- **New `lib/category-visibility.ts`** — single source of truth: `MIN_LIVE_TO_LIST = 10`,
-  `liveCount(id)`, `isListed(id)`, `listedCategories` (catalog order preserved), `totalLiveQuestions`.
-  Live counts derive from `questionsByCategory`, so they self-update as content grows — no manual
-  bookkeeping. The aspirational `count` field is left untouched as data (just no longer shown as live).
-- **Browse surface → live counts + only listed (≥10) categories (11 of 23):**
-  - `app/page.tsx` — hero metrics (`totalLiveQuestions` → "262+", `listedCategories.length` → "11") and
-    the "Explore Topics" grid.
-  - `app/candidate/page.tsx` — header count + grid; metadata description reworded to real categories.
-  - `components/TopicCard.tsx` — chip shows `liveCount(category.id)` instead of `category.count`.
-  - `components/Footer.tsx` — topic links use `listedCategories`.
-- **`app/sitemap.ts`** — category URLs limited to `listedCategories` (11); all 262 question routes kept.
-- **`app/candidate/[category]/page.tsx`** — `generateStaticParams` emits only categories with **≥1 live
-  question**, and `export const dynamicParams = false` → **empty** categories (Azure/GCP) **404**.
-  `generateMetadata` adds `robots: { index:false, follow:true }` when `!isListed` and uses the live count;
-  the header chip shows `{qs.length} question(s)`. The "being written" empty state is now unreachable
-  (kept only as a defensive fallback).
-- **`app/q/[slug]/page.tsx`** — "More {category}" sidebar card shows the live count (pluralized).
+- **New `lib/questions-extra/advanced-java.ts`** exporting `advancedJavaExtra: Question[]` — **25**
+  questions, difficulty **10 Medium · 15 Hard** (deliberately no Easy for an advanced section),
+  organised into five sections:
+  1. **JVM & Class Loading** — `jdk-jre-jvm-internals`, `classloader-architecture`,
+     `parent-delegation-breaking`, `jmm-happens-before-advanced`, `stack-frames-stackoverflow`,
+     `gc-collectors-tradeoffs`, `reference-types-gc-caching`.
+  2. **Serialization & Metaprogramming** — `serialization-vs-externalization`, `transient-keyword`,
+     `reflection-api`, `dynamic-proxy`, `java-annotations`.
+  3. **Object Contracts & Generics** — `comparable-comparator-advanced`, `equals-hashcode-inheritance`,
+     `immutability-advanced`, `generics-bounded-wildcards`, `generics-heap-pollution-safevarargs`,
+     `safe-removal-during-iteration`.
+  4. **Concurrency Framework** — `executor-shutdown-rejection`, `task-exception-handling-executors`,
+     `completablefuture-error-handling`, `forkjoin-recursivetask-commonpool`,
+     `threadlocal-context-scopedvalues`.
+  5. **Modern Java (17–21)** — `records-sealed-classes`, `virtual-threads-pinning-structured`.
+- **Full FIG schema per question** (`shortAnswer`, `mindMap`, `handsOn`, `whatIf`, `realWorld`,
+  `interviewerExpectation`, `followUps`, `commonMistakes`, `bestPractices`, `relatedTech`, `tags`,
+  `experience`, `askedIn`, `related`) **plus** keyword-led `seoTitle` / `seoDescription` / `heading`
+  overrides (reusing the DECISIONS #033 fields — no new SEO system). The four "Continue Learning with
+  AI" prompts auto-generate via `lib/ai-prompts.ts`; the ☕ Coffee Chat block and `QAPage` structured
+  data keep the conversational `question`.
+- **`lib/questions-extra/index.ts`** — imported `advancedJavaExtra` and spread it into `extraQuestions`
+  (the only wiring needed). Everything downstream — category page, `/q/{slug}` pages, search index,
+  sitemap, `QAPage` / `BreadcrumbList` JSON-LD, prev/next nav, related questions — updates automatically.
 
-### Why below-threshold categories render (not 404) but empty ones 404
+### No-duplication approach (Release 10 content decision)
 
-Categories like Docker/Git/Behavioral have **1–3 live, genuinely valuable question pages** whose
-breadcrumb + sidebar link to `/candidate/{id}`. 404-ing those would create broken links, so they still
-render but are `noindex` and hidden from browse/sitemap. Azure/GCP have **0** questions → nothing links
-to them → safe to 404 (removes the empty placeholder entirely).
+The brief listed 25 topics, but a bank audit showed ~20 already have a canonical, high-quality page in
+the flagship batches — just filed under `jvm`/`core-java`/`java-collections`/`multithreading` rather
+than `advanced-java`. Publishing 25 same-titled pages would have created duplicate content and keyword
+cannibalisation, contradicting the brief's own "No duplicate content" and topical-authority goals. With
+owner approval ("distinct advanced angles"), each overlapping topic was re-angled to a deeper facet not
+already covered (e.g. JDK/JRE/JVM → the compile→JIT execution pipeline; equals/hashCode → the
+inheritance symmetry + ORM-proxy problem; ForkJoin → the shared common-pool hazard) and cross-linked to
+its base question. The result: 25 net-new pages, zero duplicates, and stronger internal linking into the
+existing JVM/core-java/multithreading pages.
 
 ---
 
 # Files Created
 
-- `lib/category-visibility.ts` — live-count / visibility helpers.
+- `lib/questions-extra/advanced-java.ts` — 25 Advanced Java questions (`advancedJavaExtra`).
 
 # Files Modified
 
-- `app/page.tsx` — metrics + Explore Topics use `listedCategories` / `totalLiveQuestions`; copy tweak.
-- `app/candidate/page.tsx` — listed categories + live total; metadata description updated.
-- `app/candidate/[category]/page.tsx` — non-empty-only `generateStaticParams`, `dynamicParams=false`,
-  `noindex` for below-threshold, live count in header + metadata.
-- `app/sitemap.ts` — category URLs from `listedCategories`.
-- `app/q/[slug]/page.tsx` — sidebar "More {category}" live count (pluralized).
-- `components/TopicCard.tsx` — chip shows live count.
-- `components/Footer.tsx` — topic links from `listedCategories`.
-- `docs/02_DECISIONS.md` (**#034**), `docs/04_ARCHITECTURE.md` (lib map + Content Model),
-  `docs/06_CHANGELOG.md` (Changed entry at top of Unreleased), `docs/07_SESSION_HANDOVER.md` (this file).
+- `lib/questions-extra/index.ts` — import + spread `advancedJavaExtra` (only code wiring).
+- `docs/06_CHANGELOG.md` — "Added (ROADMAP CE3 / Release 10 …)" at top of Unreleased.
+- `docs/05_ROADMAP.md` — "CE3 / Release 10 — Advanced Java question bank" under Content Expansion.
+- `docs/04_ARCHITECTURE.md` — expansion-bank tally (230 → 255 questions, 11 → 12 files).
+- `docs/07_SESSION_HANDOVER.md` — this file (rewritten for the session).
+- `CLAUDE.md` — testing-checklist page count → 329; version block Last Updated.
 
 ---
 
 # Documentation Updated
 
-- **`02_DECISIONS.md`** — Decision **#034** (advertise only ≥10-live categories; live counts; noindex thin).
-- **`06_CHANGELOG.md`** — "Changed (SEO — advertise only substantial categories …)" at top of Unreleased.
-- **`04_ARCHITECTURE.md`** — added `category-visibility.ts` to the `lib/` map + a Content Model bullet.
+- **`06_CHANGELOG.md`** — CE3 / Release 10 entry (newest-first in Unreleased).
+- **`05_ROADMAP.md`** — CE3 entry marked ✅ Completed 2026-08-04 (built; awaiting approval).
+- **`04_ARCHITECTURE.md`** — `questions-extra/` tally updated to 255 questions across 12 files + index.
 - **`07_SESSION_HANDOVER.md`** — this file.
-- **Timestamps** refreshed to **2026-08-01**. **Not changed:** `README.md`, `05_ROADMAP.md` (no roadmap
-  item — this is SEO/quality remediation tracked via CHANGELOG + DECISIONS #034), `14_ANALYTICS.md`,
-  `lib/categories.ts` (catalog data retained).
+- **`CLAUDE.md`** — page count 304 → 329; Last Updated timestamp.
+- **Not changed:** `README.md` (no stack/config/behaviour change), `02_DECISIONS.md` (no new
+  architectural decision — reuses #028 append-only, #033 SEO overrides, #034 visibility),
+  `14_ANALYTICS.md` (no analytics change), `lib/categories.ts` (aspirational `count`/`topics` retained).
+
+> **Doc-name mapping:** the brief asked to update `CHANGELOG.md` and `RELEASE_NOTES.md`. This project's
+> convention (CLAUDE.md → docs win) keeps the changelog at `docs/06_CHANGELOG.md` and uses
+> `docs/07_SESSION_HANDOVER.md` as the per-release notes; both were updated accordingly. There are no
+> root `CHANGELOG.md` / `RELEASE_NOTES.md` files to avoid divergence.
 
 ---
 
 # Verification Summary
 
 - ✅ **TypeScript:** clean (`npx tsc --noEmit`).
-- ✅ **Production build:** green — **304 pages** (was 306; **−2** = the two 0-question category routes,
-  Azure/GCP, no longer generated). No First-Load-JS change.
-- ✅ **In-browser (dev):** home + `/candidate` show **"262+ questions across 11 categories"** with real
-  per-card counts (Core Java 27, Python 27, JSON 26, REST 24, AWS/SQL 22, System Design 21,
-  Collections/MT/JVM/Microservices 20). Delisted categories (Azure, GCP, Docker, Coding Challenges,
-  Java 8+, Behavioral, …) **absent** from the browse grid and footer.
-- ✅ **Indexing signals:** `/candidate/aws` → `robots: index,follow`; `/candidate/docker` renders (200)
-  with `robots: noindex,follow`; **sitemap lists exactly 11** category URLs (Azure/GCP/Docker excluded,
-  AWS/JSON included). All 262 question routes remain in the sitemap.
-- ✅ **No broken links / no URL change:** every question slug unchanged; breadcrumbs from questions in
-  below-threshold categories still resolve (those category pages still render).
+- ✅ **Production build:** green — **329 pages** (was 304; **+25** `/q/[slug]`). Shared First Load JS
+  **102 kB unchanged**; `/q/[slug]` **111 kB unchanged**.
+- ✅ **Lint:** ESLint is not configured in this project (CLAUDE.md — `tsc` + `build` are the standing
+  gates); both pass. `next lint` is deprecated for Next 16 and not wired here.
+- ✅ **Slug integrity:** **287 unique slugs, 0 duplicates** (was 262); all new `related` cross-links
+  resolve to real questions (0 dangling refs).
+- ✅ **In-browser (dev, localhost:3000):** `/candidate/advanced-java` shows **"28 LIVE"** and is now
+  listed; a new page (`/q/dynamic-proxy`) renders every FIG section, the `seoTitle` fills the tab title
+  ("Java Dynamic Proxy Interview Questions & Answers | Full Stack Interview Guru") and the `heading`
+  drives the H1; breadcrumb `Advanced Java › Dynamic Proxy`; **no console errors / hydration warnings**.
+- ✅ **No regression:** canonical, `QAPage`, `BreadcrumbList`, and branded titles intact; no question
+  URL/slug/schema change; GA4 (`@next/third-parties`) and AdSense loader wiring untouched.
 
 ---
 
@@ -105,13 +122,13 @@ to them → safe to 404 (removes the empty placeholder entirely).
 
 - **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG. No
   backend/DB/auth.
-- **Content:** 262 live questions across 23 catalog categories; **11 advertised** (≥10 live). Browse /
-  sitemap driven by `lib/category-visibility.ts`.
+- **Content:** **287 live questions** (32 base + 255 expansion across 12 files). `advanced-java` now
+  **28 live** and newly listed/indexed. **12 advertised categories** (≥10 live). Browse / sitemap driven
+  by `lib/category-visibility.ts`.
 - **SEO:** per-page canonicals/OG/Twitter, `WebSite`+`Organization`+`QAPage`+`BreadcrumbList` JSON-LD;
-  per-page `seoTitle`/`seoDescription`/`heading` overrides (#033); category listings now honest +
-  thin-category `noindex` (#034).
-- **Analytics/Ads:** GA4 via `@next/third-parties` (env-gated); AdSense loader env-gated — **AdSense
-  approval pending** (this change is the remediation).
+  per-page `seoTitle`/`seoDescription`/`heading` overrides (#033); honest category listings + thin
+  `noindex` (#034).
+- **Analytics/Ads:** GA4 via `@next/third-parties` (env-gated); AdSense loader env-gated — unchanged.
 - **Theme:** still dark-only (H3/H4 open).
 
 ---
@@ -119,41 +136,43 @@ to them → safe to 404 (removes the empty placeholder entirely).
 # Current Roadmap Status
 
 - **Phase 2:** QW1–QW5, H1, H2, M1–M6 complete.
-- **Post-Phase-2:** AR1 ✅ · AR2 ✅ · SEO CTR pass ✅ (#033) · **AdSense low-value remediation ✅ (this
-  session, #034)** · CE1 (Python) ✅ · CE2 (JSON) ✅ · core-java dangling-ref maintenance fix ✅ (released).
+- **Post-Phase-2:** AR1 ✅ · AR2 ✅ · SEO CTR pass ✅ (#033) · AdSense low-value remediation ✅ (#034) ·
+  CE1 (Python) ✅ · CE2 (JSON) ✅ · core-java dangling-ref fix ✅ · **CE3 / Release 10 (Advanced Java)
+  ✅ built — awaiting approval / deploy.**
 - **Remaining (committed):** H3 + H4 (theme + palette); L1 (homepage tone).
 
 ---
 
 # Current Project Health
 
-- ✅ TypeScript clean · ✅ Build green (**304 pages**) · ✅ 0 broken `related` refs (262 unique slugs) ·
-  ✅ Browse surface honest (11 real categories, live counts) · ✅ No question URL/schema change · ✅ Docs
-  synchronized + timestamped.
+- ✅ TypeScript clean · ✅ Build green (**329 pages**) · ✅ 0 broken `related` refs (287 unique slugs) ·
+  ✅ `advanced-java` newly listed (28 live) · ✅ No question URL/schema change · ✅ No duplicate content ·
+  ✅ Docs synchronized + timestamped. ⏳ Not yet released (awaiting owner approval).
 
 ---
 
 # Known Limitations / Follow-ups
 
-- **AdSense re-review is an owner action, done *after* deploy + re-crawl.** Don't tick "I confirm I have
-  fixed the issues" / Request Review until this is live and Google has re-crawled (a few days). Avoid
-  repeated empty re-requests.
-- **Depth, not just honesty:** hiding thin categories fixes the *misleading/thin* signal, but reviewers
-  also weigh overall uniqueness/volume. Consider (separately, owner-approved) adding original long-form
-  content and re-populating delisted categories to ≥10 so they re-list automatically.
-- **`count` field retained but now display-unused** for the browse surface; kept as the catalog target.
-  If it drifts confusingly from reality later, consider repurposing or removing it (separate cleanup).
-- **Released to production 2026-08-01** — `2c0794e` merged to `main`, pushed, Vercel deploy succeeded,
-  smoke test passed (Azure/GCP 404, thin categories noindex, sitemap = 11, home/candidate honest counts).
-  Don't `npm run build` while a dev/preview server is live.
+- **Awaiting approval — do not deploy without it.** No commit/merge/push has been made this session.
+- **Category `topics` pills unchanged.** `advanced-java`'s `topics` array in `lib/categories.ts` still
+  lists the original six pills (Concurrency, Virtual Threads, Memory Model, GC Tuning, Reflection, Class
+  Loading); the new questions span more topics (Serialization, Generics, Annotations, Records, …). This
+  is cosmetic and was left untouched to keep the change minimal; consider a small pills refresh in a
+  future pass if desired (owner-approved).
+- **Aspirational `count` (80) retained** for `advanced-java` as the catalog target; the live count (28)
+  is what drives the browse UI and sitemap.
+- **Depth compounding:** because the new questions cross-link into the JVM/core-java/multithreading
+  pages, this release also strengthens internal linking on already-indexed pages — a secondary SEO gain.
 
 ---
 
 # Important Decisions (that must never change)
 
 - **Never change URLs** without approval. **Never break SEO.** **Never remove existing features.**
+- **No duplicate content:** when a briefed topic already has a canonical page, add a distinct deeper
+  facet and **cross-link** — never restate it (scales CE2's `json-vs-xml-differences` pattern).
 - **Advertise only substantial categories (#034):** browse/sitemap driven by `category-visibility.ts`;
-  `count` is a catalog target, not a live number. Filling a category past `MIN_LIVE_TO_LIST` re-lists it.
+  filling a category past `MIN_LIVE_TO_LIST` re-lists it automatically (exactly what this release does).
 - **`"FIG – %s"` default title template**; `seoTitle` is a per-page opt-out (#033).
 - **No fake functionality / no dead links** (#026). **Append-only content model** (#028).
 - **GA IDs never committed**; AdSense publisher ID in `lib/site.ts` (#031/#032).
@@ -165,21 +184,24 @@ to them → safe to 404 (removes the empty placeholder entirely).
 
 # Recommended First Task For The Next Session
 
-Owner-selected: **(a)** after deploy + re-crawl, **request the AdSense re-review** (owner action); **(b)**
-content depth — re-populate delisted categories (Docker, Kubernetes, Git, Linux, Behavioral, …) to ≥10
-live so they re-list, following the CE2 pattern; or **(c)** resume the committed roadmap (H3 + H4, then
-L1). **All require explicit owner approval before implementation.**
+**(a)** On approval, run the release flow for CE3 / Release 10 (focused commit, then owner-controlled
+merge/push/deploy + post-deploy smoke test of the 25 new `/q` pages and `/candidate/advanced-java`
+listing). Then optionally **(b)** continue content depth — bring other flagship-but-thin categories to
+≥10 live so they re-list (CE pattern), or **(c)** resume the committed roadmap (H3 + H4, then L1).
+**All require explicit owner approval before implementation.**
 
 ---
 
 # Notes For Future Developers / AI Assistants
 
-- **Read `CLAUDE.md` first**, then `/docs`. **Category visibility lives in
-  `lib/category-visibility.ts`** — never re-introduce `category.count` into the browse UI; use
-  `liveCount` / `listedCategories`. Empty categories 404 (`dynamicParams=false`); below-threshold ones
-  are `noindex` but still render for breadcrumb safety.
-- **Adding a content batch (CE pattern):** new `lib/questions-extra/<cat>.ts` → import + spread in
-  `index.ts`. Once a category crosses `MIN_LIVE_TO_LIST` it re-lists automatically (no UI change).
+- **Read `CLAUDE.md` first**, then `/docs`. **Adding a content batch (CE pattern):** new
+  `lib/questions-extra/<cat>.ts` → import + spread in `index.ts`. Once a category crosses
+  `MIN_LIVE_TO_LIST` it re-lists + indexes automatically (no UI change) — as `advanced-java` does here.
+- **Before authoring, audit for existing coverage.** Many "advanced" topics already live under
+  `jvm`/`core-java`/`java-collections`/`multithreading`. Grep existing slugs first; if a topic exists,
+  write a distinct deeper facet and cross-link rather than duplicate.
+- **Category visibility lives in `lib/category-visibility.ts`** — never re-introduce `category.count`
+  into the browse UI; use `liveCount` / `listedCategories`.
 - **Versions:** project `package.json` = **1.0.0**; docs = **1.0.0**.
 
 ---
@@ -187,7 +209,7 @@ L1). **All require explicit owner approval before implementation.**
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (SEO — AdSense low-value remediation / category visibility; released to production; DECISIONS #034)
+- **Last Updated:** 2026-08-04 (CE3 / Release 10 — Advanced Java question bank; built & verified, awaiting owner approval)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

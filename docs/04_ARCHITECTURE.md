@@ -72,8 +72,8 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
   categories.ts              Category catalog (19 categories)
   questions.ts               Base question bank (32) + merges questions-extra; getQuestion,
                              questionsByCategory, getQuestionNav (category position + prev/next)
-  questions-extra/           Expansion bank (230 questions, 11 files + index):
-                             9 flagship categories × 20 + Python × 25 + JSON × 25 (content expansion)
+  questions-extra/           Expansion bank (255 questions, 12 files + index):
+                             9 flagship categories × 20 + Python × 25 + JSON × 25 + Advanced Java × 25 (content expansion)
   category-visibility.ts     Live-count helpers: MIN_LIVE_TO_LIST, liveCount, isListed,
                              listedCategories, totalLiveQuestions (drives browse/sitemap — DECISIONS #034)
   search.ts                  Prebuilt client-side search index

@@ -10,6 +10,7 @@ import { awsExtra } from "./aws";
 import { systemDesignExtra } from "./system-design";
 import { pythonExtra } from "./python";
 import { jsonExtra } from "./json";
+import { advancedJavaExtra } from "./advanced-java";
 
 /**
  * Aggregated expansion batches. Each flagship category adds its own file here and
@@ -24,6 +25,7 @@ import { jsonExtra } from "./json";
  * Content-expansion batches:
  * Python — 25 questions (Phase 2 content expansion, CE1).
  * JSON — 25 questions (Phase 2 content expansion, CE2).
+ * Advanced Java — 25 questions (Phase 2 content expansion, CE3 / Release 10).
  */
 export const extraQuestions: Question[] = [
   ...coreJavaExtra,
@@ -37,4 +39,5 @@ export const extraQuestions: Question[] = [
   ...systemDesignExtra,
   ...pythonExtra,
   ...jsonExtra,
+  ...advancedJavaExtra,
 ];

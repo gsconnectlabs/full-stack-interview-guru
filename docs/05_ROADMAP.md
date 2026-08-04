@@ -462,6 +462,37 @@ pick them up with zero extra wiring — see [04_ARCHITECTURE.md](./04_ARCHITECTU
 - **Files:** new `lib/questions-extra/json.ts`; `lib/questions-extra/index.ts` (import + spread).
 - **SEO affected:** Positive (more content + per-page keyword-led titles) — no URL/schema change.
 
+### CE3 / Release 10 — Advanced Java question bank (25 questions)
+- **Status:** ✅ **Completed 2026-08-04** — added **25** senior-level Advanced Java questions in the new
+  `lib/questions-extra/advanced-java.ts` (`advancedJavaExtra`), wired into
+  `lib/questions-extra/index.ts`. Five sections: JVM & class loading (JDK/JRE/JVM pipeline, ClassLoader
+  architecture, breaking parent delegation, JMM safe publication, stack frames vs StackOverflowError, GC
+  collector trade-offs, reference-type caches), serialization & metaprogramming (Serialization vs
+  Externalization, transient, Reflection, Dynamic Proxy, Annotations), object contracts & generics
+  (Comparator composition, equals/hashCode under inheritance, deep immutability, bounded wildcards/PECS,
+  heap pollution/@SafeVarargs, safe removal during iteration), concurrency framework (ExecutorService
+  shutdown/rejection, task exception propagation, CompletableFuture error handling, ForkJoin common
+  pool, ThreadLocal vs ScopedValue), and modern Java 17–21 (Records & Sealed Classes, virtual-thread
+  pinning/structured concurrency). Full FIG schema **plus** keyword-led `seoTitle`/`seoDescription`/
+  `heading` overrides; AI prompts auto-generated. Difficulty **10 Medium · 15 Hard**.
+  **No duplicate content:** ~20 of the briefed topics already own a canonical page under
+  `jvm`/`core-java`/`java-collections`/`multithreading`; each new question takes a *distinct deeper
+  facet* and **cross-links** to the existing base (scaling the CE2 `json-vs-xml-differences` pattern).
+  `advanced-java` category goes **3 → 28 live**, crossing `MIN_LIVE_TO_LIST` so it becomes **listed +
+  indexed + in the sitemap**. Verified: TypeScript clean; production build green (**329 pages**, +25
+  `/q/[slug]`, was 304); **287 unique slugs, no duplicates**; all new `related` refs resolve; category
+  page "28 LIVE"; new pages render every FIG section with SEO title/H1, no console/hydration errors;
+  shared JS **102 kB unchanged**, `/q/[slug]` **111 kB unchanged** — **no SEO/URL/UI regression**.
+- **Reason:** Phase 2 content growth; `advanced-java` is a flagship category (topic pills) that had only
+  3 live questions and sat below the listing threshold; a strong Advanced Java section builds topical
+  authority for senior Java searches.
+- **Benefits:** Newly indexed category + 25 indexable long-tail pages; internal links strengthen the
+  existing JVM/core-java/multithreading pages the new questions cross-link to.
+- **Complexity:** M (content authoring; no code/architecture change).
+- **Files:** new `lib/questions-extra/advanced-java.ts`; `lib/questions-extra/index.ts` (import + spread).
+- **SEO affected:** Positive (a category flips to indexed + 25 keyword-led pages + internal linking) —
+  no URL/schema change.
+
 ---
 
 ## 🔮 Future Improvements

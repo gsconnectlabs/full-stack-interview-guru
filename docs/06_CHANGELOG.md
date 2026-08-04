@@ -50,6 +50,54 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (ROADMAP CE3 / Release 10 — Advanced Java question bank, 25 questions) — 2026-08-04
+Content expansion — **no route, UI, layout, or schema change**. Follows the CE2 (JSON) pattern:
+new batch file + one-line wiring, full FIG schema plus keyword-led `seoTitle` / `seoDescription` /
+`heading` overrides (DECISIONS #033). Append-only (#028).
+
+- **New `lib/questions-extra/advanced-java.ts`** exporting `advancedJavaExtra: Question[]` with **25**
+  senior-level questions (difficulty mix **10 Medium · 15 Hard** — deliberately no Easy for an advanced
+  section), ordered by five sections: JVM & Class Loading → Serialization & Metaprogramming → Object
+  Contracts & Generics → Concurrency Framework → Modern Java (17–21). Each uses the full schema
+  (`shortAnswer`, `mindMap`, `handsOn`, `whatIf`, `realWorld`, `interviewerExpectation`, `followUps`,
+  `commonMistakes`, `bestPractices`, `relatedTech`, `tags`, `experience`, `askedIn`, `related`) plus
+  the SEO overrides. The four "Continue Learning with AI" prompts auto-generate via `lib/ai-prompts.ts`.
+- **Coverage:** JDK/JRE/JVM execution pipeline, ClassLoader architecture, breaking parent delegation,
+  JMM safe publication, stack frames vs StackOverflowError, GC collector trade-offs, reference-type
+  caches, **Serialization vs Externalization**, **transient**, **Reflection API**, **Dynamic Proxy**,
+  **Java Annotations**, Comparator composition, equals/hashCode under inheritance, deep immutability,
+  bounded wildcards (PECS), heap pollution / @SafeVarargs, safe removal during iteration, ExecutorService
+  shutdown & rejection, task exception propagation, CompletableFuture error handling, ForkJoin common
+  pool, ThreadLocal vs ScopedValue, **Records & Sealed Classes**, and virtual-thread pinning/structured
+  concurrency.
+- **No duplicate content (DECISIONS — Release 10).** ~20 of the 25 briefed topics already own a canonical
+  page under `jvm` / `core-java` / `java-collections` / `multithreading` (e.g. `jvm-jre-jdk`,
+  `java-memory-model`, `reference-types`, `comparable-vs-comparator`, `java-equals-hashcode`,
+  `immutable-class-design`, `generics-type-erasure`, `fail-fast-vs-fail-safe`,
+  `executorservice-thread-pools`, `completablefuture-async`, `forkjoinpool-work-stealing`,
+  `threadlocal-memory-leak`, `virtual-threads`). To avoid keyword cannibalisation, **every** new
+  question takes a *distinct, deeper advanced facet* and **cross-links** to the existing base question
+  via `related` — scaling the same pattern CE2 used for `json-vs-xml-differences` → `json-vs-xml`. The
+  five genuinely-missing topics (Externalization, transient, Reflection, Dynamic Proxy, Records/Sealed)
+  are covered head-on.
+- **Category state change:** `advanced-java` goes **3 → 28 live**, crossing `MIN_LIVE_TO_LIST = 10`
+  (DECISIONS #034), so the category flips from `noindex`/unlisted to **listed + indexed + in the
+  sitemap** — the browse surface, home metrics, footer, and `sitemap.ts` pick it up automatically.
+- **`lib/questions-extra/index.ts`:** imported `advancedJavaExtra` and spread it into `extraQuestions`
+  (the only wiring needed). Everything downstream — category page, `/q/{slug}` pages, search index,
+  sitemap, `QAPage` / `BreadcrumbList` JSON-LD, prev/next nav, related questions — updates automatically.
+- **Question totals:** **262 → 287** (32 base + **255** flagship/expansion). Extra files: 11 → **12**.
+- **Verified:** TypeScript clean (`tsc --noEmit`); production build green — **329 pages** (was 304,
+  +25 `/q/[slug]`); **287 unique slugs, no duplicates**; all new `related` refs resolve; in-browser:
+  `/candidate/advanced-java` shows **"28 LIVE"** and is now listed, a new page (`/q/dynamic-proxy`)
+  renders every FIG section with the `seoTitle` in the tab title and the `heading` H1, **no console
+  errors / hydration warnings**. **No regression:** shared First Load JS **102 kB unchanged**,
+  `/q/[slug]` **111 kB unchanged**; canonical, `QAPage`, `BreadcrumbList`, and branded titles intact —
+  **no URL/UI change**.
+- **Files:** new `lib/questions-extra/advanced-java.ts`; `lib/questions-extra/index.ts` (import +
+  spread); docs (`04_ARCHITECTURE.md`, `05_ROADMAP.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`),
+  root `CLAUDE.md` (testing-checklist page count → 329).
+
 ### Changed (SEO — advertise only substantial categories; honest live counts) — 2026-08-01
 AdSense **"Low value content"** remediation (DECISIONS **#034**). The site advertised **1,970 questions
 across 23 categories** while only **262** existed (12 categories had <10 live; Azure/GCP had 0), producing
