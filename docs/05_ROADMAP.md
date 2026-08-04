@@ -463,7 +463,9 @@ pick them up with zero extra wiring — see [04_ARCHITECTURE.md](./04_ARCHITECTU
 - **SEO affected:** Positive (more content + per-page keyword-led titles) — no URL/schema change.
 
 ### CE3 / Release 10 — Advanced Java question bank (25 questions)
-- **Status:** ✅ **Completed 2026-08-04** — added **25** senior-level Advanced Java questions in the new
+- **Status:** ✅ **Released to production 2026-08-04** (commit `b3a2fc2`; smoke test passed — 25 new `/q`
+  pages 200, category indexable + listed at 28 live, sitemap updated) — added **25** senior-level
+  Advanced Java questions in the new
   `lib/questions-extra/advanced-java.ts` (`advancedJavaExtra`), wired into
   `lib/questions-extra/index.ts`. Five sections: JVM & class loading (JDK/JRE/JVM pipeline, ClassLoader
   architecture, breaking parent delegation, JMM safe publication, stack frames vs StackOverflowError, GC

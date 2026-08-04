@@ -51,7 +51,11 @@ Phase 2 work is logged here as it is approved and implemented, one feature at a 
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
 ### Added (ROADMAP CE3 / Release 10 — Advanced Java question bank, 25 questions) — 2026-08-04
-Content expansion — **no route, UI, layout, or schema change**. Follows the CE2 (JSON) pattern:
+**Released to production 2026-08-04** (commit `b3a2fc2`, fast-forward merged to `main` + pushed; Vercel
+deploy succeeded; post-deploy smoke test on https://fullstackinterviewguru.com passed — 25 new `/q`
+pages 200, `/candidate/advanced-java` indexable + listed at 28 live, sitemap updated, `seoTitle`/`QAPage`/
+canonical correct on sampled pages). Content expansion — **no route, UI, layout, or schema change**.
+Follows the CE2 (JSON) pattern:
 new batch file + one-line wiring, full FIG schema plus keyword-led `seoTitle` / `seoDescription` /
 `heading` overrides (DECISIONS #033). Append-only (#028).
 

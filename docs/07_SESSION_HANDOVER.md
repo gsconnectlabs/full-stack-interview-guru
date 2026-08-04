@@ -20,9 +20,13 @@
   `json-vs-xml-differences` → `json-vs-xml` precedent. The five genuinely-missing topics (Serialization
   vs Externalization, `transient`, Reflection API, Dynamic Proxy, Records & Sealed Classes) are covered
   head-on. **No route, URL, UI, layout, or schema change.**
-- **Release Status:** ⏳ **Built & verified; awaiting owner approval — NOT deployed.** Per the brief
-  ("Do NOT deploy automatically") and CLAUDE.md governance, work stops here for review. No commit,
-  merge, or push has been made. Next step is owner approval, then the standard release flow.
+- **Release Status:** ✅ **Released to production 2026-08-04.** Owner approved; commit `b3a2fc2`
+  fast-forward merged into `main` (`124da89..b3a2fc2`) + pushed; Vercel production deploy succeeded.
+  Post-deployment smoke test on **https://fullstackinterviewguru.com** passed — **all 25 new `/q`
+  pages return 200**, `/candidate/advanced-java` renders **28 curated questions** and is now
+  **indexable (no `noindex`)** and **listed on `/candidate`**, sitemap includes the category URL + the
+  new question routes, and a sample page (`/q/reflection-api`) has the correct `seoTitle`, `QAPage`
+  JSON-LD, and canonical. No regressions.
 
 ---
 
@@ -138,7 +142,7 @@ existing JVM/core-java/multithreading pages.
 - **Phase 2:** QW1–QW5, H1, H2, M1–M6 complete.
 - **Post-Phase-2:** AR1 ✅ · AR2 ✅ · SEO CTR pass ✅ (#033) · AdSense low-value remediation ✅ (#034) ·
   CE1 (Python) ✅ · CE2 (JSON) ✅ · core-java dangling-ref fix ✅ · **CE3 / Release 10 (Advanced Java)
-  ✅ built — awaiting approval / deploy.**
+  ✅ released to production 2026-08-04.**
 - **Remaining (committed):** H3 + H4 (theme + palette); L1 (homepage tone).
 
 ---
@@ -147,13 +151,15 @@ existing JVM/core-java/multithreading pages.
 
 - ✅ TypeScript clean · ✅ Build green (**329 pages**) · ✅ 0 broken `related` refs (287 unique slugs) ·
   ✅ `advanced-java` newly listed (28 live) · ✅ No question URL/schema change · ✅ No duplicate content ·
-  ✅ Docs synchronized + timestamped. ⏳ Not yet released (awaiting owner approval).
+  ✅ Docs synchronized + timestamped. ✅ **Released to production 2026-08-04** (`b3a2fc2`, smoke test passed).
 
 ---
 
 # Known Limitations / Follow-ups
 
-- **Awaiting approval — do not deploy without it.** No commit/merge/push has been made this session.
+- **Released to production 2026-08-04** — `b3a2fc2` merged to `main`, pushed, Vercel deploy succeeded,
+  smoke test passed (25 new `/q` pages 200, category indexable + listed at 28 live, sitemap updated).
+  Don't `npm run build` while a dev/preview server is live.
 - **Category `topics` pills unchanged.** `advanced-java`'s `topics` array in `lib/categories.ts` still
   lists the original six pills (Concurrency, Virtual Threads, Memory Model, GC Tuning, Reflection, Class
   Loading); the new questions span more topics (Serialization, Generics, Annotations, Records, …). This
@@ -184,11 +190,10 @@ existing JVM/core-java/multithreading pages.
 
 # Recommended First Task For The Next Session
 
-**(a)** On approval, run the release flow for CE3 / Release 10 (focused commit, then owner-controlled
-merge/push/deploy + post-deploy smoke test of the 25 new `/q` pages and `/candidate/advanced-java`
-listing). Then optionally **(b)** continue content depth — bring other flagship-but-thin categories to
-≥10 live so they re-list (CE pattern), or **(c)** resume the committed roadmap (H3 + H4, then L1).
-**All require explicit owner approval before implementation.**
+CE3 / Release 10 is **live** (released 2026-08-04). Next options: **(a)** continue content depth — bring
+other flagship-but-thin categories to ≥10 live so they re-list (CE pattern); or **(b)** resume the
+committed roadmap (H3 + H4 theme + palette, then L1 homepage tone). **All require explicit owner approval
+before implementation.**
 
 ---
 
@@ -209,7 +214,7 @@ listing). Then optionally **(b)** continue content depth — bring other flagshi
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-04 (CE3 / Release 10 — Advanced Java question bank; built & verified, awaiting owner approval)
+- **Last Updated:** 2026-08-04 (CE3 / Release 10 — Advanced Java question bank; released to production, commit b3a2fc2)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
