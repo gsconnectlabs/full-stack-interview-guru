@@ -17,6 +17,7 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
   {
     title: "Resources",
     links: [
+      { href: "/store", label: "🛒 Store" },
       { href: "/candidate", label: "Interview Questions" },
       { href: "/interviewer", label: "Interviewer Mode" },
       { href: "/real-world", label: "Real World vs Interview" },

@@ -1006,6 +1006,47 @@ Google re-crawls.
 
 ---
 
+# Decision #035
+
+## Title
+
+FIG Store — New `/store` Section, First Product (Free Java Ebook), First Custom GA4 Event
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-09)
+
+### Reason
+
+FIG needed an optional, trust-first surface for structured deeper resources without weakening the
+"free, no dark patterns" core. The first real resource — **"Top 50 Java Interview Questions & Answers —
+Free Edition"** (a free PDF ebook distributed via Gumroad, based on FIG's free Java Q&A content) — needed
+a home that feels native to FIG, not a bolted-on storefront.
+
+### Implementation
+
+- **New route `/store`** (`app/store/page.tsx`) — static, server-rendered, added to `sitemap.ts`/`robots.ts`
+  automatically (no exclusions). Added to `Navbar` (always-visible, matching `Candidate`/`Interviewer`) and
+  `Footer` (Resources group).
+- **Data-driven catalog:** `lib/store.ts` exports `StoreProduct[]` — appending a future product requires
+  no page/component changes (mirrors the `lib/products.ts` pattern, DECISIONS precedent). The Gumroad URL
+  lives in exactly one place: the product's `gumroadUrl` field.
+- **New components:** `StoreProductCard` (server) renders the product; `GumroadCtaButton` (client island)
+  is the only client code — it fires the GA event and opens the real Gumroad URL in a new tab.
+- **First custom GA4 event:** `gumroad_cta_click` (`{ product, destination }`), fired via
+  `sendGAEvent` from `@next/third-parties/google` (the same package already loading GA). This is the first
+  event to graduate from the "planned" list in [14_ANALYTICS.md](./14_ANALYTICS.md) — approved explicitly
+  for this feature, not a blanket approval for the rest of the planned list.
+- **Product is free (₹0):** priced and labeled as **Free**, never as a discount or paid item. No price,
+  reviews, ratings, sales numbers, or testimonials are shown — none exist yet, and none are invented.
+  Cover image sourced from the real ebook asset, copied to `public/store/`.
+- **Future scalability:** the Store page lists planned resource categories (Java, Microservices, SQL,
+  System Design, AWS, Interview Preparation) as text chips only — explicitly not fake/placeholder products.
+- **Not changed:** existing routes, question content, SEO URLs, or the "off until `NEXT_PUBLIC_GA_ID` is
+  set" analytics behavior (DECISIONS #031/#032) — `gumroad_cta_click` inherits the same off-by-default gate.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1017,7 +1058,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (Decision #034 — advertise only substantial categories; live counts)
+- **Last Updated:** 2026-08-09 (Decision #035 — FIG Store, first product, first custom GA4 event)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

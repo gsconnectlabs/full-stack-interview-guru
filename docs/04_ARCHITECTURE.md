@@ -44,13 +44,14 @@ app/                         Routes (App Router)
   about/                     About Us (static) — mission/vision/standards; Breadcrumb JSON-LD
   contact/                   Contact Us (static) — ContactForm island; Breadcrumb JSON-LD
   privacy/, terms/, disclaimer/  Legal pages (static) — via LegalPage; Breadcrumb JSON-LD (AdSense readiness)
+  store/                     FIG Store — optional deeper resources (DECISIONS #035); data-driven catalog
   not-found.tsx              404
   sitemap.ts, robots.ts      SEO routes (driven by lib data + NEXT_PUBLIC_SITE_URL)
   icon.svg, apple-icon.tsx   Browser branding — FIG monogram (Teal + Gold)
   manifest.ts                Web app manifest (auto-linked at /manifest.webmanifest)
   globals.css                Tailwind layers + design tokens/components
 
-components/                  Reusable UI (23 components)
+components/                  Reusable UI (25 components)
   Navbar, Footer, SearchBar, QuestionCard, TopicCard (server; category card reused by
   homepage + candidate index), DifficultyBadge,
   PrevNextNav (server; sequential prev/next + "Question N of M" + "View all"),
@@ -62,7 +63,9 @@ components/                  Reusable UI (23 components)
   AdSlot, Analytics, FeedbackForm, UpiQrCard,
   ContactForm (client; Name/Email/Subject/Message — endpoint POST or mailto fallback),
   LegalPage (server; shared shell for privacy/terms/disclaimer — header + breadcrumb + .prose-legal),
-  Breadcrumb (visible trail + BreadcrumbList JSON-LD), JsonLd (schema.org emitter)
+  Breadcrumb (visible trail + BreadcrumbList JSON-LD), JsonLd (schema.org emitter),
+  StoreProductCard (server; renders a StoreProduct — cover, benefits, "What's inside", CTA),
+  GumroadCtaButton (client island; opens the product's Gumroad URL, fires `gumroad_cta_click`)
 
 hooks/                       Client hooks
   useTemporaryFlag            transient on→auto-reset(1500ms) flag; shared by CopyButton/ShareButton
@@ -81,8 +84,9 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
   ai-prompts.ts              "Continue Learning with AI": buildAiPrompts (4 levels, build-time) + AI_PROVIDERS (ChatGPT/Gemini/Claude)
   site.ts                    siteUrl, contact/donate config, UPI helper
   environment.ts, transitions.ts, interviewer.ts, products.ts   Feature data
+  store.ts                   FIG Store catalog — StoreProduct[]; append-only (DECISIONS #035)
 
-public/                      Currently minimal (donate/README.md only)
+public/                      donate/README.md; store/ (product cover images)
 ```
 
 Business logic lives in `lib/`, not in pages — pages compose data + components.
@@ -120,7 +124,7 @@ Business logic lives in `lib/`, not in pages — pages compose data + components
 | `/candidate` | Topic index |
 | `/candidate/{category}` | Category detail |
 | `/q/{slug}` | Question detail |
-| `/interviewer`, `/transition`, `/environment`, `/real-world`, `/donate`, `/feedback` | Feature pages |
+| `/interviewer`, `/transition`, `/environment`, `/real-world`, `/donate`, `/feedback`, `/store` | Feature pages |
 | `/about`, `/contact`, `/privacy`, `/terms`, `/disclaimer` | Company/legal pages (AdSense readiness) |
 
 Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_URL`
@@ -148,7 +152,9 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   `components/Analytics.tsx` renders `<GoogleAnalytics gaId={gaId} />` once (site-wide, through the root
   layout), which loads `gtag.js` a single time and tracks App Router route changes as `page_view`. It is
   gated on `gaId` (`lib/site.ts` = `NEXT_PUBLIC_GA_ID`, **no committed default** — off until set, per
-  DECISIONS #031/#032). No custom GA4 events yet — see [14_ANALYTICS.md](./14_ANALYTICS.md).
+  DECISIONS #031/#032). One custom GA4 event implemented — `gumroad_cta_click` on `/store`
+  (DECISIONS #035); the rest of the planned catalogue is still not implemented —
+  see [14_ANALYTICS.md](./14_ANALYTICS.md).
 - **Advertising:** `adsbygoogle.js` loaded once site-wide via `components/Analytics.tsx` and a
   `google-adsense-account` verification `<meta>` in the root layout — both read `adsenseClientId` from
   `lib/site.ts` (production `ca-pub-…` committed as the default; `NEXT_PUBLIC_ADSENSE_ID` overrides
@@ -163,8 +169,9 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
 - **Lighthouse 12 (desktop, production build):** Homepage **100 / 100 / 100 / 100**
   (Perf / A11y / BP / SEO); Question page **100 / 96 / 100 / 100** (the 96 is the DECISIONS #029
   tertiary-contrast item, deferred to H3/H4). CWV: FCP 0.3–0.4 s, LCP 0.5–0.7 s, **CLS 0**, **TBT 0 ms**.
-- **Fonts:** system-font stack — no `next/font`, no web fonts (DECISIONS #030). **Images:** none
-  (emoji + inline SVG). Client JS minimal (shared 102 kB; small islands only).
+- **Fonts:** system-font stack — no `next/font`, no web fonts (DECISIONS #030). **Images:** emoji + inline
+  SVG site-wide; the one exception is the Store product cover (`next/image`, `/store`, DECISIONS #035).
+  Client JS minimal (shared 102 kB unchanged; small islands only).
 
 ## Accessibility (current)
 
@@ -219,7 +226,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (SEO — category visibility / live counts, `category-visibility.ts`; DECISIONS #034)
+- **Last Updated:** 2026-08-09 (FIG Store — `/store` route, `lib/store.ts` catalog, first `next/image` use, first custom GA4 event; DECISIONS #035)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

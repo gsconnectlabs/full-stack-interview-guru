@@ -34,6 +34,12 @@ export default function Navbar() {
             Interviewer
           </Link>
           <Link
+            href="/store"
+            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
+          >
+            Store
+          </Link>
+          <Link
             href="/environment"
             className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white md:block"
           >

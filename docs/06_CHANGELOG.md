@@ -50,6 +50,21 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (FIG Store — `/store`, first product, first custom GA4 event) — 2026-08-09
+New top-level Store section (DECISIONS #035): free, distraction-free platform stays the same; the Store
+is an optional surface for structured deeper resources. First (and currently only) product: **"Top 50
+Java Interview Questions & Answers — Free Edition"** — a free PDF ebook, distributed via Gumroad, based
+on FIG's free Java Q&A content. Not a paid product; no price/discount/testimonial claims are shown.
+- New route `app/store/page.tsx`; added to `Navbar` and `Footer` (Resources group).
+- New `lib/store.ts` (data-driven `StoreProduct[]` catalog — append-only for future products; the
+  Gumroad URL lives in exactly one place per product).
+- New components: `StoreProductCard` (server), `GumroadCtaButton` (client island).
+- First custom GA4 event, `gumroad_cta_click`, via `sendGAEvent` (`@next/third-parties/google`) — see
+  [14_ANALYTICS.md](./14_ANALYTICS.md). Off by default, same as all GA (DECISIONS #031/#032).
+- First `next/image` use in the project (Store product cover, `public/store/`).
+- No existing routes, content, or SEO URLs changed. `npx tsc --noEmit` clean; `npm run build` green
+  (330 pages, up from 329; shared First Load JS unchanged at 102 kB).
+
 ### Added (ROADMAP CE3 / Release 10 — Advanced Java question bank, 25 questions) — 2026-08-04
 **Released to production 2026-08-04** (commit `b3a2fc2`, fast-forward merged to `main` + pushed; Vercel
 deploy succeeded; post-deploy smoke test on https://fullstackinterviewguru.com passed — 25 new `/q`
@@ -689,7 +704,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (SEO — advertise only substantial categories / live counts; DECISIONS #034)
+- **Last Updated:** 2026-08-09 (FIG Store — `/store`, first product, first custom GA4 event; DECISIONS #035)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

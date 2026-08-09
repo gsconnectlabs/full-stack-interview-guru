@@ -130,11 +130,23 @@ Array.from(document.querySelectorAll('script[src]'))
 
 ---
 
+## Implemented Custom Events
+
+| Event | Trigger | Params | Since |
+|---|---|---|---|
+| **`gumroad_cta_click`** | The Store's Gumroad CTA (`components/GumroadCtaButton.tsx`) is clicked on `/store` | `product` (slug), `destination` (`"gumroad"`) | DECISIONS #035, 2026-08-09 |
+
+Implementation: `GumroadCtaButton` calls `sendGAEvent("event", "gumroad_cta_click", { product, destination })`
+from `@next/third-parties/google` — the same package already loading GA, no new dependency. `sendGAEvent`
+no-ops (with a console warning) when GA hasn't initialized, i.e. whenever `NEXT_PUBLIC_GA_ID` is unset —
+consistent with the site-wide "off until an ID is present" behavior (DECISIONS #031/#032). No new
+always-on client JS: the event only ships inside the one client island that needed it.
+
 ## Future GA4 Events (planned — not yet implemented)
 
-Custom events are **not** implemented in the current release and require **separate owner approval**
+The rest of the candidate events below are **not** implemented and require **separate owner approval**
 before any code is written (they must remain lightweight and privacy-respecting, never degrading
-performance or the reading experience). Candidate events:
+performance or the reading experience):
 
 | Event | Trigger | Example params |
 |---|---|---|
@@ -150,16 +162,16 @@ performance or the reading experience). Candidate events:
 | **Session Engagement** | Engaged-time / return visit signals | GA4 built-ins where possible |
 
 Implementation guidance (for when approved): prefer GA4 recommended event names/params where they
-exist; centralize a tiny typed helper (e.g. `lib/analytics.ts`) that no-ops when `gaId` is unset;
-keep event wiring inside existing client islands (no new always-on client JS); and document each
-event here as it ships.
+exist; `sendGAEvent` from `@next/third-parties/google` is now the established pattern (see
+`gumroad_cta_click` above) rather than a new typed helper; keep event wiring inside existing client
+islands (no new always-on client JS); and document each event here as it ships.
 
 ---
 
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-30 (created — AR2 GA4 official integration)
+- **Last Updated:** 2026-08-09 (first custom event — `gumroad_cta_click` on `/store`; DECISIONS #035)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
