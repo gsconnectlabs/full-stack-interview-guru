@@ -147,6 +147,14 @@ a URL change. Nothing here is implemented until the owner approves it, one featu
 - **SEO affected:** None (visual only; no markup/URL change).
 
 ### H4 — Teal + Gold/Kaavi palette (align to approved color system)
+- **Status:** ✅ **Dark-only palette completed 2026-08-09** (DECISIONS #036) — `brand` (indigo→deep
+  teal), `ink` (navy→teal-tinted), and `slate` (cool gray→warm neutral) re-hued in place at the token
+  level, cascading site-wide with no per-component renaming; new `gold` scale added as a restrained
+  signature accent; editorial system-serif headings added; glow shadows/backdrop-blur/`rounded-2xl`/
+  rainbow category accents reduced. Verified: TS clean, build green (330 pages, shared JS unchanged),
+  contrast re-checked (7–15:1 on body/secondary/tertiary text). **Light-mode token values not
+  authored** — done standalone rather than bundled with H3, since H3 (light-default theme system) has
+  not started; light values remain future work when H3 is scheduled.
 - **Description:** Re-map the design tokens from Indigo/Blue to **Teal (primary) + Gold/Kaavi
   (secondary)** as defined in DECISIONS #005 — done as part of the H3 token migration so both
   themes share one source of truth.
@@ -404,6 +412,34 @@ a URL change. Nothing here is implemented until the owner approves it, one featu
   GA4 events remain **pending approval** (catalogued in `14_ANALYTICS.md`).
 - **SEO affected:** None — non-visual, env-gated instrumentation only.
 
+### SR1 — FIG Store (new `/store` section, first product)
+- **Status:** ✅ **Released to production 2026-08-09** (commit `ceaebae`; 10/10 post-deployment smoke
+  test passed on fullstackinterviewguru.com — see CHANGELOG and **DECISIONS #035**). New top-level
+  `/store` route positioning "free FIG content → trust → optional deeper resources"; first (and
+  currently only) product is **"Top 50 Java Interview Questions & Answers — Free Edition"**, a free
+  PDF ebook distributed via Gumroad, built on FIG's free Java Q&A content.
+  - **Data-driven catalog:** new `lib/store.ts` (`StoreProduct[]`, mirrors `lib/products.ts`) — future
+    products append with no page/component changes; the Gumroad URL lives in exactly one place.
+  - **New components:** `StoreProductCard` (server), `GumroadCtaButton` (client island — the only new
+    client code).
+  - **Navigation:** `Store` link added to `Navbar` (always-visible) and `Footer` (Resources group).
+  - **First custom GA4 event**, `gumroad_cta_click` (via `sendGAEvent`, `@next/third-parties/google`),
+    graduating from the "planned" list in `14_ANALYTICS.md`. First `next/image` use in the project
+    (product cover).
+  - Priced/labeled **Free** throughout — no invented price, discount, reviews, ratings, or testimonials.
+  - Verified: TypeScript clean; production build green (**330 pages**, +1, was 329); shared JS **102 kB
+    unchanged**; sitemap includes `/store`; canonical/OG/meta description present; mobile/desktop nav
+    verified; no regression on existing routes.
+- **Reason:** Owner-directed — an optional, trust-first monetization surface distinct from the existing
+  Amazon "Featured Products" / Donate.
+- **Benefits:** A native home for structured deeper resources without weakening the free core platform;
+  scalable catalog for future products (Java, Microservices, SQL, System Design, AWS categories planned).
+- **Complexity:** M
+- **Files:** new `app/store/page.tsx`, `lib/store.ts`, `components/StoreProductCard.tsx`,
+  `components/GumroadCtaButton.tsx`, `public/store/top-50-java-interview-qa-cover.png`;
+  `components/Navbar.tsx`, `components/Footer.tsx`, `app/sitemap.ts`.
+- **SEO affected:** Positive (new indexable, canonicalized page) — no existing URL/schema change.
+
 ---
 
 ## 📚 Content Expansion (Phase 2)
@@ -528,7 +564,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-01 (CE2 — JSON question bank, 25 questions)
+- **Last Updated:** 2026-08-09 (H4 — Teal + Gold palette, dark-only; DECISIONS #036)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -52,9 +52,9 @@ export default function Home() {
           No Login • No Noise • Just Interviews
         </div>
 
-        <h1 className="mt-6 animate-fade-up text-4xl font-black tracking-tight text-white sm:text-6xl">
+        <h1 className="mt-6 animate-fade-up font-serif text-4xl font-black tracking-tight text-white sm:text-6xl">
           Full Stack{" "}
-          <span className="bg-gradient-to-r from-brand-400 via-brand-300 to-sky-300 bg-clip-text text-transparent">
+          <span className="bg-gradient-to-r from-brand-300 to-gold-300 bg-clip-text text-transparent">
             Interview Guru
           </span>
         </h1>
@@ -94,7 +94,7 @@ export default function Home() {
           { value: "Zero", label: "Login Required" },
         ].map((m) => (
           <div key={m.label} className="card p-5 text-center">
-            <div className="bg-gradient-to-r from-brand-300 to-sky-300 bg-clip-text text-2xl font-black text-transparent sm:text-3xl">
+            <div className="bg-gradient-to-r from-brand-300 to-brand-100 bg-clip-text text-2xl font-black text-transparent sm:text-3xl">
               {m.value}
             </div>
             <div className="mt-1 text-xs font-medium text-slate-400">{m.label}</div>
@@ -232,7 +232,7 @@ export default function Home() {
             Support the Guru →
           </Link>
         </div>
-        <div className="card relative overflow-hidden bg-gradient-to-br from-brand-500/15 to-sky-500/[0.06] p-6">
+        <div className="card relative overflow-hidden bg-gradient-to-br from-brand-500/15 to-brand-700/[0.06] p-6">
           <span className="text-3xl">💬</span>
           <h3 className="mt-3 text-lg font-bold text-white">Spotted something off?</h3>
           <p className="mt-2 text-sm text-slate-300">

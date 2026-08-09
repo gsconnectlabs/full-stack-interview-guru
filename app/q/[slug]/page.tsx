@@ -88,7 +88,7 @@ function Section({
 }) {
   return (
     <section className="mt-8">
-      <h2 className="flex items-center gap-2 text-lg font-bold text-white">
+      <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-white">
         <span className="text-xl">{emoji}</span>
         {title}
       </h2>
@@ -202,7 +202,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             )}
           </div>
 
-          <h1 className="mt-4 text-2xl font-black leading-tight text-white sm:text-3xl">{q.heading ?? q.question}</h1>
+          <h1 className="mt-4 font-serif text-2xl font-black leading-tight text-white sm:text-3xl">{q.heading ?? q.question}</h1>
 
           {/* Asked In */}
           <div className="mt-4 flex flex-wrap items-center gap-2">
@@ -253,7 +253,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
           {/* ⚡ TL;DR / Short Answer */}
           {q.shortAnswer && (
-            <div className="mt-6 rounded-2xl border border-brand-500/30 bg-brand-500/[0.06] p-5">
+            <div className="mt-6 rounded-xl border border-brand-500/30 bg-brand-500/[0.06] p-5">
               <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">⚡ Short Answer</p>
               <p className="mt-2 leading-relaxed text-slate-200">{q.shortAnswer}</p>
             </div>

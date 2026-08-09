@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { listedCategories } from "@/lib/category-visibility";
 
@@ -45,14 +46,12 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
 export default function Footer() {
   const topics = listedCategories.slice(0, 12);
   return (
-    <footer className="mt-24 border-t border-white/[0.06] bg-ink-950/60">
+    <footer className="mt-24 border-t border-ink-700/40 bg-ink-950/60">
       <div className="mx-auto max-w-6xl px-4 py-12 sm:px-6">
         <div className="grid gap-10 md:grid-cols-[1.4fr_2fr]">
           <div>
             <div className="flex items-center gap-2.5">
-              <span className="grid h-9 w-9 place-items-center rounded-xl bg-gradient-to-br from-brand-500 to-brand-700 text-lg">
-                🧭
-              </span>
+              <Image src="/icon.png" alt="" width={512} height={512} className="h-9 w-9 shrink-0" />
               <span className="text-lg font-extrabold text-white">Full Stack Interview Guru</span>
             </div>
             <p className="mt-4 text-sm font-semibold text-brand-300">Prepare. Ask. Evaluate.</p>
@@ -99,7 +98,7 @@ export default function Footer() {
           </div>
         </div>
 
-        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-white/[0.06] pt-6 text-xs text-slate-500 sm:flex-row">
+        <div className="mt-10 flex flex-col items-center justify-between gap-3 border-t border-ink-700/40 pt-6 text-xs text-slate-500 sm:flex-row">
           <p>© {new Date().getFullYear()} Full Stack Interview Guru. Made for the night-before crammers.</p>
           <p>Java • Python • AWS • REST • SQL • AI</p>
         </div>

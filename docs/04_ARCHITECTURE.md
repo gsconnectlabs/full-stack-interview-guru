@@ -47,7 +47,7 @@ app/                         Routes (App Router)
   store/                     FIG Store — optional deeper resources (DECISIONS #035); data-driven catalog
   not-found.tsx              404
   sitemap.ts, robots.ts      SEO routes (driven by lib data + NEXT_PUBLIC_SITE_URL)
-  icon.svg, apple-icon.tsx   Browser branding — FIG monogram (Teal + Gold)
+  icon.png, apple-icon.png   Browser branding — FIG badge logo (Teal + Gold)
   manifest.ts                Web app manifest (auto-linked at /manifest.webmanifest)
   globals.css                Tailwind layers + design tokens/components
 
@@ -159,8 +159,10 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   `google-adsense-account` verification `<meta>` in the root layout — both read `adsenseClientId` from
   `lib/site.ts` (production `ca-pub-…` committed as the default; `NEXT_PUBLIC_ADSENSE_ID` overrides
   per-env), so the snippet renders on **every page**. No live display ad units yet. See DECISIONS #031.
-- **Browser branding:** SVG favicon, Apple Touch Icon (generated via `next/og`), and web
-  app manifest — FIG monogram in Teal + Gold. (Emoji-only favicon gap closed.)
+- **Browser branding:** favicon (`app/icon.png`, 512×512) and Apple Touch Icon (`app/apple-icon.png`,
+  180×180) generated from the owner-supplied transparent FIG badge logo (`public/FIG-logo-transparent.png`,
+  1024×1024 source), plus web app manifest — same badge in Teal + Gold. The same `/icon.png` is also the
+  Navbar/Footer logo mark (`next/image`), replacing the earlier emoji-in-gradient-box placeholder.
 
 ---
 
@@ -170,7 +172,8 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   (Perf / A11y / BP / SEO); Question page **100 / 96 / 100 / 100** (the 96 is the DECISIONS #029
   tertiary-contrast item, deferred to H3/H4). CWV: FCP 0.3–0.4 s, LCP 0.5–0.7 s, **CLS 0**, **TBT 0 ms**.
 - **Fonts:** system-font stack — no `next/font`, no web fonts (DECISIONS #030). **Images:** emoji + inline
-  SVG site-wide; the one exception is the Store product cover (`next/image`, `/store`, DECISIONS #035).
+  SVG elsewhere; `next/image` used for the Store product cover (`/store`, DECISIONS #035) and the
+  site-wide Navbar/Footer/favicon logo mark (`/icon.png`).
   Client JS minimal (shared 102 kB unchanged; small islands only).
 
 ## Accessibility (current)
@@ -189,17 +192,23 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
 
 - **Current:** dark-only. Root layout hardcodes `<html className="dark">`; there is no
   light theme and no `prefers-color-scheme` handling.
-- **Palette (current):** Indigo/Blue (`brand.*` = indigo) + amber accents.
+- **Palette (current):** **Deep Teal** (`brand.*`, pixel-sampled from the real logo) + **Gold** accent
+  (`gold.*`, signature-only — wordmark + one hero moment, never body text/large surfaces) + warm
+  neutrals (`slate.*` overridden from cool gray to stone-based) — DECISIONS #036.
+- **Typography:** system sans for UI/chrome (unchanged); system serif stack (`font-serif`, no
+  webfont dependency) for question H1s/section headings and the home/Store H1 only — DECISIONS #036.
 - **Vision (PROJECT_CONTEXT / DECISIONS #005–#006):** **Light default**, dark via
-  `prefers-color-scheme` (no manual toggle); **Teal primary + Gold/Kaavi secondary**.
-- This is the largest architectural divergence — tracked in [05_ROADMAP.md](./05_ROADMAP.md).
+  `prefers-color-scheme` (no manual toggle); **Teal primary + Gold/Kaavi secondary**. The palette half
+  is now implemented dark-only (#036); **light-default + `prefers-color-scheme` remains open** — still
+  the largest divergence, tracked in [05_ROADMAP.md](./05_ROADMAP.md) (H3).
 
 ---
 
 ## Known Divergences from Vision (summary)
 
 1. Theme model (dark-only) vs light-default + `prefers-color-scheme`.
-2. Palette (Indigo/Blue) vs Teal + Gold/Kaavi.
+2. ~~Palette (Indigo/Blue) vs Teal + Gold/Kaavi.~~ — ✅ **Resolved dark-only** (DECISIONS #036):
+   `brand`/`gold`/warm `slate` tokens implemented. Light-mode values remain unauthored (paired with #1).
 3. ~~Brand shown in nav as "Full Stack Interview Guru" vs "FIG" in-interface.~~ — ✅ **Resolved**
    (ROADMAP QW1): navbar shows **FIG**; full name kept as `sr-only`/`title` + in footer & metadata.
 4. ~~No real favicon/manifest/app icons~~ — ✅ **Resolved** (ROADMAP H1): SVG favicon, Apple
@@ -226,7 +235,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (FIG Store — `/store` route, `lib/store.ts` catalog, first `next/image` use, first custom GA4 event; DECISIONS #035)
+- **Last Updated:** 2026-08-09 (FIG Teal + Gold visual identity — token recolor + editorial serif; DECISIONS #036)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

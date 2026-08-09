@@ -1047,6 +1047,60 @@ a home that feels native to FIG, not a bolted-on storefront.
 
 ---
 
+# Decision #036
+
+## Title
+
+FIG Teal + Gold Visual Identity — Token-Level Recolor + Editorial Serif Headings
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-09)
+
+### Reason
+
+Realize the long-planned Teal + Gold palette (PROJECT_CONTEXT, DECISIONS #005) as a distinctive,
+editorial developer-brand identity anchored on the real FIG logo — replacing the generic
+indigo/glassmorphism "AI SaaS" look (colored glow shadows, heavy backdrop-blur, rainbow per-category
+gradients, cool slate neutrals) without a functional redesign. Brand colors were **pixel-sampled from
+the actual logo asset** (`public/FIG-logo-transparent.png`) rather than guessed: disc ≈ `#00424e`,
+lettering ≈ `#eec353`.
+
+### Implementation
+
+- **Token-level recolor (`tailwind.config.ts`)** — three existing color keys re-hued in place so every
+  existing `brand-*`/`ink-*`/`slate-*` utility class site-wide inherited the new palette with **no
+  per-component renaming**: `brand` indigo → deep teal; `ink` navy-black → teal-tinted dark neutrals;
+  `slate` cool gray → warm neutral (stone-based), improving long-form readability per the editorial goal.
+  New `gold` scale added, used only as a restrained signature accent (Navbar wordmark "I", one hero
+  gradient) — explicitly **not** applied to the Store "Free" badge or any large surface/body text.
+- **Editorial typography** — system serif stack (`--font-serif`: Georgia/Iowan Old Style/Palatino
+  fallback chain, **no webfont/next-font dependency**) applied only to question-page H1s, question
+  section headings (☕🧠⌨️🔥…), and the home/Store H1s. Navigation, buttons, chips, and technical UI
+  stay sans-serif.
+- **Reduced "generic SaaS" signatures:** removed `backdrop-blur` from `.card` and `AmazonProductCard`
+  (kept only on the sticky Navbar — functionally justified); removed colored glow shadows
+  (`shadow-brand-900/50` etc.) from `.card-hover`, `.btn-primary`, `AmazonProductCard`; `rounded-2xl` →
+  `rounded-xl` across cards/search/product-card; body background reduced from a dual indigo+sky ambient
+  glow to a single, low-opacity teal wash.
+- **Category accents (`lib/categories.ts`):** all 22 per-category icon gradients (previously a rainbow
+  of unrelated hues — orange, violet, sky, pink, indigo…) remapped to a small rotating set of
+  teal-family combinations (2 of 22 use the gold accent, deliberately sparse).
+- **Preserved unchanged (by design):** `DifficultyBadge` (emerald/amber/rose semantics), `CodeBlock`
+  (developer/terminal character), the Store "Free" badge (stays emerald, never gold), all routes,
+  content, analytics, and SEO metadata.
+- Verified: TypeScript clean; production build green (**330 pages**, shared First Load JS **102 kB
+  unchanged**); contrast re-checked programmatically (body/secondary/tertiary text **7–15:1** on the new
+  background; the one pre-existing borderline tertiary-label gap, DECISIONS #029, is unchanged — not
+  worsened, still deferred to a future pass).
+
+### Scope note
+
+This is the dark-only palette half of ROADMAP **H4**; **H3** (light-default + `prefers-color-scheme`)
+remains a separate, unstarted item — light-mode token values are not authored here.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1058,7 +1112,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (Decision #035 — FIG Store, first product, first custom GA4 event)
+- **Last Updated:** 2026-08-09 (Decision #036 — FIG Teal + Gold visual identity)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -50,6 +50,36 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (FIG Teal + Gold visual identity — token recolor + editorial serif) — 2026-08-09
+Site-wide visual-system change realizing the Teal + Gold palette (DECISIONS #036), anchored on colors
+pixel-sampled from the real logo. **Token-level, not a redesign** — no routing, content, or functional
+change.
+- `tailwind.config.ts`: `brand` re-hued indigo→deep teal, `ink` navy→teal-tinted, `slate` cool-gray→warm
+  neutral (all three cascade to every existing utility class site-wide); new `gold` scale added
+  (signature accent only — Navbar wordmark + one hero gradient; **not** the Store "Free" badge); new
+  `font-serif` system stack (no webfont dependency) for question H1s/section headings + home/Store H1.
+- `app/globals.css`: removed `backdrop-blur`/colored glow shadows from `.card`/`.card-hover`/
+  `.btn-primary`; `rounded-2xl` → `rounded-xl`; body background reduced from a dual indigo+sky glow to
+  one restrained teal wash.
+- `lib/categories.ts`: all 22 category icon accents remapped from a rainbow of unrelated hues to a
+  cohesive teal-family set (2 use the gold accent, deliberately sparse).
+- `components/AmazonProductCard.tsx`, `SearchBar.tsx`: same blur/shadow/radius reduction.
+- Preserved unchanged: `DifficultyBadge` (emerald/amber/rose semantics), `CodeBlock` (developer
+  character), Store "Free" badge (stays emerald).
+- Verified: `tsc --noEmit` clean; `npm run build` green (330 pages, shared First Load JS unchanged at
+  102 kB); contrast re-checked programmatically (7–15:1 on body/secondary/tertiary text; the one
+  pre-existing tertiary-label gap from DECISIONS #029 is unchanged, not worsened).
+
+### Changed (Logo/favicon refresh — real FIG badge logo) — 2026-08-09
+Replaced the emoji-in-gradient-box placeholder mark and the generated monogram favicon with the
+owner-supplied transparent FIG badge logo (`public/FIG-logo-transparent.png`, 1024×1024).
+- `app/icon.png` (512×512) and `app/apple-icon.png` (180×180) generated from the source asset,
+  replacing `app/icon.svg` and the `next/og`-generated `app/apple-icon.tsx` (both removed).
+- `Navbar` and `Footer` logo marks now render `/icon.png` via `next/image` (was an emoji span).
+- `manifest.ts` icons updated to `/icon.png` (512×512, `any` + `maskable`).
+- Text, tagline, layout, colors, and responsive nav behavior unchanged. `npx tsc --noEmit` clean;
+  `npm run build` green (330 pages, shared First Load JS unchanged at 102 kB).
+
 ### Added (FIG Store — `/store`, first product, first custom GA4 event) — 2026-08-09
 New top-level Store section (DECISIONS #035): free, distraction-free platform stays the same; the Store
 is an optional surface for structured deeper resources. First (and currently only) product: **"Top 50
@@ -704,7 +734,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (FIG Store — `/store`, first product, first custom GA4 event; DECISIONS #035)
+- **Last Updated:** 2026-08-09 (FIG Teal + Gold visual identity; DECISIONS #036)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

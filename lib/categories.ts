@@ -8,7 +8,7 @@ export const categories: Category[] = [
     blurb: "OOP, Collections, Strings, Exceptions, JVM internals.",
     count: 150,
     topics: ["OOP", "Collections", "String", "Exceptions", "Streams", "Multithreading", "JVM"],
-    accent: "from-orange-500/20 to-amber-500/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "java-collections",
@@ -17,7 +17,7 @@ export const categories: Category[] = [
     blurb: "List/Set/Map internals, HashMap, ConcurrentHashMap, performance.",
     count: 120,
     topics: ["List vs Set vs Map", "HashMap Internals", "ConcurrentHashMap", "Iterators", "TreeMap", "Performance"],
-    accent: "from-amber-400/20 to-orange-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "multithreading",
@@ -26,7 +26,7 @@ export const categories: Category[] = [
     blurb: "Threads, locks, executors, the memory model, deadlocks, async.",
     count: 110,
     topics: ["Threads & Pools", "Locks", "volatile & Memory Model", "Deadlocks", "Atomics", "CompletableFuture"],
-    accent: "from-rose-500/20 to-orange-500/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "jvm",
@@ -35,7 +35,7 @@ export const categories: Category[] = [
     blurb: "Memory areas, garbage collection, JIT, class loading, tuning.",
     count: 90,
     topics: ["Memory Areas", "Garbage Collection", "GC Tuning", "JIT", "Class Loading", "Troubleshooting"],
-    accent: "from-slate-400/20 to-zinc-500/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "java-8",
@@ -44,7 +44,7 @@ export const categories: Category[] = [
     blurb: "Lambdas, Streams, Optional, functional interfaces.",
     count: 100,
     topics: ["Lambdas", "Stream API", "Optional", "Functional Interfaces", "Method References", "Default Methods"],
-    accent: "from-red-500/20 to-orange-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "advanced-java",
@@ -53,7 +53,7 @@ export const categories: Category[] = [
     blurb: "Concurrency, JVM tuning, memory model, virtual threads.",
     count: 80,
     topics: ["Concurrency", "Virtual Threads", "Memory Model", "GC Tuning", "Reflection", "Class Loading"],
-    accent: "from-amber-600/20 to-red-600/10",
+    accent: "from-gold-400/20 to-brand-600/10",
   },
   {
     id: "python",
@@ -62,7 +62,7 @@ export const categories: Category[] = [
     blurb: "Data structures, comprehensions, decorators, the GIL.",
     count: 100,
     topics: ["Lists & Dicts", "Comprehensions", "Decorators", "Generators", "OOP", "Async"],
-    accent: "from-yellow-500/20 to-blue-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "rest-apis",
@@ -71,7 +71,7 @@ export const categories: Category[] = [
     blurb: "HTTP verbs, status codes, idempotency, versioning.",
     count: 100,
     topics: ["HTTP Methods", "Status Codes", "Idempotency", "Auth", "Versioning", "HATEOAS"],
-    accent: "from-emerald-500/20 to-teal-500/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "microservices",
@@ -80,7 +80,7 @@ export const categories: Category[] = [
     blurb: "Service design, communication, resilience, sagas, events, observability.",
     count: 100,
     topics: ["Service Design", "Communication", "Resilience", "Sagas & Events", "Data Consistency", "Observability"],
-    accent: "from-teal-500/20 to-cyan-600/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "json",
@@ -89,7 +89,7 @@ export const categories: Category[] = [
     blurb: "Structure, parsing, serialization, schema validation.",
     count: 50,
     topics: ["Syntax", "Parsing", "Serialization", "Schema", "JSON vs XML"],
-    accent: "from-slate-400/20 to-slate-500/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "sql",
@@ -98,7 +98,7 @@ export const categories: Category[] = [
     blurb: "Joins, indexes, transactions, query optimization.",
     count: 100,
     topics: ["Joins", "Indexes", "Transactions", "Normalization", "Window Functions", "Optimization"],
-    accent: "from-sky-500/20 to-cyan-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "aws",
@@ -107,7 +107,7 @@ export const categories: Category[] = [
     blurb: "EC2, S3, Lambda, IAM, VPC and the well-architected pillars.",
     count: 100,
     topics: ["EC2", "S3", "Lambda", "IAM", "VPC", "DynamoDB"],
-    accent: "from-amber-500/20 to-orange-600/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "azure",
@@ -116,7 +116,7 @@ export const categories: Category[] = [
     blurb: "App Service, Functions, Blob Storage, AKS.",
     count: 60,
     topics: ["App Service", "Functions", "Blob Storage", "AKS", "Entra ID"],
-    accent: "from-blue-500/20 to-sky-600/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "gcp",
@@ -125,7 +125,7 @@ export const categories: Category[] = [
     blurb: "Compute Engine, Cloud Run, BigQuery, GKE.",
     count: 60,
     topics: ["Compute Engine", "Cloud Run", "BigQuery", "GKE", "Pub/Sub"],
-    accent: "from-red-400/20 to-yellow-400/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "docker",
@@ -134,7 +134,7 @@ export const categories: Category[] = [
     blurb: "Images, containers, layers, networking, compose.",
     count: 50,
     topics: ["Images", "Containers", "Dockerfile", "Volumes", "Networking", "Compose"],
-    accent: "from-sky-400/20 to-blue-500/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "kubernetes",
@@ -143,7 +143,7 @@ export const categories: Category[] = [
     blurb: "Pods, deployments, services, scaling, self-healing.",
     count: 50,
     topics: ["Pods", "Deployments", "Services", "ConfigMaps", "Scaling", "Helm"],
-    accent: "from-blue-500/20 to-indigo-500/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "git",
@@ -152,7 +152,7 @@ export const categories: Category[] = [
     blurb: "Branching, merging, rebase, resolving conflicts.",
     count: 50,
     topics: ["Branching", "Merge vs Rebase", "Stash", "Reset vs Revert", "Conflicts"],
-    accent: "from-orange-500/20 to-red-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "linux",
@@ -161,7 +161,7 @@ export const categories: Category[] = [
     blurb: "Shell, permissions, processes, networking commands.",
     count: 50,
     topics: ["Shell", "Permissions", "Processes", "Networking", "Pipes & Redirection"],
-    accent: "from-slate-400/20 to-zinc-500/10",
+    accent: "from-brand-600/20 to-ink-700/10",
   },
   {
     id: "ai-basics",
@@ -170,7 +170,7 @@ export const categories: Category[] = [
     blurb: "ML vs DL, models, tokens, embeddings, inference.",
     count: 50,
     topics: ["ML vs DL", "Neural Nets", "Tokens", "Embeddings", "Training vs Inference"],
-    accent: "from-violet-500/20 to-fuchsia-500/10",
+    accent: "from-gold-400/20 to-brand-600/10",
   },
   {
     id: "prompt-engineering",
@@ -179,7 +179,7 @@ export const categories: Category[] = [
     blurb: "Zero/few-shot, chain-of-thought, system prompts, RAG.",
     count: 50,
     topics: ["Zero-shot", "Few-shot", "Chain of Thought", "System Prompts", "RAG"],
-    accent: "from-fuchsia-500/20 to-purple-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "system-design",
@@ -188,7 +188,7 @@ export const categories: Category[] = [
     blurb: "Scaling, caching, load balancing, CAP, messaging.",
     count: 100,
     topics: ["Scaling", "Caching", "Load Balancing", "CAP Theorem", "Message Queues", "Databases"],
-    accent: "from-teal-500/20 to-emerald-600/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
   {
     id: "behavioral",
@@ -197,7 +197,7 @@ export const categories: Category[] = [
     blurb: "STAR method, conflict, leadership, ownership.",
     count: 50,
     topics: ["STAR Method", "Conflict", "Leadership", "Failure", "Teamwork"],
-    accent: "from-pink-500/20 to-rose-500/10",
+    accent: "from-brand-400/20 to-emerald-600/10",
   },
   {
     id: "coding-challenges",
@@ -206,7 +206,7 @@ export const categories: Category[] = [
     blurb: "Arrays, strings, hashmaps, two pointers, DP.",
     count: 200,
     topics: ["Arrays", "Strings", "HashMaps", "Two Pointers", "Recursion", "Dynamic Programming"],
-    accent: "from-indigo-500/20 to-blue-500/10",
+    accent: "from-brand-500/20 to-brand-700/10",
   },
 ];
 

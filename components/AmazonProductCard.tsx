@@ -117,7 +117,7 @@ export default function AmazonProductCard({
   if (embeddable && status !== "fallback") {
     return (
       <div
-        className={`group relative flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900/70 ${className}`}
+        className={`group relative flex min-h-[22rem] flex-col overflow-hidden rounded-xl border border-ink-700/50 bg-ink-900/70 ${className}`}
       >
         <div className="relative flex-1">
           <iframe
@@ -161,7 +161,7 @@ export default function AmazonProductCard({
       href={outUrl}
       target="_blank"
       rel="noopener noreferrer sponsored"
-      className={`group relative flex min-h-[22rem] flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-ink-900/70 backdrop-blur-sm transition-all duration-200 hover:-translate-y-1 hover:border-brand-500/50 hover:shadow-xl hover:shadow-brand-900/40 hover:ring-1 hover:ring-brand-500/40 ${className}`}
+      className={`group relative flex min-h-[22rem] flex-col overflow-hidden rounded-xl border border-ink-700/50 bg-ink-900/70 transition-colors duration-200 hover:border-brand-500/50 ${className}`}
     >
       {/* Branded visual panel */}
       <div className="relative flex flex-1 items-center justify-center bg-gradient-to-br from-ink-850 to-ink-900 p-8">
@@ -170,7 +170,7 @@ export default function AmazonProductCard({
           style={{ background: "radial-gradient(circle at 30% 25%, #FF9900, transparent 55%)" }}
         />
         {badge && (
-          <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-ink-950/70 px-2.5 py-1 text-[11px] font-semibold text-brand-200 backdrop-blur-sm">
+          <span className="absolute left-3 top-3 rounded-full border border-white/10 bg-ink-950/70 px-2.5 py-1 text-[11px] font-semibold text-brand-200">
             {badge}
           </span>
         )}

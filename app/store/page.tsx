@@ -32,7 +32,7 @@ export default function StorePage() {
 
       <div className="mt-6 text-center">
         <span className="chip mx-auto">🛒 Store</span>
-        <h1 className="mt-4 text-3xl font-black text-white sm:text-4xl">FIG Store</h1>
+        <h1 className="mt-4 font-serif text-3xl font-black text-white sm:text-4xl">FIG Store</h1>
         <p className="mx-auto mt-3 max-w-2xl text-slate-400">
           Premium resources for developers who want to go beyond interview basics.
         </p>

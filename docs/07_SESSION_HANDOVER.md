@@ -2,129 +2,89 @@
 
 # Session Summary
 
-- **Session Name:** FIG Store — new `/store` section, first product, first custom GA4 event
+- **Session Name:** FIG Teal + Gold visual identity (DECISIONS #036)
 - **Date:** 2026-08-09
-- **Overall Progress:** Added a new top-level Store section (DECISIONS #035). FIG stays a free,
-  distraction-free platform; the Store is an optional, trust-first surface for structured deeper
-  resources. First (and currently only) product: **"Top 50 Java Interview Questions & Answers — Free
-  Edition"** — a free PDF ebook (61 pages, 50 questions), distributed via Gumroad, built on FIG's free
-  Java Q&A content and positioning. It is explicitly **free (₹0)** — labeled "Free" throughout, never
-  presented as paid or discounted, and carries no invented price/reviews/ratings/testimonials.
-- **Release Status:** ✅ **Released to production 2026-08-09.** Owner approved; commit `ceaebae`
-  (`f4af9bd..ceaebae`) pushed to `origin/main`; GitHub → Vercel auto-deploy succeeded. Post-deployment
-  smoke test on **https://fullstackinterviewguru.com** passed (10/10 — see Verification Summary).
+- **Overall Progress:** Site-wide token-level recolor realizing the approved Teal + Gold palette,
+  anchored on colors pixel-sampled from the real logo (disc ≈ `#00424e`, lettering ≈ `#eec353`), plus
+  restrained editorial serif headings and reduced "generic SaaS" visual signatures (glow shadows,
+  backdrop-blur, `rounded-2xl`, rainbow category gradients). No routing/content/functional change.
+- **Release Status:** ⏳ Implemented and verified locally; **not committed, not pushed, not deployed**.
 
 ---
 
 # Implementation Summary
 
-- **New route `app/store/page.tsx`** — hero, "Free content → trust → optional deeper resources"
-  positioning, the featured product, and a "planned categories" section (text chips only — Java,
-  Microservices, SQL, System Design, AWS, Interview Preparation — explicitly not fake products).
-- **New `lib/store.ts`** — `StoreProduct[]` catalog, data-driven like `lib/products.ts`. Adding a future
-  product requires no page/component changes. The Gumroad URL lives in exactly one place per product
-  (`gumroadUrl` field), sourced from the real product page:
-  `https://interviewmaster1.gumroad.com/l/top-50-java-interview-questions`.
-- **New components:**
-  - `StoreProductCard` (server) — cover, benefits, "What's inside" (14 real topic groups extracted from
-    the actual ebook's table of contents via `pdftotext`, not invented), audience, price/free badge.
-  - `GumroadCtaButton` (client island) — the only client code added; opens the real Gumroad URL in a new
-    tab and fires the GA event.
-- **Navigation:** `Navbar` — "Store" link added (always-visible, same style as Candidate/Interviewer, not
-  hidden on mobile). `Footer` — "🛒 Store" added to the Resources group.
-- **First `next/image` use in the project** — the Store cover (`public/store/top-50-java-interview-qa-cover.png`,
-  1254×1254, copied from the real asset). Every other page still uses emoji/inline SVG only (unchanged).
-- **First custom GA4 event, `gumroad_cta_click`** (`{ product, destination }`) — via `sendGAEvent` from
-  `@next/third-parties/google` (already a dependency; no new package). Off by default, same as all GA
-  (DECISIONS #031/#032) — verified it safely no-ops locally when `NEXT_PUBLIC_GA_ID` is unset. This is
-  the first event to graduate from the "planned" list in `14_ANALYTICS.md`; the rest of that list is
-  still planned-only and still needs separate approval.
-- **Copy accuracy:** title, "What's inside" topic list, key benefits, and audience description were all
-  taken directly from the real ebook PDF and its cover asset (`OneDrive/Pictures/FIG/Ebooks/TopFreeJavaQA/`),
-  not invented. Price, reviews, ratings, and testimonials were not invented — none are shown.
+- **`tailwind.config.ts`** — re-hued three existing color keys in place (no renaming, so every existing
+  `brand-*`/`ink-*`/`slate-*` class cascades automatically): `brand` indigo→teal, `ink` navy→teal-tinted,
+  `slate` cool-gray→warm neutral. Added `gold` scale (signature accent only) and `font-serif` (system
+  stack: Georgia/Iowan Old Style/Palatino — no webfont/next-font dependency).
+- **`app/globals.css`** — `.card`/`.card-hover`/`.btn-primary`: dropped `backdrop-blur`, colored glow
+  shadows, `rounded-2xl`→`rounded-xl`; body background reduced from dual indigo+sky glow to one
+  restrained teal wash.
+- **`lib/categories.ts`** — all 22 category icon accents remapped from unrelated rainbow hues to a
+  cohesive teal-family rotation (2 use gold, deliberately sparse).
+- **`components/Navbar.tsx`/`Footer.tsx`** — borders tinted to the new `ink` scale; Navbar wordmark "I"
+  → gold (ties to the real logo's gold lettering) — the only other gold placement besides the homepage
+  hero gradient.
+- **`app/page.tsx`** — hero headline gradient teal→gold (one signature moment); metrics gradient
+  simplified to teal-only; one stray `sky-500` CTA gradient replaced for cohesion; H1 → serif.
+- **`app/q/[slug]/page.tsx`** — H1 and all `Section` headings (☕🧠⌨️🔥…) → serif; Short Answer callout
+  `rounded-2xl`→`rounded-xl`.
+- **`app/store/page.tsx`** — H1 → serif (everything else inherits the token changes automatically, zero
+  other edits needed).
+- **`components/AmazonProductCard.tsx`, `SearchBar.tsx`** — same blur/glow-shadow/radius reduction.
+- **Deliberately preserved:** `DifficultyBadge` (emerald/amber/rose semantics untouched), `CodeBlock`
+  (developer/terminal character untouched), Store "Free" badge (stays emerald, per explicit instruction
+  not to make it gold).
+- **Deliberately out of scope** (to keep the diff to shared/high-traffic surfaces only): `UpiQrCard.tsx`
+  (Donate-only), `app/transition/page.tsx` (one `sky-500` gradient) — minor, page-specific, low-traffic;
+  not in the named validation scope.
 
 ---
 
-# Files Created
-
-- `app/store/page.tsx`
-- `lib/store.ts`
-- `components/StoreProductCard.tsx`
-- `components/GumroadCtaButton.tsx`
-- `public/store/top-50-java-interview-qa-cover.png`
-
 # Files Modified
 
-- `components/Navbar.tsx` — added the Store link.
-- `components/Footer.tsx` — added the Store link to the Resources group.
-- `docs/02_DECISIONS.md` — new Decision #035; version block Last Updated.
-- `docs/04_ARCHITECTURE.md` — folder structure (`app/store/`, `lib/store.ts`, `public/store/`), component
-  list (+2), routing table (`/store`), custom-GA4-event line, images line; version block Last Updated.
-- `docs/06_CHANGELOG.md` — new entry at top of Unreleased; version block Last Updated.
-- `docs/14_ANALYTICS.md` — new "Implemented Custom Events" section (`gumroad_cta_click`); version block
-  Last Updated.
-- `docs/07_SESSION_HANDOVER.md` — this file (rewritten for the session).
-- `CLAUDE.md` — testing-checklist page count 329 → 330; version block Last Updated (final-review fix).
-- **Not changed:** `README.md` (no stack/config/dev-workflow change — a route addition doesn't affect the
-  "Getting started" instructions; the project-structure snippet there was already non-exhaustive before
-  this session), `CLAUDE.md` (no standing rule changed), any existing route, question content, or SEO URL.
+`tailwind.config.ts` · `app/globals.css` · `components/Navbar.tsx` · `components/Footer.tsx` ·
+`lib/categories.ts` · `app/page.tsx` · `app/q/[slug]/page.tsx` · `app/store/page.tsx` ·
+`components/AmazonProductCard.tsx` · `components/SearchBar.tsx` · `docs/02_DECISIONS.md` (new #036) ·
+`docs/04_ARCHITECTURE.md` · `docs/05_ROADMAP.md` (H4 marked done, dark-only) · `docs/06_CHANGELOG.md` ·
+`docs/07_SESSION_HANDOVER.md` (this file).
+
+No files created or deleted this session.
 
 ---
 
 # Verification Summary
 
 - ✅ **TypeScript:** clean (`npx tsc --noEmit`).
-- ✅ **Production build:** green — **330 pages** (was 329; **+1** `/store`). Shared First Load JS
-  **102 kB unchanged**; `/store` **116 kB** (new route; includes the one product-card image + CTA island).
-- ✅ **Lint:** ESLint not configured (CLAUDE.md — `tsc` + `build` are the standing gates); both pass.
-- ✅ **In-browser (dev, localhost:3000):**
-  - `/store` renders: hero, positioning cards, the product card (cover image loads via `/_next/image`),
-    "What's inside" topics, CTA, planned-categories chips. No console errors or hydration warnings (only
-    the pre-existing, unrelated AdSense `data-nscript` dev warning).
-  - Nav: `Store` link present on desktop (between Interviewer and Environment) and on mobile (with
-    Candidate/Interviewer/Donate; Environment/Transition stay hidden on mobile, unchanged behavior).
-  - CTA link `href` verified to be the real Gumroad product URL; clicking it fired `gumroad_cta_click`
-    (console showed the expected `@next/third-parties: GA has not been initialized` no-op, since
-    `NEXT_PUBLIC_GA_ID` is unset locally — matches documented off-by-default behavior).
-  - Mobile viewport (375×812) checked — no layout break, nav collapses the same way it already does
-    elsewhere on the site.
-- ✅ **No regression:** existing routes/content/SEO URLs untouched; GA4/AdSense loader wiring in
-  `components/Analytics.tsx` unchanged.
-
-## Post-deployment smoke test (production, 2026-08-09)
-
-Run against **https://fullstackinterviewguru.com** after the Vercel deploy of commit `ceaebae` went
-Ready. **10/10 passed**, no issues found, no changes made during the check:
-
-1. ✅ `/store` loads (200, correct title/content).
-2. ✅ Store nav link present and correct on desktop and mobile.
-3. ✅ Ebook cover loads (`_next/image` 200).
-4. ✅ Free messaging correct ("Free" badge, "Get it Free on Gumroad", free/instant-access footnote).
-5. ✅ Gumroad CTA `href` is the exact configured URL.
-6. ✅ Desktop (1280px) and mobile (375px) layouts correct; nav collapses the same way as elsewhere.
-7. ✅ Existing pages unaffected — homepage and `/candidate/core-java` clean, no new console errors.
-8. ✅ `/sitemap.xml` contains `/store` (313 URLs total).
-9. ✅ Canonical, OG (title/description/url), and meta description present and correct on `/store`.
-10. ✅ `gumroad_cta_click` intact in production — live `gtag`/`dataLayer` confirmed, and the shipped
-    `/store` JS bundle contains the event name and `destination` param.
+- ✅ **Production build:** green — **330 pages** (unchanged). Shared First Load JS **102 kB unchanged**.
+- ✅ **In-browser (dev, localhost:3000), checked via computed styles + console, no screenshots available
+  in this environment:**
+  - Home, question page (`/q/what-is-hashmap`), Store, category page (`/candidate/core-java`), and a
+    legal page (`/privacy`) all load with **zero console errors**.
+  - Computed styles confirmed live: body bg `#0a1412`, body text `#e7e3de`, `.card` border/bg/radius/
+    `backdrop-filter: none`, `.btn-primary` bg `#0d7a70`, H1/Section headings render the serif stack.
+  - `DifficultyBadge` "Easy" confirmed still emerald (`rgba(16,185,129,.15)` bg) — semantics intact.
+  - Mobile (375px): Navbar collapse behavior unchanged (Environment/Transition hidden, Store visible).
+- ✅ **Contrast (computed programmatically against the new `#0a1412` background):** body text 14.7:1,
+  secondary 12.3:1, tertiary 7.2:1, gold-400 (wordmark) 10.1:1, brand-300 (links) 10.2:1 — all well above
+  AA. The one pre-existing borderline case (tertiary label color, DECISIONS #029) measured 3.91:1, in
+  the same range as before (~4.06:1) — **not worsened**, still a known deferred gap, not new.
+- ✅ **No regression:** routing, content, analytics, and SEO metadata untouched.
 
 ---
 
 # Current Architecture Status
 
-- **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG. No
-  backend/DB/auth.
-- **Routes:** 330 static pages, now including `/store`.
-- **Analytics/Ads:** GA4 via `@next/third-parties` (env-gated); one custom event (`gumroad_cta_click`);
-  AdSense loader env-gated — unchanged otherwise.
-- **Theme:** still dark-only (H3/H4 open, unrelated to this session).
+- **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG.
+- **Theme:** dark-only, now on the Teal + Gold palette (DECISIONS #036) — light-default +
+  `prefers-color-scheme` (ROADMAP H3) remains unstarted and separate.
+- **Typography:** sans (UI/chrome, unchanged) + system serif (editorial H1s/section headings, new).
 
 ---
 
 # Current Roadmap Status
 
-- **Phase 2:** QW1–QW5, H1, H2, M1–M6 complete.
-- **Post-Phase-2:** AR1 ✅ · AR2 ✅ · SEO CTR pass ✅ (#033) · AdSense low-value remediation ✅ (#034) ·
-  CE1 (Python) ✅ · CE2 (JSON) ✅ · CE3 / Release 10 (Advanced Java) ✅ · **FIG Store (#035) ✅ released to
-  production 2026-08-09.**
-- **Remaining (committed):** H3 + H4 (theme + palette); L1 (homepage tone).
+- **H4 (Teal + Gold palette)** — ✅ dark-only palette complete 2026-08-09.
+- **H3 (light/dark theme system)** — still open, unstarted; light-mode token values not authored.
+- Other items unchanged from the prior session.

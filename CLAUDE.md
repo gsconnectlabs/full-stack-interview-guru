@@ -36,7 +36,7 @@ Business logic lives in `lib/`, not in pages — **pages compose data + componen
 app/          Routes (App Router): layout.tsx (root, metadata, JSON-LD), page.tsx (home),
               candidate/ (+ [category]), q/[slug], interviewer/, transition/, environment/,
               real-world/, donate/, feedback/, about/, contact/, privacy/, terms/, disclaimer/,
-              not-found.tsx, sitemap.ts, robots.ts, manifest.ts, icon.svg, apple-icon.tsx, globals.css
+              not-found.tsx, sitemap.ts, robots.ts, manifest.ts, icon.png, apple-icon.png, globals.css
 components/   Reusable UI (server by default; `"use client"` only for interactive islands)
 hooks/        Client hooks (e.g. useTemporaryFlag)
 lib/          Data + utilities: types.ts, categories.ts, questions.ts (+ questions-extra/*),
@@ -204,7 +204,7 @@ Full catalogue + implementation guidance: [docs/14_ANALYTICS.md](docs/14_ANALYTI
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (FIG Store, DECISIONS #035; testing-checklist page count 329 → 330)
+- **Last Updated:** 2026-08-09 (Logo/favicon refresh — FIG badge logo; testing-checklist page count 329 → 330)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
