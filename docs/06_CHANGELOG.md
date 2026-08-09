@@ -83,8 +83,11 @@ SEO/structured-data regression, no page-count change** (330 pages, unchanged).
   `/q/what-is-hashmap` showed no errors beyond a pre-existing, environment-only AdSense request failure
   (`net::ERR_TUNNEL_CONNECTION_FAILED` reaching `pagead2.googlesyndication.com`) that reproduces
   identically on untouched pages (e.g. `/about`) in this sandboxed network — not caused by this session's
-  changes.
-- **Not committed:** left as uncommitted working-tree changes for owner review, per explicit instruction.
+  changes. Re-verified clean after the `/contact` follow-up below.
+- **Follow-up (same session):** the Donate quick-link on `/contact` was also removed (grid tightened from
+  3 to 2 columns, now Feedback + About only) for consistency with the Navbar/Footer/homepage removal.
+- Committed on `claude/great-einstein-0cof5b` and opened as a pull request into `main` for owner review
+  (not merged by this session).
 
 ### Changed (FIG Teal + Gold visual identity — token recolor + editorial serif) — 2026-08-09
 Site-wide visual-system change realizing the Teal + Gold palette (DECISIONS #036), anchored on colors
