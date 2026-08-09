@@ -10,8 +10,9 @@
   Edition"** — a free PDF ebook (61 pages, 50 questions), distributed via Gumroad, built on FIG's free
   Java Q&A content and positioning. It is explicitly **free (₹0)** — labeled "Free" throughout, never
   presented as paid or discounted, and carries no invented price/reviews/ratings/testimonials.
-- **Release Status:** ⏳ Implemented and verified locally; **not committed, not pushed, not deployed**
-  per instruction. Awaiting owner review.
+- **Release Status:** ✅ **Released to production 2026-08-09.** Owner approved; commit `ceaebae`
+  (`f4af9bd..ceaebae`) pushed to `origin/main`; GitHub → Vercel auto-deploy succeeded. Post-deployment
+  smoke test on **https://fullstackinterviewguru.com** passed (10/10 — see Verification Summary).
 
 ---
 
@@ -90,6 +91,23 @@
 - ✅ **No regression:** existing routes/content/SEO URLs untouched; GA4/AdSense loader wiring in
   `components/Analytics.tsx` unchanged.
 
+## Post-deployment smoke test (production, 2026-08-09)
+
+Run against **https://fullstackinterviewguru.com** after the Vercel deploy of commit `ceaebae` went
+Ready. **10/10 passed**, no issues found, no changes made during the check:
+
+1. ✅ `/store` loads (200, correct title/content).
+2. ✅ Store nav link present and correct on desktop and mobile.
+3. ✅ Ebook cover loads (`_next/image` 200).
+4. ✅ Free messaging correct ("Free" badge, "Get it Free on Gumroad", free/instant-access footnote).
+5. ✅ Gumroad CTA `href` is the exact configured URL.
+6. ✅ Desktop (1280px) and mobile (375px) layouts correct; nav collapses the same way as elsewhere.
+7. ✅ Existing pages unaffected — homepage and `/candidate/core-java` clean, no new console errors.
+8. ✅ `/sitemap.xml` contains `/store` (313 URLs total).
+9. ✅ Canonical, OG (title/description/url), and meta description present and correct on `/store`.
+10. ✅ `gumroad_cta_click` intact in production — live `gtag`/`dataLayer` confirmed, and the shipped
+    `/store` JS bundle contains the event name and `destination` param.
+
 ---
 
 # Current Architecture Status
@@ -107,6 +125,6 @@
 
 - **Phase 2:** QW1–QW5, H1, H2, M1–M6 complete.
 - **Post-Phase-2:** AR1 ✅ · AR2 ✅ · SEO CTR pass ✅ (#033) · AdSense low-value remediation ✅ (#034) ·
-  CE1 (Python) ✅ · CE2 (JSON) ✅ · CE3 / Release 10 (Advanced Java) ✅ · **FIG Store (#035) — implemented,
-  awaiting owner approval to commit/release.**
+  CE1 (Python) ✅ · CE2 (JSON) ✅ · CE3 / Release 10 (Advanced Java) ✅ · **FIG Store (#035) ✅ released to
+  production 2026-08-09.**
 - **Remaining (committed):** H3 + H4 (theme + palette); L1 (homepage tone).
