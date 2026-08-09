@@ -37,6 +37,21 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 
 ---
 
+# Content Ideas
+
+### Author "Real Talk from Guru" (`guruTake`) content, question by question
+- **Description:** DECISIONS #037 added the optional `Question.guruTake?: string` field and its "🗣️ Real
+  Talk from Guru" rendering on `/q/[slug]`, but deliberately shipped with **zero questions populated** —
+  no existing question object in `lib/questions.ts` or `lib/questions-extra/*.ts` was touched this
+  session. Writing the actual personal-take copy is a separate, content-authoring pass.
+- **Why it is valuable:** Differentiated, non-generic content in Guru's own voice; the field/rendering are
+  already live, so this is pure content work with no further code changes needed — just append the field
+  to chosen question objects.
+- **Status:** Idea *(field + rendering shipped 2026-08-09; content authoring intentionally deferred)*
+- **Date Added:** 2026-08-09
+
+---
+
 # UX Improvements
 
 ### Prev/Next question keyboard shortcuts
@@ -175,7 +190,7 @@ officially approved and scheduled, **move it into the roadmap** and update its S
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-07-31 (logged content gaps from the SEO CTR pass — DECISIONS #033)
+- **Last Updated:** 2026-08-09 (logged deferred "Real Talk from Guru" content-authoring pass — DECISIONS #037)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

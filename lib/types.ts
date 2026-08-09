@@ -60,6 +60,8 @@ export interface Question {
   /** Visible `<h1>` override (keyword-led heading). The ☕ Coffee Chat block and the
    *  `QAPage` structured data keep using the conversational `question`. Falls back to `question`. */
   heading?: string;
+  /** 🗣️ Guru's personal take — rendered as "Real Talk from Guru". Optional; omit the section entirely when absent. */
+  guruTake?: string;
 }
 
 export interface Category {

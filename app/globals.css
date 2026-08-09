@@ -51,6 +51,11 @@
   .card-hover {
     @apply transition-colors duration-200 hover:border-brand-500/40 hover:bg-ink-850/80;
   }
+  /* Restrained premium variant — signature gold accent (DECISIONS #036: gold is
+     accent-only, never a large surface color), used sparingly for Guru's Picks. */
+  .card-premium {
+    @apply card border-gold-500/30 bg-gradient-to-br from-gold-500/[0.06] to-transparent;
+  }
   .chip {
     @apply inline-flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 text-xs font-medium text-slate-300;
   }

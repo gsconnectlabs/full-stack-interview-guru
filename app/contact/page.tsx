@@ -66,7 +66,7 @@ export default function ContactPage() {
       {/* AD SLOT (future): an optional horizontal unit may sit here, below the form.
           Keep it out of the reading/interaction flow and preserve CLS = 0. */}
 
-      <div className="mt-10 grid gap-3 sm:grid-cols-3">
+      <div className="mt-10 grid gap-3 sm:grid-cols-2">
         <Link href="/feedback" className="card card-hover p-4 text-sm">
           <span className="font-semibold text-slate-100">💬 Quick feedback</span>
           <span className="mt-1 block text-slate-400">Report a typo or content fix</span>
@@ -74,10 +74,6 @@ export default function ContactPage() {
         <Link href="/about" className="card card-hover p-4 text-sm">
           <span className="font-semibold text-slate-100">🧭 About us</span>
           <span className="mt-1 block text-slate-400">Who builds FIG and why</span>
-        </Link>
-        <Link href="/donate" className="card card-hover p-4 text-sm">
-          <span className="font-semibold text-slate-100">❤️ Support</span>
-          <span className="mt-1 block text-slate-400">Help keep FIG free</span>
         </Link>
       </div>
     </div>

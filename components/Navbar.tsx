@@ -43,7 +43,7 @@ export default function Navbar() {
             href="/store"
             className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
           >
-            Store
+            Guru&apos;s Picks
           </Link>
           <Link
             href="/environment"
@@ -56,13 +56,6 @@ export default function Navbar() {
             className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white md:block"
           >
             Transition
-          </Link>
-          <Link
-            href="/donate"
-            aria-label="Donate"
-            className="ml-1 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm font-semibold text-rose-200 transition-colors hover:bg-rose-500/20"
-          >
-            <span aria-hidden="true">❤️</span> <span className="hidden sm:inline">Donate</span>
           </Link>
         </div>
       </nav>

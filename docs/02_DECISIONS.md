@@ -1101,6 +1101,58 @@ remains a separate, unstarted item — light-mode token values are not authored 
 
 ---
 
+# Decision #037
+
+## Title
+
+Donate Removed From Primary Navigation (Page Retained), "Store" Renamed to "Guru's Picks", New Optional Per-Question "Real Talk from Guru" Field
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-09)
+
+### Reason
+
+The owner wanted the Donate CTA out of the primary navigation surfaces (Navbar, Footer, homepage) without
+losing the underlying page or any donate configuration/code — a reversible de-emphasis, not a removal.
+Separately, "Store" was judged too generic for a section meant to carry Guru's personal, 16-years-of-
+banking-domain-interviews credibility — it needed a distinct, non-generic identity without a URL change.
+Finally, question pages needed a place for Guru's own commentary, distinct from the existing "😂 Real
+World" (how developers use it on the job) and "🔥 What If?" (probing follow-up) sections.
+
+This **updates the navigation implementation of DECISIONS #026** (Donate is no longer promoted in
+Navbar/Footer/homepage, though the monetization strategy itself — Donate as a channel — is unchanged and
+the page/config are fully intact) and **renames the public label introduced in DECISIONS #035** (the
+`/store` route, its data model, and its product catalog are unchanged — only the display name changes).
+
+### Implementation
+
+- **Donate:** unlinked from `Navbar.tsx`, `Footer.tsx`'s Support group, the homepage CTA card (now a
+  "Guru's Picks" teaser instead of an empty gap), and `/contact`'s quick-links row (grid narrowed from 3
+  to 2 columns, now Feedback + About only). `app/donate/page.tsx`, `components/UpiQrCard.tsx`, and every
+  donate-related export in `lib/site.ts` (`donateOptions`, `hasDonateOptions`, `upiId`, `upiPayUri`, the
+  `NEXT_PUBLIC_*` donate env fallbacks) are **unchanged and still functional** — the route still resolves
+  and is still in `sitemap.ts`. Nothing was deleted.
+- **"Store" → "Guru's Picks":** display-label-only rename across `Navbar.tsx`, `Footer.tsx`, and
+  `app/store/page.tsx` (breadcrumb, chip, `<h1>`, metadata title/description/OG title). The **route stays
+  `/store`** — no redirect, canonical, or sitemap change (per the "no item requires a URL change" rule).
+  A short personal-framing line ("16 years in banking-domain interviews…") was added under the H1 via a
+  single editable constant (`GURU_INTRO`), not inlined in JSX. A restrained premium visual treatment —
+  new `.card-premium` utility (`globals.css`), built from the existing `gold` token per DECISIONS #036's
+  "signature accent only" rule (no new colors) — was applied to the featured product card and the new
+  homepage teaser card only; the Store "Free" badge stays emerald, unchanged (per #036). `lib/store.ts`
+  (`storeProducts`, pricing, `gumroadUrl`) is untouched.
+- **New `Question.guruTake?: string`** (`lib/types.ts`) renders as an optional "🗣️ Real Talk from Guru"
+  section on `/q/[slug]`, shown only when set (no placeholder copy), positioned after the unmodified
+  "😂 Real World" section. This session adds the field and rendering only; no existing question object
+  was populated — content authoring is a deliberately separate future pass (tracked in
+  `99_IDEAS_BACKLOG.md`).
+- **Not changed:** all URLs, canonicals, `QAPage`/`BreadcrumbList` structured data, `sitemap.ts`/
+  `robots.ts` output (aside from the label text now emitted for the `/store` breadcrumb's `name`, which
+  is expected — labels are explicitly in scope), and every existing question's content fields.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1112,7 +1164,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (Decision #036 — FIG Teal + Gold visual identity)
+- **Last Updated:** 2026-08-09 (Decision #037 — Donate nav removal, "Guru's Picks" rename, "Real Talk from Guru" field)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -313,6 +313,15 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             </Section>
           )}
 
+          {/* 🗣️ Real Talk from Guru */}
+          {q.guruTake && (
+            <Section emoji="🗣️" title="Real Talk from Guru">
+              <div className="card-premium p-5">
+                <p className="leading-relaxed text-slate-300">{q.guruTake}</p>
+              </div>
+            </Section>
+          )}
+
           {/* 🎯 Interviewer's Expectation */}
           {q.interviewerExpectation && q.interviewerExpectation.length > 0 && (
             <Section emoji="🎯" title="Interviewer's Expectation">
@@ -447,6 +456,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
               {q.handsOn && <li>⌨️ Hands-on Keyboard</li>}
               {q.whatIf && <li>🔥 What If?</li>}
               {q.realWorld && <li>😂 Real World</li>}
+              {q.guruTake && <li>🗣️ Real Talk from Guru</li>}
               {q.interviewerExpectation && <li>🎯 Interviewer&apos;s Expectation</li>}
               <li>🤖 Continue Learning with AI</li>
             </ul>

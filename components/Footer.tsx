@@ -18,7 +18,7 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
   {
     title: "Resources",
     links: [
-      { href: "/store", label: "🛒 Store" },
+      { href: "/store", label: "🗝️ Guru's Picks" },
       { href: "/candidate", label: "Interview Questions" },
       { href: "/interviewer", label: "Interviewer Mode" },
       { href: "/real-world", label: "Real World vs Interview" },
@@ -36,10 +36,7 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
   },
   {
     title: "Support",
-    links: [
-      { href: "/feedback", label: "Feedback" },
-      { href: "/donate", label: "❤️ Donate" },
-    ],
+    links: [{ href: "/feedback", label: "Feedback" }],
   },
 ];
 

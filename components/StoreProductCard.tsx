@@ -6,7 +6,7 @@ export default function StoreProductCard({ product }: { product: StoreProduct })
   const isFree = product.price.amount === 0;
 
   return (
-    <article className="card grid gap-8 p-6 sm:p-8 lg:grid-cols-[280px_1fr]">
+    <article className="card-premium grid gap-8 p-6 sm:p-8 lg:grid-cols-[280px_1fr]">
       <div className="mx-auto w-full max-w-xs lg:mx-0">
         <Image
           src={product.coverImage}

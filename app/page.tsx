@@ -219,19 +219,17 @@ export default function Home() {
         </div>
       </section>
 
-      {/* SUPPORT + FEEDBACK CTA */}
+      {/* GURU'S PICKS + FEEDBACK CTA */}
       <section className="mt-16 grid gap-4 md:grid-cols-2">
-        <div className="card relative overflow-hidden bg-gradient-to-br from-rose-500/15 to-orange-500/[0.06] p-6">
-          <span className="text-3xl">❤️</span>
-          <h3 className="mt-3 text-lg font-bold text-white">Keep it free &amp; ad-light</h3>
+        <Link href="/store" className="card-premium card-hover relative overflow-hidden p-6">
+          <span className="text-3xl">🗝️</span>
+          <h3 className="mt-3 font-serif text-lg font-bold text-white">Guru&apos;s Picks</h3>
           <p className="mt-2 text-sm text-slate-300">
-            No login, no paywall, barely any ads — on purpose. A small tip keeps it that way and funds new
-            content. A Pro tier is coming in Phase 2.
+            16 years of banking-domain interviews, distilled into a few resources worth your time — starting
+            with a free Java question bank.
           </p>
-          <Link href="/donate" className="btn-primary mt-4">
-            Support the Guru →
-          </Link>
-        </div>
+          <span className="mt-4 inline-block text-sm font-semibold text-gold-300">Browse Guru&apos;s Picks →</span>
+        </Link>
         <div className="card relative overflow-hidden bg-gradient-to-br from-brand-500/15 to-brand-700/[0.06] p-6">
           <span className="text-3xl">💬</span>
           <h3 className="mt-3 text-lg font-bold text-white">Spotted something off?</h3>

@@ -50,6 +50,42 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (Donate nav removal, Store → "Guru's Picks" rename, "Real Talk from Guru" field) — 2026-08-09
+Owner-directed session: three scoped, non-breaking changes (see DECISIONS #037). **No URL changes, no
+SEO/structured-data regression, no page-count change** (330 pages, unchanged).
+- **Donate section unlinked from every user-facing surface:** the "❤️ Donate" link is gone from
+  `Navbar.tsx`, the Footer Support group, and `/contact`'s quick-links row (grid tightened from 3 to 2
+  columns since only Feedback + About remain); the homepage "❤️ Keep it free & ad-light" card is replaced
+  by a "Guru's Picks" teaser card linking to `/store` (the CTA slot is repurposed, not deleted).
+  `app/donate/page.tsx`, `components/UpiQrCard.tsx`, and all donate-related `lib/site.ts` config
+  (`donateOptions`, `hasDonateOptions`, `upiId`, `upiPayUri`) are **untouched and still live** at
+  `/donate` (still in `sitemap.ts`) — nothing was deleted, only unlinked from the surfaces that pointed to
+  it. `lib/site.ts` donate env fallbacks were explicitly **not modified** this session, per owner
+  instruction.
+- **"Store" renamed to "Guru's Picks"** (display label only — the route stays `/store`, so no redirect/
+  canonical/sitemap change was needed): `Navbar.tsx`, `Footer.tsx`, and `app/store/page.tsx` (breadcrumb,
+  chip, `<h1>`, `<title>`/`description`/OG title) all updated. Added a short personal framing line under
+  the H1, sourced from a single editable constant (`GURU_INTRO` in `app/store/page.tsx`) rather than
+  inlined in JSX. Added a restrained premium visual treatment — new `.card-premium` utility in
+  `globals.css` (reuses the existing `gold` token, per DECISIONS #036's "signature accent only" rule; no
+  new colors) — applied to the featured product card (`StoreProductCard.tsx`, styling-only change, no
+  data-rendering logic touched) and the new homepage teaser card. `lib/store.ts` (`storeProducts`,
+  pricing, `gumroadUrl`) is **completely untouched**.
+- **New optional `Question.guruTake?: string` field** (`lib/types.ts`) renders as a new "🗣️ Real Talk from
+  Guru" section on `/q/[slug]` (`app/q/[slug]/page.tsx`), placed after the existing "😂 Real World"
+  section (which is unmodified) and before "🎯 Interviewer's Expectation". Renders **only when
+  `guruTake` is set** — no placeholder/"coming soon" copy — and is listed in the sidebar "On this page"
+  index the same way the other optional sections are. **No existing question object was edited** —
+  `guruTake` is not populated anywhere in `lib/questions.ts` or `lib/questions-extra/*.ts` this session;
+  content authoring is a deferred follow-up (see `99_IDEAS_BACKLOG.md`).
+- **Verified:** `npx tsc --noEmit` clean; `npm run build` green — **330 pages** (unchanged), shared First
+  Load JS **102 kB** (unchanged); in-browser console check (production build) on `/`, `/store`, and
+  `/q/what-is-hashmap` showed no errors beyond a pre-existing, environment-only AdSense request failure
+  (`net::ERR_TUNNEL_CONNECTION_FAILED` reaching `pagead2.googlesyndication.com`) that reproduces
+  identically on untouched pages (e.g. `/about`) in this sandboxed network — not caused by this session's
+  changes.
+- **Not committed:** left as uncommitted working-tree changes for owner review, per explicit instruction.
+
 ### Changed (FIG Teal + Gold visual identity — token recolor + editorial serif) — 2026-08-09
 Site-wide visual-system change realizing the Teal + Gold palette (DECISIONS #036), anchored on colors
 pixel-sampled from the real logo. **Token-level, not a redesign** — no routing, content, or functional
@@ -734,7 +770,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (FIG Teal + Gold visual identity; DECISIONS #036)
+- **Last Updated:** 2026-08-09 (Donate nav removal, "Guru's Picks" rename, "Real Talk from Guru" field; DECISIONS #037)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
