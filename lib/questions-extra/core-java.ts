@@ -1073,4 +1073,157 @@ try {
     askedIn: ["Amazon", "Microsoft", "Deloitte"],
     related: ["threadlocal-memory-leak", "java-memory-leak-diagnosis", "static-init-deadlock"],
   },
+
+  // ---------------------------------------------------- CE4 additions (2026-08)
+  {
+    slug: "object-creation-cost-primitive-streams",
+    categoryId: "core-java",
+    topic: "Primitives",
+    question: "What's the real cost of excessive object creation, and how do IntStream/LongStream avoid the autoboxing tax Stream<Integer> pays?",
+    seoTitle: "Object Creation Cost & Primitive Streams: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "The real cost of excessive object allocation in Java hot paths, and how IntStream/LongStream/DoubleStream avoid the autoboxing overhead that Stream<Integer> pipelines pay per element.",
+    heading: "Object Creation Cost & Primitive Streams — Interview Questions",
+    tags: ["object creation", "autoboxing", "intstream", "escape analysis", "performance"],
+    shortAnswer:
+      "Every object allocation is more than 'a bit of memory' — it's a write that has to be tracked by the garbage collector, and at high enough frequency, allocation rate (not heap size) becomes the dominant driver of GC pause frequency. Stream<Integer> pays this cost per element: each int gets autoboxed into an Integer object as it enters the pipeline. IntStream, LongStream, and DoubleStream exist specifically to avoid it — they carry primitives through the pipeline unboxed, and only box if you explicitly convert back to a boxed Stream<Integer> via .boxed().",
+    mindMap: [
+      { type: "text", content: "The Integer cache (-128 to 127) hides this cost for small numbers in casual code, which is exactly why the problem is easy to miss until a hot path processes a wide range of values — outside the cache range, every autobox is a fresh heap allocation, one per element, on every pipeline execution." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Stream<Integer>", v: "Boxes every element — one allocation per int, outside the -128..127 cache" },
+          { k: "IntStream/LongStream/DoubleStream", v: "Primitives flow through unboxed — no per-element allocation" },
+          { k: "Escape analysis", v: "Can sometimes let the JIT stack-allocate short-lived, non-escaping objects" },
+          { k: ".boxed()", v: "Explicitly opts back into Integer objects when a Stream<Integer> API is needed" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** in numeric hot paths, reach for the primitive stream types by default — mapToInt()/mapToLong() instead of a generic Stream<Integer>, saving an allocation per element without changing what the code actually computes." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `List<Integer> values = List.of(1, 2, 3, 200, 300);
+
+// Boxes on the way in, boxes again for the intermediate reduce
+int sumBoxed = values.stream().reduce(0, Integer::sum);
+
+// mapToInt unboxes once, then the whole pipeline stays primitive
+int sumPrimitive = values.stream().mapToInt(Integer::intValue).sum();
+
+// The Integer cache hides the cost for small numbers, but not for these:
+Integer a = 200, b = 200;
+System.out.println(a == b);      // false — outside the -128..127 cache, real allocations`,
+    },
+    whatIf: {
+      q: "If escape analysis lets the JIT stack-allocate short-lived objects, does that make this whole concern moot?",
+      a: "Not reliably — escape analysis only applies when the JIT can prove an object never 'escapes' the method (isn't stored, returned, or passed somewhere it could outlive the method), and Stream pipeline internals with captured lambdas and iterator chaining often defeat that proof even when intuitively the object 'should' be short-lived. Using primitive streams removes the boxing allocation outright rather than hoping escape analysis optimizes it away.",
+    },
+    realWorld:
+      "This shows up in profiling as a surprisingly high allocation rate (visible in a GC/allocation profile) coming from a seemingly innocent numeric aggregation pipeline processing millions of records — switching Stream<Integer> to IntStream (or the equivalent for long/double) is a common, low-risk fix that shows up as a measurable drop in young-gen GC frequency.",
+    guruTake:
+      "When I see mapToInt/mapToLong show up unprompted in someone's Stream code, that tells me they've internalized that boxing isn't free — it's a small detail that correlates strongly with someone who's actually looked at an allocation profile rather than just read about Streams.",
+    interviewerExpectation: [
+      "Connects allocation rate to GC pause frequency, not just heap size",
+      "Explains autoboxing as a per-element allocation in Stream<Integer>",
+      "Names IntStream/LongStream/DoubleStream as the fix",
+      "Knows the Integer cache's range and its limits",
+    ],
+    followUps: [
+      "Why does the Integer cache only cover -128 to 127?",
+      "How would you find an unexpectedly high allocation rate in a running application?",
+      "When would you deliberately call .boxed() despite the extra allocation?",
+    ],
+    commonMistakes: [
+      "Using Stream<Integer> for numeric hot paths without considering IntStream",
+      "Assuming the Integer cache eliminates boxing costs generally",
+      "Not correlating high GC frequency with allocation rate in profiling",
+    ],
+    bestPractices: [
+      "Use mapToInt/mapToLong/mapToDouble for numeric Stream pipelines",
+      "Profile allocation rate, not just heap size, when chasing GC-related latency",
+      "Reserve .boxed() for when a boxed-type API genuinely requires it",
+    ],
+    relatedTech: ["Escape Analysis", "JIT", "Autoboxing"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Google", "Microsoft"],
+    related: ["autoboxing-performance-trap", "stream-pipeline-vs-loop-hot-path"],
+  },
+  {
+    slug: "records-vs-lombok-dto",
+    categoryId: "core-java",
+    topic: "OOP",
+    question: "Records vs Lombok @Value for DTOs — what do you actually gain and lose?",
+    seoTitle: "Java Records vs Lombok @Value for DTOs: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Java Records vs Lombok's @Value for immutable DTOs: what's a language feature vs a compile-time annotation processor, and the real trade-offs for compact constructors, inheritance and JSON serialization.",
+    heading: "Records vs Lombok @Value for DTOs — Interview Questions",
+    tags: ["records", "lombok", "dto", "immutability", "java 17"],
+    shortAnswer:
+      "Both produce an immutable class with a canonical constructor, accessors, equals(), hashCode(), and toString() — but Records (finalized in Java 16) are a real language feature the compiler generates and understands directly, with no build-time dependency, no annotation-processor step, and first-class support in pattern matching and switch; Lombok's @Value is a compile-time annotation processor bolted onto a normal class, which predates Records and still offers things Records don't, like builder-style generation (@Builder) and the ability to extend a superclass, since a Record can't extend another class.",
+    mindMap: [
+      { type: "text", content: "The core distinction is **language feature vs external tool**: a Record's shape is enforced by javac itself, so every Java developer and every other tool (IDEs, pattern matching, reflection) understands it uniformly. Lombok generates equivalent bytecode via annotation processing, which works well but is invisible in the source until you know Lombok's conventions." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Records", v: "Language feature (Java 16+); no dependency; can't extend a class" },
+          { k: "Lombok @Value", v: "Annotation processor; needs the Lombok dependency + IDE plugin" },
+          { k: "Pattern matching", v: "Records get first-class deconstruction patterns; Lombok classes don't" },
+          { k: "Builders / inheritance", v: "Lombok (@Builder, extends) still fills gaps Records don't cover" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** on Java 17+, Records are the default choice for a plain immutable data carrier; Lombok remains relevant specifically where its extra generators (builders, inheritance-friendly value classes) cover a gap Records structurally can't." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `// Record: compiler-generated, no dependency, with a validating compact constructor
+public record OrderDto(String id, BigDecimal total) {
+    public OrderDto {                      // compact constructor — runs before field assignment
+        if (total.signum() < 0) throw new IllegalArgumentException("negative total");
+    }
+}
+
+// Lombok equivalent: same shape, requires the Lombok dependency + annotation processing
+@Value
+public class OrderDtoLombok {
+    String id;
+    BigDecimal total;
+}
+// Lombok can additionally generate a builder (@Builder) — Records have no built-in builder`,
+    },
+    whatIf: {
+      q: "Why can't a Record extend another class the way a Lombok @Value class can?",
+      a: "Every Record implicitly extends java.lang.Record, and Java doesn't support multiple inheritance of state — allowing a Record to also extend a user class would mean combining two sets of inherited fields in a way the language's single-inheritance model doesn't support. This is a deliberate language-level constraint, not a missing feature Lombok simply implements better.",
+    },
+    realWorld:
+      "Teams standardizing on Java 17+ for new services increasingly default to Records for DTOs and drop the Lombok dependency for that use case entirely, keeping Lombok (if at all) only for classes needing @Builder or inheritance Records structurally can't provide — this also removes a build-time annotation-processor dependency and IDE-plugin requirement that occasionally causes friction (stale generated code, IDE support lag on new Lombok versions).",
+    guruTake:
+      "If I'm starting a new Java 17+ codebase, I reach for Records first for DTOs, and only bring in Lombok for the specific gap it fills — usually @Builder on a more complex object. I wouldn't rip Lombok out of an existing large codebase just for consistency; that's churn without a real payoff.",
+    interviewerExpectation: [
+      "Knows Records are a compiler/language feature, Lombok is an annotation processor",
+      "Names the compact constructor as Records' validation mechanism",
+      "Knows Records can't extend a class",
+      "Identifies a concrete gap (builders, inheritance) where Lombok still applies",
+    ],
+    followUps: [
+      "How does a Record's compact constructor differ from a canonical constructor?",
+      "How do Records interact with pattern matching in a switch expression?",
+      "Would you migrate an existing large Lombok codebase to Records — why or why not?",
+    ],
+    commonMistakes: [
+      "Assuming Records and Lombok @Value are strictly interchangeable",
+      "Not knowing Records can't extend another class",
+      "Migrating everything to Records without checking for a builder/inheritance dependency",
+    ],
+    bestPractices: [
+      "Default to Records for new immutable DTOs on Java 17+",
+      "Keep Lombok only for the specific gaps Records don't cover",
+      "Use a compact constructor for Record-level validation instead of a separate factory",
+    ],
+    relatedTech: ["Lombok", "Pattern Matching", "Immutability"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft", "Deloitte"],
+    related: ["immutable-class-design"],
+  },
 ];

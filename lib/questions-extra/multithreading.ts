@@ -1009,4 +1009,540 @@ jstack -l <pid> > dump1.txt
     askedIn: ["Amazon", "Microsoft", "Deloitte", "Google"],
     related: ["thread-lifecycle-states", "deadlock-prevention", "livelock-starvation"],
   },
+
+  // ---------------------------------------------------- CE4 additions (2026-08)
+  {
+    slug: "stampedlock-optimistic-reads",
+    categoryId: "multithreading",
+    topic: "Locks",
+    question: "When would you reach for StampedLock's optimistic locking over ReentrantReadWriteLock?",
+    seoTitle: "StampedLock Optimistic Reads: Interview Questions & Answers | Full Stack Interview Guru",
+    seoDescription:
+      "StampedLock's optimistic read mode vs ReentrantReadWriteLock: how the stamp/validate() pattern avoids taking a lock at all for the common case, and its non-reentrant trade-offs.",
+    heading: "StampedLock Optimistic Reads — Interview Questions",
+    tags: ["stampedlock", "optimistic locking", "reentrantreadwritelock", "concurrency"],
+    shortAnswer:
+      "ReentrantReadWriteLock lets multiple readers proceed concurrently but still requires every reader to acquire and release an actual lock, which costs coordination even when writes are rare. StampedLock adds a third mode — optimistic read — where a reader takes a stamp, reads the data without blocking anyone, and then calls validate(stamp) to check whether a writer interleaved; if validation fails, it falls back to a real read lock and retries. For read-heavy, write-rare data, this avoids lock acquisition overhead entirely in the common case, at the cost of StampedLock being non-reentrant and considerably trickier to use correctly.",
+    mindMap: [
+      { type: "text", content: "Optimistic reads bet that **nothing changes during the read** and only pay the cost of verifying that bet, not the cost of preventing writes outright. It's the same philosophy as optimistic concurrency control in databases, applied to an in-memory lock." },
+      {
+        type: "kv",
+        rows: [
+          { k: "ReentrantReadWriteLock", v: "Readers always acquire a real (shared) lock" },
+          { k: "StampedLock optimistic", v: "Read without locking, then validate(stamp) after" },
+          { k: "Validation fails", v: "Fall back to a real readLock() and re-read" },
+          { k: "Trade-off", v: "Not reentrant; easy to misuse; no Condition support" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** StampedLock trades ReentrantReadWriteLock's simplicity for lower read-path overhead — only reach for it once profiling shows read-lock acquisition itself is the bottleneck on a hot, read-dominated path." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `class Point {
+    private double x, y;
+    private final StampedLock lock = new StampedLock();
+
+    double distanceFromOrigin() {
+        long stamp = lock.tryOptimisticRead();       // no blocking, no lock taken
+        double curX = x, curY = y;                    // read without synchronization
+        if (!lock.validate(stamp)) {                   // did a writer interleave?
+            stamp = lock.readLock();                    // fall back to a real lock
+            try { curX = x; curY = y; }
+            finally { lock.unlockRead(stamp); }
+        }
+        return Math.sqrt(curX * curX + curY * curY);
+    }
+
+    void move(double dx, double dy) {
+        long stamp = lock.writeLock();
+        try { x += dx; y += dy; }
+        finally { lock.unlockWrite(stamp); }
+    }
+}`,
+    },
+    whatIf: {
+      q: "Why is StampedLock non-reentrant, and what breaks if you call writeLock() twice on the same thread?",
+      a: "StampedLock trades reentrancy for a lighter-weight stamp-based implementation — calling writeLock() again from a thread that already holds it will deadlock, since the lock has no concept of 'the same thread already owns this.' This makes it unsuitable for code paths that might recursively re-enter the locked method, unlike ReentrantLock/ReentrantReadWriteLock which explicitly support that.",
+    },
+    realWorld:
+      "StampedLock earns its complexity in narrow, hot, read-dominated data structures — a coordinate/geometry cache, a frequently-read configuration snapshot — where profiling shows readLock() acquisition itself in the flame graph. Most application code never needs it; reaching for it by default over the simpler, reentrant, better-understood ReentrantReadWriteLock is a common over-engineering mistake.",
+    guruTake:
+      "I'd tell an interviewer: I don't start with StampedLock — I start with ReentrantReadWriteLock, or even just synchronized, and only move to optimistic reads when a profiler points at the read-lock acquisition itself as the cost. Its non-reentrancy has bitten teams that reached for it too early.",
+    interviewerExpectation: [
+      "Explains the stamp/validate() optimistic-read pattern",
+      "Knows StampedLock is non-reentrant, unlike ReentrantLock",
+      "Frames it as an optimization for measured read-heavy hot paths",
+      "Knows optimistic reads must fall back to a real lock on validation failure",
+    ],
+    followUps: [
+      "What happens if you forget to call validate() after an optimistic read?",
+      "Why doesn't StampedLock support Condition objects?",
+      "How does StampedLock's write lock differ from ReentrantReadWriteLock's?",
+    ],
+    commonMistakes: [
+      "Forgetting to validate() after an optimistic read",
+      "Assuming StampedLock is reentrant like ReentrantLock",
+      "Reaching for StampedLock without profiling data showing it's needed",
+    ],
+    bestPractices: [
+      "Default to ReentrantReadWriteLock; move to StampedLock only when profiling justifies it",
+      "Always validate() after an optimistic read and fall back on failure",
+      "Never call StampedLock methods recursively from the same thread",
+    ],
+    relatedTech: ["ReentrantReadWriteLock", "ReentrantLock", "Optimistic Concurrency Control"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Google"],
+    related: ["reentrantlock-vs-synchronized"],
+  },
+  {
+    slug: "thread-pool-exhaustion-cascading-failure",
+    categoryId: "multithreading",
+    topic: "Threads & Pools",
+    question: "How does thread-pool exhaustion in one service cascade into a system-wide outage, and how does the bulkhead pattern prevent it?",
+    seoTitle: "Thread Pool Exhaustion & Bulkhead Pattern: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "How a slow downstream dependency exhausts a shared thread pool and cascades into a system-wide outage, and how dedicating a separate ExecutorService per dependency (the bulkhead pattern) contains the blast radius.",
+    heading: "Thread Pool Exhaustion & the Bulkhead Pattern — Interview Questions",
+    tags: ["thread pool", "bulkhead", "cascading failure", "production", "resilience"],
+    shortAnswer:
+      "If every downstream call — fast and slow — shares one thread pool, a single slow or hanging dependency ties up threads waiting on it until the pool is fully occupied; requests to entirely unrelated, healthy dependencies then queue behind those stuck threads and start timing out too, turning one slow dependency into a full outage. The bulkhead pattern fixes this by giving each dependency (or dependency class) its own dedicated, bounded ExecutorService, so exhaustion in one pool can't consume threads earmarked for another.",
+    mindMap: [
+      { type: "text", content: "This is a **thread pool sizing problem disguised as a downstream-service problem** — the failure isn't really that dependency B is slow, it's that dependency A's slowness was allowed to consume resources that dependency B's requests also needed. Named after ship bulkheads: compartmentalize so one breach doesn't sink the whole vessel." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Shared pool", v: "One slow dependency starves threads for all dependencies" },
+          { k: "Bulkhead pattern", v: "One bounded ExecutorService per dependency/category" },
+          { k: "Blast radius", v: "A stuck dependency only exhausts ITS OWN pool" },
+          { k: "Pairs with", v: "Timeouts + circuit breakers on each isolated pool" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** a thread pool is a shared resource with a hard capacity — the moment two independent things compete for it, one's failure becomes both's failure. Isolation is the fix, not just a bigger pool." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `// Before: one shared pool — a slow inventory service can starve payment calls
+ExecutorService shared = Executors.newFixedThreadPool(50);
+
+// Bulkhead: isolated, bounded pools per dependency
+ExecutorService paymentPool   = new ThreadPoolExecutor(10, 10, 0, TimeUnit.SECONDS,
+    new ArrayBlockingQueue<>(20), new ThreadPoolExecutor.CallerRunsPolicy());
+ExecutorService inventoryPool = new ThreadPoolExecutor(10, 10, 0, TimeUnit.SECONDS,
+    new ArrayBlockingQueue<>(20), new ThreadPoolExecutor.CallerRunsPolicy());
+
+// A hang in inventoryPool can never starve paymentPool's 10 threads`,
+    },
+    whatIf: {
+      q: "Why not just make the shared pool bigger instead of splitting it?",
+      a: "A bigger pool delays the symptom but doesn't fix the coupling — enough concurrent slow calls will still exhaust any finite pool, and a larger pool also means more threads blocked waiting (more memory, more context-switch overhead) before the failure becomes visible. Isolation bounds the blast radius regardless of size; a bigger shared pool just raises the threshold at which the same cascading failure happens.",
+    },
+    realWorld:
+      "This is a textbook cause of multi-hour outages: a downstream service starts timing out, its calls pile up in a shared connection/thread pool, and completely unrelated features that happen to share the same executor start failing minutes later — on-call engineers chase the wrong service because the visible symptom (unrelated endpoint failing) doesn't obviously point at the real, slow dependency. Frameworks like Resilience4j formalize this as a Bulkhead alongside CircuitBreaker and TimeLimiter.",
+    guruTake:
+      "In an incident retro I'd say: the root cause usually isn't 'service X was slow' — services get slow sometimes, that's expected. The real bug is that we let X's slowness consume a resource Y also depended on. Bulkheads turn an inevitable slow dependency into a contained, single-feature degradation instead of an outage.",
+    interviewerExpectation: [
+      "Explains how a shared pool couples unrelated dependencies' reliability",
+      "Names the bulkhead pattern and can describe the isolation mechanism",
+      "Connects it to timeouts/circuit breakers as complementary patterns",
+      "Gives a concrete cascading-failure scenario, not just a definition",
+    ],
+    followUps: [
+      "How do you decide how many isolated pools to create without over-fragmenting resources?",
+      "How does a circuit breaker complement a bulkhead?",
+      "How would you size a per-dependency pool relative to that dependency's expected latency and your target throughput?",
+    ],
+    commonMistakes: [
+      "Sharing one thread pool across unrelated downstream dependencies",
+      "Treating 'increase pool size' as a fix for cascading failure",
+      "Not pairing isolation with timeouts, so threads still block indefinitely",
+    ],
+    bestPractices: [
+      "Dedicate a bounded pool per dependency or dependency class",
+      "Always pair pool isolation with a timeout on the call itself",
+      "Combine with circuit breakers to fail fast once a dependency is clearly unhealthy",
+    ],
+    relatedTech: ["Resilience4j", "Circuit Breaker", "ThreadPoolExecutor"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Microsoft", "Deloitte"],
+    related: ["threadpoolexecutor-tuning", "executor-shutdown-rejection"],
+  },
+  {
+    slug: "completablefuture-callback-thread-semantics",
+    categoryId: "multithreading",
+    topic: "CompletableFuture",
+    question: "thenApply vs thenApplyAsync — which thread actually runs your callback, and why does that matter?",
+    seoTitle: "thenApply vs thenApplyAsync Thread Semantics: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "CompletableFuture's thenApply/thenCompose/thenCombine vs their Async variants: which thread runs each callback, why that matters for blocking work, and the executor-overload pitfall.",
+    heading: "thenApply vs thenApplyAsync — Interview Questions",
+    tags: ["completablefuture", "thenapply", "thenapplyasync", "forkjoinpool", "async"],
+    shortAnswer:
+      "The non-Async variant (thenApply, thenCompose, thenCombine) runs its callback on whichever thread completes the preceding stage — if the future is already complete when you attach the callback, that's the calling thread; if it completes later, it's whatever thread finished the async work, which for the default executor is a ForkJoinPool.commonPool() thread. The Async variant (thenApplyAsync, etc.) always dispatches to an executor — the commonPool by default, or one you explicitly pass — decoupling the callback from whichever thread happened to finish the prior stage. This matters because a non-Async callback can silently execute on a thread you didn't plan for, including the very thread that called .complete() on the future.",
+    mindMap: [
+      { type: "text", content: "The naming is a giveaway once you know it: **no 'Async' suffix means 'run inline if possible'**, Async suffix means 'always hop to an executor.' The subtlety is that 'inline if possible' has two different outcomes depending on timing — same-thread execution if the future is already done, or completing-thread execution if it isn't." },
+      {
+        type: "kv",
+        rows: [
+          { k: "thenApply()", v: "Runs on caller's thread (if done) or completing thread" },
+          { k: "thenApplyAsync()", v: "Always submitted to commonPool() (or your executor)" },
+          { k: "thenApplyAsync(fn, exec)", v: "Always submitted to YOUR executor — full control" },
+          { k: "Risk", v: "Blocking work in a non-Async callback can run on a shared pool thread" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** if your callback does anything blocking or expensive, use the Async variant with an explicit executor — don't let it silently inherit whatever thread happened to complete the prior stage." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `CompletableFuture<Integer> future = CompletableFuture.supplyAsync(() -> slowCall());
+
+// Non-Async: runs on whatever thread completes supplyAsync's task (commonPool by default)
+future.thenApply(result -> result * 2);
+
+// Async, default executor: submitted fresh to commonPool()
+future.thenApplyAsync(result -> result * 2);
+
+// Async, explicit executor: full control over where blocking work runs
+future.thenApplyAsync(result -> blockingDbCall(result), dbExecutor);`,
+    },
+    whatIf: {
+      q: "If the future is already complete when you call thenApply(), which thread runs the callback?",
+      a: "The calling thread runs it synchronously, right there, before thenApply() even returns — there's no thread hop at all in that case. That's the subtle part: thenApply()'s execution thread isn't fixed, it depends entirely on timing relative to when the prior stage completes.",
+    },
+    realWorld:
+      "This causes real production incidents when a chain of thenApply() calls ends with a blocking database or HTTP call, and under load that blocking work lands on ForkJoinPool.commonPool() — the same pool backing every parallelStream() and default-executor CompletableFuture in the JVM — starving unrelated async work across the entire application, not just the one request.",
+    guruTake:
+      "My interview answer: I treat the Async suffix as the 'I want this on MY executor, not wherever it happens to land' signal, and I always pass an explicit executor to the Async variant for anything that blocks. Relying on the default commonPool for blocking work is the same mistake as putting blocking I/O inside parallelStream().",
+    interviewerExpectation: [
+      "Explains that non-Async runs on the completing/calling thread, not a fixed thread",
+      "Knows Async variants default to commonPool() unless given an explicit executor",
+      "Connects this to the shared commonPool() starvation risk",
+      "Recommends explicit executors for blocking callback work",
+    ],
+    followUps: [
+      "Why would you ever choose the non-Async variant deliberately?",
+      "What executor does supplyAsync() use if you don't pass one?",
+      "How does this thread-semantics question relate to virtual threads replacing CompletableFuture chains?",
+    ],
+    commonMistakes: [
+      "Assuming thenApply() always runs on a fixed, predictable thread",
+      "Putting blocking work in a non-Async callback that lands on commonPool()",
+      "Using the Async variant without passing an explicit executor for blocking work",
+    ],
+    bestPractices: [
+      "Use non-Async variants only for cheap, non-blocking transformations",
+      "Pass an explicit executor to Async variants for blocking or heavy work",
+      "Never assume a specific thread runs a non-Async callback",
+    ],
+    relatedTech: ["ForkJoinPool", "Executor", "parallelStream"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft", "Google"],
+    related: ["completablefuture-async", "completablefuture-timeout-ortimeout", "parallel-stream-production-pitfalls"],
+  },
+  {
+    slug: "threadlocal-caching-virtual-threads",
+    categoryId: "multithreading",
+    topic: "Virtual Threads",
+    question: "Does the 'one thread per request' mental model still hold with virtual threads — and why can ThreadLocal-based caching patterns silently stop working?",
+    seoTitle: "ThreadLocal Caching & Virtual Threads: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Why virtual threads keep ThreadLocal's per-request correctness but silently defeat ThreadLocal-based object-reuse caching — the 'one thread per request' mental model, explained accurately for interviews.",
+    heading: "ThreadLocal Caching & the Virtual-Thread Mental Model — Interview Questions",
+    tags: ["threadlocal", "virtual threads", "per-request state", "caching", "java 21"],
+    shortAnswer:
+      "Virtual threads don't break ThreadLocal's core guarantee — each virtual thread still gets its own isolated ThreadLocal storage, so per-request context (a request ID, security principal, MDC logging fields) still isolates correctly, one virtual thread per request, just like the old one-platform-thread-per-request model. What breaks is a different, easy-to-miss assumption: code that uses ThreadLocal as a reuse cache for an expensive object (a ThreadLocal<SimpleDateFormat>, a scratch buffer) relied on the same underlying OS thread being reused across many requests from a small, fixed pool. Executors.newVirtualThreadPerTaskExecutor() creates a brand-new, disposable virtual thread per task and never reuses it — so that ThreadLocal.get() misses every time, and the 'cache' silently re-creates the expensive object on every call. Nothing throws; it just quietly stops caching.",
+    mindMap: [
+      { type: "text", content: "ThreadLocal has always done **two different jobs** that happened to both work under a bounded platform-thread pool: request-scoped **isolation**, and thread-**reuse caching**. Virtual threads keep the first and quietly remove the second, because a virtual thread is never handed a second, unrelated task." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Per-request context (MDC, security)", v: "Still correct — each virtual thread has its own isolated ThreadLocal storage" },
+          { k: "Reuse cache (SimpleDateFormat, buffers)", v: "Silently defeated — no OS-thread reuse to amortize the cost across" },
+          { k: "Root cause", v: "newVirtualThreadPerTaskExecutor() creates one disposable virtual thread per task, never reused" },
+          { k: "Detection", v: "A ThreadLocal-backed pool's hit-rate metric quietly drops toward 0% after migrating" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** the 'one thread per request' mental model is still accurate for correctness — it was never a guarantee that the SAME thread would come back for the next request, which is the (implicit, never-promised) assumption a ThreadLocal reuse cache depended on." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `// Platform-thread-pool era: this amortizes construction cost because the
+// SAME OS thread (and its ThreadLocal storage) serves many requests over time
+private static final ThreadLocal<SimpleDateFormat> FORMATTER =
+    ThreadLocal.withInitial(() -> new SimpleDateFormat("yyyy-MM-dd"));
+
+String format(Date d) {
+    return FORMATTER.get().format(d);   // reused across requests on a pooled platform thread
+}
+
+// Under Executors.newVirtualThreadPerTaskExecutor(): each request gets a
+// brand-new virtual thread, so FORMATTER.get() misses EVERY time — the
+// "cache" now just constructs a fresh SimpleDateFormat per request, silently.`,
+    },
+    whatIf: {
+      q: "If ThreadLocal is still correct per virtual thread, why does this feel like a regression?",
+      a: "Because correctness and the platform-thread-pool-era reuse optimization happened to both hold under a bounded thread pool, and only correctness survives under the virtual-thread model. The reuse assumption was always implicit — ThreadLocal's contract never promised the same thread would come back for your next task, a bounded pool just made that true in practice.",
+    },
+    realWorld:
+      "Teams migrating a Spring MVC app to a virtual-thread executor (e.g. Tomcat's virtual-thread support) sometimes see a ThreadLocal-based formatter or buffer pool show a hit-rate metric quietly drop toward 0% after the switch — allocation and GC pressure creep up even though nothing threw an exception or otherwise 'broke.' The regression is invisible without dedicated cache-hit-rate observability, which is exactly what makes it a good interview question: it rewards knowing to look for a silent behavior change, not just a crash.",
+    guruTake:
+      "I'd tell an interviewer: ThreadLocal has always quietly done two jobs — isolation and reuse-caching — that only diverge once threads stop being reused. If your ThreadLocal is a cache, ask what it's actually caching against now that there's no 'same thread, next request' to reuse; if it's request-scoped context, it's still exactly as correct as it always was.",
+    interviewerExpectation: [
+      "Distinguishes context-propagation use of ThreadLocal from reuse-cache use",
+      "Explains why virtual threads defeat the cache pattern specifically (no thread reuse), not correctness",
+      "Names a concrete detection signal (cache hit-rate metric), not just a theoretical concern",
+      "Knows virtual threads are deliberately not pooled/reused by design",
+    ],
+    followUps: [
+      "How would you replace a ThreadLocal-based object pool for code that now runs on virtual threads?",
+      "Does this same issue affect ThreadLocal-based security or logging context propagation?",
+      "How does this interact with structured concurrency subtasks that need the same request-scoped context?",
+    ],
+    commonMistakes: [
+      "Assuming a ThreadLocal-based cache still amortizes cost under virtual threads",
+      "Not distinguishing per-request context from a per-thread reuse cache",
+      "Blaming virtual threads for a 'bug' that's actually an expected, silent behavior change",
+    ],
+    bestPractices: [
+      "Before migrating, classify each ThreadLocal as context-propagation (fine) or reuse-cache (needs rethinking)",
+      "For genuinely expensive-to-construct objects, use a real bounded object pool instead of ThreadLocal if avoiding allocation still matters",
+      "Add cache-hit-rate observability so a silent regression like this is visible, not invisible",
+    ],
+    relatedTech: ["ThreadLocal", "SimpleDateFormat", "MDC", "newVirtualThreadPerTaskExecutor"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Google"],
+    related: ["threadlocal-memory-leak", "threadlocal-context-scopedvalues", "virtual-threads-pinning-structured"],
+  },
+  {
+    slug: "structured-concurrency-deep-dive",
+    categoryId: "multithreading",
+    topic: "Threads & Pools",
+    question: "How does StructuredTaskScope let you treat a family of subtasks as a single unit of work?",
+    seoTitle: "Structured Concurrency (StructuredTaskScope): Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Java's StructuredTaskScope (structured concurrency): still a preview API through JDK 26 (JEP 525), with the API shape itself changed in JDK 25 (JEP 505) — constructors replaced by open() + Joiner. An accurate, current preview-status explanation for interviews.",
+    heading: "Structured Concurrency with StructuredTaskScope — Interview Questions",
+    tags: ["structured concurrency", "structuredtaskscope", "virtual threads", "preview api", "jdk 25"],
+    shortAnswer:
+      "Structured concurrency ties the lifetime of a set of concurrent subtasks to a single enclosing scope — fork a few subtasks inside a try-with-resources StructuredTaskScope, join them, and the scope guarantees none of them can outlive the block. The API itself is still moving, which matters for an interview answer: JDK 21 (JEP 453) introduced it as a preview with constructor-based scopes (new StructuredTaskScope.ShutdownOnFailure()); JDK 25 (JEP 505, fifth preview) replaced those constructors with a static StructuredTaskScope.open() factory and a new Joiner interface, removing ShutdownOnFailure/ShutdownOnSuccess as separate types. It remains a preview feature with no finalized version — JDK 26 (JEP 525) previews it again as a sixth iteration — so verify the exact API shape against whichever JDK you actually target rather than assuming either version's syntax, or a GA date, without checking.",
+    mindMap: [
+      { type: "text", content: "Plain `CompletableFuture`/`ExecutorService` code can easily leak tasks — fire off three async calls, one fails, and the other two keep running with no one waiting on or cancelling them. Structured concurrency borrows the discipline of structured programming (a block has one entry, one exit) and applies it to concurrency: **a scope's subtasks can't outlive the scope**. That guarantee has stayed stable across previews even as the surrounding API syntax hasn't." },
+      {
+        type: "kv",
+        rows: [
+          { k: "fork()", v: "Start a subtask, tracked by the enclosing scope — stable across previews" },
+          { k: "join()", v: "Wait for subtasks per the active Joiner's policy" },
+          { k: "Joiner (JDK 25+, JEP 505)", v: "Replaces ShutdownOnFailure/ShutdownOnSuccess; controls result combination + failure handling" },
+          { k: "Status", v: "Preview since JDK 21 (JEP 453); API reshaped in JDK 25 (JEP 505); still preview in JDK 26 (JEP 525) — no finalized version" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** the value isn't the exact syntax — it's an actual safety guarantee (no orphaned subtasks) that hand-rolled ExecutorService/CompletableFuture code has to reimplement manually every time. Being an evolving preview API matters for interview credibility — cite the guarantee confidently and the exact syntax cautiously." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `// JDK 25+ (JEP 505): constructors were replaced by the open() factory
+// and a Joiner interface. JDK 21-24 previews used
+// "new StructuredTaskScope.ShutdownOnFailure()" instead — confirm the
+// shape for your actual target JDK before shipping code against it.
+try (var scope = StructuredTaskScope.open()) {   // default joiner: all-success-or-throw
+    Subtask<User> userTask   = scope.fork(() -> fetchUser(id));
+    Subtask<Order> orderTask = scope.fork(() -> fetchOrders(id));
+
+    scope.join();   // throws StructuredTaskScope.FailedException if any subtask failed
+
+    return new Profile(userTask.get(), orderTask.get());
+}   // scope close guarantees no subtask can outlive this block`,
+    },
+    whatIf: {
+      q: "How is this different from just using CompletableFuture.allOf() with two futures?",
+      a: "allOf() waits for both futures but doesn't cancel the other one if one fails — the failed future's exception has to be checked separately, and the still-running future keeps consuming resources with nothing tying its lifetime to the failure. A StructuredTaskScope's Joiner (or, on JDK 21-24, a ShutdownOnFailure policy) makes cancellation-on-failure automatic and ties every subtask's lifetime to the enclosing block — the exact type name for that policy has changed across previews, but the guarantee itself hasn't.",
+    },
+    realWorld:
+      "This targets a real, common bug class: a request handler fans out to two or three downstream calls with CompletableFuture, one times out, and the others keep running to completion anyway — burning threads/connections on work whose result nobody needs anymore because the overall request already failed. Structured concurrency is aimed squarely at eliminating that leak by construction rather than requiring every call site to remember manual cleanup.",
+    guruTake:
+      "If this comes up, I'd be upfront that it's still a preview feature — and not just in name. The API shape itself changed between JDK 21 and JDK 25, which is exactly why I wouldn't ship production code against it without pinning to a specific JDK and re-checking on every upgrade. The concept — scoped subtask lifetimes, automatic cancellation on failure — is what's worth understanding deeply; the exact method names are what I'd double-check before writing real code.",
+    interviewerExpectation: [
+      "Explains the core guarantee: subtasks can't outlive their scope",
+      "Names fork()/join() and knows a Joiner (or pre-JDK-25 shutdown policy) controls failure handling",
+      "Correctly states this is a preview API with no finalized version, without guessing a GA date",
+      "Knows the API shape itself changed in JDK 25 (JEP 505) — not just a version-number curiosity",
+    ],
+    followUps: [
+      "Why did JEP 505 replace ShutdownOnFailure/ShutdownOnSuccess with the Joiner interface?",
+      "How does structured concurrency relate to virtual threads — do you need one for the other?",
+      "Why does needing --enable-preview matter for a team deciding whether to adopt this now?",
+    ],
+    commonMistakes: [
+      "Presenting StructuredTaskScope as a finalized, stable API without checking",
+      "Assuming the JDK 21-24 constructor-based API (ShutdownOnFailure) is still current on JDK 25+",
+      "Confusing it with plain ExecutorService.invokeAll(), which has no failure-cancellation guarantee",
+    ],
+    bestPractices: [
+      "Verify the API's preview/finalization status against the exact JDK version you target",
+      "Confirm the exact API shape (constructors vs open()+Joiner) before writing code against it",
+      "Prefer it over hand-rolled CompletableFuture fan-out once it's stable for your target JDK",
+    ],
+    relatedTech: ["Virtual Threads", "ExecutorService", "CompletableFuture"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Google", "Amazon"],
+    related: ["virtual-threads-pinning-structured"],
+  },
+  {
+    slug: "virtual-thread-synchronized-pinning",
+    categoryId: "multithreading",
+    topic: "Threads & Pools",
+    question: "How does synchronized interact with virtual-thread carrier pinning, and how did that change in Java 24?",
+    seoTitle: "Virtual Threads & synchronized Pinning (JEP 491): Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Java 21-23 vs Java 24+: how blocking inside synchronized pinned a virtual thread's carrier thread, and how JEP 491 removed that pinning for the common case — an accurate, version-aware explanation for interviews.",
+    heading: "Virtual Threads & synchronized Pinning (JEP 491) — Interview Questions",
+    tags: ["virtual threads", "synchronized", "pinning", "jep 491", "java 24"],
+    shortAnswer:
+      "This behavior is genuinely version-dependent, and stating it accurately matters: in Java 21 through 23, a virtual thread that blocked while holding a monitor acquired via synchronized could not unmount from its carrier platform thread — it 'pinned' the carrier for the duration, so blocking I/O inside a synchronized block or method effectively lost virtual threads' scalability benefit for that stretch of code, and the JDK-recommended workaround was to replace hot synchronized blocks with java.util.concurrent.locks.ReentrantLock. JEP 491, delivered in Java 24, reimplemented monitor support so that synchronized no longer pins the carrier thread in the common case — meaning on Java 24+, this specific problem is largely resolved and the ReentrantLock workaround is no longer necessary purely for pinning reasons. Always confirm which JDK a codebase targets before giving blanket advice here.",
+    mindMap: [
+      { type: "text", content: "Virtual threads work by **unmounting from their carrier platform thread whenever they block**, freeing the carrier to run other virtual threads. Before JEP 491, the JVM's monitor implementation (backing `synchronized`) couldn't safely unmount a virtual thread mid-block — so the carrier stayed pinned, unable to serve anyone else, for as long as that blocking call lasted." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Java 21–23", v: "Blocking inside synchronized pins the carrier thread" },
+          { k: "Workaround (21–23)", v: "Prefer ReentrantLock over synchronized in VT hot paths" },
+          { k: "Java 24+ (JEP 491)", v: "synchronized no longer pins the carrier in the common case" },
+          { k: "Detection tool", v: "-Djdk.tracePinnedThreads, JFR jdk.VirtualThreadPinned events" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** this is exactly the kind of Java-version nuance that separates a candidate who read one blog post from one who tracks the JDK release notes — the correct answer depends on which JDK the codebase actually runs, not on a single blanket rule." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `// On Java 21-23: this pins the carrier thread for the duration of blockingCall()
+synchronized (lock) {
+    blockingCall();     // carrier thread can't serve other virtual threads meanwhile
+}
+
+// 21-23 workaround: swap to ReentrantLock, which doesn't pin
+private final ReentrantLock lock = new ReentrantLock();
+lock.lock();
+try {
+    blockingCall();     // carrier CAN unmount and serve other virtual threads
+} finally {
+    lock.unlock();
+}
+
+// On Java 24+ (JEP 491): the original synchronized version no longer pins
+// in the common case — verify against your actual target JDK before relying on this.`,
+    },
+    whatIf: {
+      q: "If a team is still on Java 21 LTS, is the ReentrantLock workaround still relevant advice?",
+      a: "Yes — JEP 491 shipped in Java 24, so any codebase pinned to Java 21, 22, or 23 (a very common position for teams on the current LTS) still has the pinning behavior and should still prefer ReentrantLock over synchronized in code that virtual threads execute and that blocks. The fix only applies once a team actually upgrades to 24 or later.",
+    },
+    realWorld:
+      "This is a real migration-planning question, not trivia: a team adopting virtual threads on Java 21 has to audit synchronized usage (including inherited from legacy libraries they don't control) in any code path virtual threads execute, using -Djdk.tracePinnedThreads to find pinning hotspots — and that audit's urgency changes materially once (and if) the team can move to Java 24+.",
+    guruTake:
+      "I'd answer this by anchoring on the JDK version first: 'depends whether you're on 21-23 or 24+' — then explain the mechanism. Giving a single unversioned answer here is exactly the kind of outdated-information mistake that makes an interviewer question whether the rest of my Java 21+ knowledge is current.",
+    interviewerExpectation: [
+      "Correctly separates Java 21–23 behavior from Java 24+ (JEP 491) behavior",
+      "Names ReentrantLock as the pre-JEP-491 workaround",
+      "Knows -Djdk.tracePinnedThreads / JFR as detection tools",
+      "Doesn't state either version's behavior as universally true",
+    ],
+    followUps: [
+      "What other operations besides synchronized can still pin a virtual thread's carrier?",
+      "How would you audit a large legacy codebase for pinning-prone synchronized usage before adopting virtual threads on Java 21?",
+      "Why couldn't the JVM safely unmount a virtual thread mid-monitor before JEP 491?",
+    ],
+    commonMistakes: [
+      "Stating synchronized 'always pins virtual threads' without a version caveat",
+      "Not knowing JEP 491 (Java 24) changed this behavior at all",
+      "Assuming every team is already on the latest JDK",
+    ],
+    bestPractices: [
+      "Anchor pinning advice to the target JDK version explicitly",
+      "Use -Djdk.tracePinnedThreads or JFR to find pinning in an existing codebase",
+      "Prefer ReentrantLock over synchronized in virtual-thread hot paths only while on Java 21–23",
+    ],
+    relatedTech: ["ReentrantLock", "JFR", "Virtual Threads"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Google"],
+    related: ["virtual-threads-pinning-structured", "reentrantlock-vs-synchronized"],
+  },
+  {
+    slug: "completablefuture-timeout-ortimeout",
+    categoryId: "multithreading",
+    topic: "CompletableFuture",
+    question: "What actually happens to the underlying work when CompletableFuture.orTimeout() fires?",
+    seoTitle: "What Happens When CompletableFuture.orTimeout() Fires? | Full Stack Interview Guru",
+    seoDescription:
+      "orTimeout() completes the CompletableFuture with a TimeoutException but never cancels the underlying computation — why abandoned work keeps running, why cancel(true) doesn't help, and the real production resource-leak risk.",
+    heading: "What Happens When orTimeout() Fires? — Interview Questions",
+    tags: ["completablefuture", "ortimeout", "cancellation", "resource leak", "production"],
+    shortAnswer:
+      "orTimeout() only changes the CompletableFuture object's own completion state — at the deadline, it marks the future as completed exceptionally with a TimeoutException. It does not cancel, interrupt, or stop whatever computation is actually running underneath: if the value was being produced by supplyAsync(supplier, executor), that supplier keeps executing on its executor thread to completion (or failure) regardless, because CompletableFuture has no way to reach into and stop arbitrary running code. Calling future.cancel(true) doesn't help either — CompletableFuture's cancel() is documented to ignore the mayInterruptIfRunning flag entirely; it never interrupts the underlying thread. The caller moves on with a TimeoutException (or a fallback), but the real work can keep consuming a thread, a database connection, or CPU well after anyone is listening for its result.",
+    mindMap: [
+      { type: "text", content: "orTimeout() controls **the future's logical state** — what the caller sees. It has no reach into **the actual running computation** underneath. Those are two separate things, and conflating them is the core misconception this question tests." },
+      {
+        type: "kv",
+        rows: [
+          { k: "orTimeout() fires", v: "CompletableFuture completes exceptionally with TimeoutException" },
+          { k: "Underlying task", v: "Keeps running to completion on its executor — NOT stopped" },
+          { k: "future.cancel(true)", v: "mayInterruptIfRunning is documented to have NO EFFECT on CompletableFuture" },
+          { k: "Real cancellation", v: "Needs cooperative support in the task itself, or a raw ExecutorService Future" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** orTimeout() is a promise about what the caller experiences, not a promise about what the work does. Timing out a call doesn't stop it — it just stops you from waiting on it." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `CompletableFuture<String> future = CompletableFuture.supplyAsync(() -> {
+    try {
+        Thread.sleep(5000);              // simulates a slow downstream call
+    } catch (InterruptedException e) { Thread.currentThread().interrupt(); }
+    System.out.println("Still ran to completion!");  // prints even after the caller times out
+    return "result";
+}, executor);
+
+future.orTimeout(1, TimeUnit.SECONDS)
+    .exceptionally(ex -> "fallback");
+// The caller gets "fallback" after 1s — but sleep(5000) keeps running on its
+// executor thread for the full 5s, printing the line above regardless.`,
+    },
+    whatIf: {
+      q: "Does calling future.cancel(true) after orTimeout() fires stop the underlying work?",
+      a: "No — CompletableFuture.cancel()'s mayInterruptIfRunning parameter is documented to have no effect; it never interrupts. To actually stop work you'd need the task itself to check Thread.interrupted() cooperatively, or you'd need to hold onto the raw java.util.concurrent.Future from an ExecutorService.submit() call directly — that Future's cancel(true) genuinely does interrupt the running thread, unlike CompletableFuture's.",
+    },
+    realWorld:
+      "Under load, this shows up as silent resource exhaustion: a service times out slow downstream calls with orTimeout() and returns fallbacks to keep p99 latency low, but the abandoned downstream calls keep running and keep holding their thread-pool threads and DB connections until they finish naturally — so the pool can still exhaust even though every individual caller 'timed out' correctly. Teams discover this via thread-pool/connection-pool metrics staying elevated well past what request-level timeout metrics would suggest.",
+    guruTake:
+      "I'd tell an interviewer: orTimeout() is optimistic on the caller's side and does nothing on the callee's side. If I actually need to stop wasted work, I either build cooperative cancellation into the task or use a client library that supports real cancellation — like an HTTP client's own cancellable request object — not just wrap a call in a CompletableFuture and assume the timeout stops it.",
+    interviewerExpectation: [
+      "Knows orTimeout() only changes the future's completion state, not the underlying computation",
+      "Knows CompletableFuture.cancel()'s mayInterruptIfRunning is documented to have no effect",
+      "Distinguishes this from ExecutorService's own Future, which does support real interruption",
+      "Names a concrete production consequence (thread/connection pool staying occupied past the caller's timeout)",
+    ],
+    followUps: [
+      "How would you build genuine cancellation into a long-running task used with CompletableFuture?",
+      "Why does ExecutorService's Future.cancel(true) behave differently from CompletableFuture's cancel()?",
+      "How would you detect that abandoned work is still consuming resources after callers have timed out?",
+    ],
+    commonMistakes: [
+      "Assuming orTimeout() or cancel() actually stops the underlying computation",
+      "Not realizing CompletableFuture.cancel(true) ignores mayInterruptIfRunning",
+      "Timing out calls without checking whether the abandoned work still holds a thread or connection",
+    ],
+    bestPractices: [
+      "Treat orTimeout() as a caller-side latency control, not a resource-cleanup mechanism",
+      "Build cooperative cancellation into long-running tasks, or use a client with real cancellation support",
+      "Monitor thread-pool/connection-pool occupancy separately from request-level timeout metrics to catch orphaned work",
+    ],
+    relatedTech: ["ExecutorService", "Future", "InterruptedException"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Microsoft"],
+    related: ["completablefuture-async", "completablefuture-callback-thread-semantics"],
+  },
 ];

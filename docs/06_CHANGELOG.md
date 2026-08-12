@@ -50,6 +50,136 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (ROADMAP CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions) — 2026-08-12
+Content expansion — **no route, UI, layout, or schema change**. Owner supplied an initial 25-question
+topic pool (HashMap/JMM/volatile/ExecutorService/CompletableFuture/Streams/GC fundamentals); Phase
+1–4 analysis (repo inspection, full 117-question inventory, overlap detection) found nearly every
+proposed topic already had a canonical page — several with two depth levels (flagship base + CE3
+"advanced-java" facet) — so the batch was re-scoped to genuinely uncovered, current (Java 17–21+)
+senior/production topics instead, split across categories by natural topical fit, following the CE2/CE3
+non-duplication pattern (distinct deeper facet + `related` cross-link) wherever a topic sits near
+existing coverage. Proposal presented to the owner with full duplicate-analysis rationale before any
+content was written; **explicitly approved before implementation** (golden rule, `CLAUDE.md`).
+
+- **New `lib/questions-extra/java-8.ts`** exporting `java8Extra: Question[]` — **8** questions
+  (`parallel-stream-production-pitfalls`, `stream-vs-collection-semantics`,
+  `stream-laziness-short-circuit`, `stream-pipeline-vs-loop-hot-path`,
+  `collectors-groupingby-tomap-pitfalls`, `optional-when-to-use-and-avoid`,
+  `method-reference-vs-lambda-performance`, `custom-functional-interface-design`). **Category state
+  change:** `java-8` had only **2** live base questions (`java-stream-api`, `java-optional`) — below
+  `MIN_LIVE_TO_LIST` (10), `noindex` and unlisted since DECISIONS #034. This batch takes it to **10
+  live**, crossing the threshold — `java-8` flips to listed + indexed + in the sitemap, the same
+  category-unlock outcome CE1/CE2/CE3 achieved for Python/JSON/Advanced Java. Verified in-browser:
+  `/candidate/java-8` now shows "10 LIVE".
+- **Appended to existing category files** (not new files — each category already has a dedicated
+  `lib/questions-extra/*.ts`, so content was added to the existing exported array, matching the
+  "append typed objects" content model): **3** to `java-collections.ts` (`sequenced-collections-java21`
+  — Java 21 `SequencedCollection`/`SequencedMap`; `concurrenthashmap-size-vs-mappingcount` —
+  correctly attributes the Javadoc "estimate" language to `mappingCount()`, not `size()`;
+  `concurrenthashmap-compound-operations` — `computeIfAbsent`/`merge` atomicity vs a racy get-then-put,
+  using **specification-safe wording**: no specific exception/deadlock is guaranteed for a mapping
+  function that modifies its own map — the JDK simply documents it as an unsupported pattern).
+  **7** to `multithreading.ts` (`stampedlock-optimistic-reads`; `thread-pool-exhaustion-cascading-failure`
+  — bulkhead pattern; `completablefuture-callback-thread-semantics` — thenApply vs thenApplyAsync thread
+  semantics; `threadlocal-caching-virtual-threads` — the "one thread per request" mental model still
+  holds for correctness under virtual threads, but ThreadLocal-based *reuse-caching* patterns silently
+  stop working because virtual threads are never reused across tasks; `structured-concurrency-deep-dive`
+  — documented as a **preview API**, current as of **JDK 25 (JEP 505, fifth preview)**: constructors
+  replaced by a `StructuredTaskScope.open()` factory + `Joiner` interface, still previewing in JDK 26
+  (JEP 525), no finalized version; `virtual-thread-synchronized-pinning` — version-accurate: Java 21–23
+  pins the carrier thread on blocking `synchronized`, **JEP 491 (Java 24) removed that pinning** for the
+  common case, both stated explicitly rather than presenting either as a blanket, version-agnostic rule;
+  `completablefuture-timeout-ortimeout` — reframed around what `orTimeout()` does *not* do: it flips the
+  future's own completion state but never cancels or interrupts the underlying computation, and
+  `CompletableFuture.cancel()`'s `mayInterruptIfRunning` is documented to have no effect). **5** to
+  `jvm.ts` (`jvm-cds-appcds-startup`; `graalvm-native-image-tradeoffs`; `jmh-microbenchmarking-pitfalls`;
+  `diagnosing-high-cpu-production-jvm` — async-profiler/JFR flame graphs; `lambda-stream-closure-memory-leak`).
+  **2** to `core-java.ts` (`object-creation-cost-primitive-streams`; `records-vs-lombok-dto`).
+- **No duplicate content — verified, then corrected.** An owner-directed review pass (same day) compared
+  the batch directly against full CE3 question text rather than titles alone, and found two real
+  overlaps the initial title-level duplicate check had missed: the original `virtual-thread-executor-vs-pooled`
+  restated CE3's `virtual-threads-pinning-structured` Semaphore/downstream-capacity guidance, and the
+  original `completablefuture-timeout-ortimeout` restated the `orTimeout()`/`completeOnTimeout()` point
+  already made in CE3's `completablefuture-error-handling`. The review also surfaced that CE3's existing
+  `virtual-threads-pinning-structured` stated pre-JEP-491 `synchronized` pinning as an unqualified,
+  version-agnostic fact, and that `structured-concurrency-deep-dive`'s original code example used the
+  JDK 21–24 constructor API superseded by JDK 25's `open()`/`Joiner` shape (confirmed via live JEP/Javadoc
+  lookup, not training-data recall). All four were corrected — see the "Fixed" entry immediately below.
+  Every remaining question that sits near existing coverage (ConcurrentHashMap, ExecutorService,
+  CompletableFuture, object-creation cost) takes a distinct, deeper facet than the existing canonical
+  page and cross-links to it via `related`. Full FIG schema per question (`shortAnswer`, `mindMap`,
+  `handsOn`, `whatIf`, `realWorld`, `guruTake`, `interviewerExpectation`, `followUps`, `commonMistakes`,
+  `bestPractices`, `relatedTech`, `tags`, `experience`, `askedIn`, `related`) plus SEO overrides
+  (`seoTitle`, `seoDescription`, `heading`, DECISIONS #033). No new schema fields added — "Green
+  flags"/"Red flags"/"Strong candidate answer" map onto the existing
+  `interviewerExpectation`/`commonMistakes`/`guruTake` fields rather than extending `lib/types.ts`.
+- **`lib/questions-extra/index.ts`:** imported `java8Extra` and spread it into `extraQuestions`; updated
+  the header comment describing the batch split. The 4 existing category files needed no import changes
+  (already wired) — only their arrays grew.
+- **Question totals:** **287 → 312** (32 base + **280** flagship/expansion), unchanged by the correction
+  pass (one slug replaced, net zero). Extra files: 12 → **13**.
+- **Verified (post-correction):** TypeScript clean (`tsc --noEmit`); production build green — **355
+  pages** (was 330, +25 `/q/[slug]`); **312 unique slugs, no duplicates**; all `related` refs resolve
+  **bank-wide** (312 questions, not just the new batch); grepped for lingering references to the removed
+  `virtual-thread-executor-vs-pooled` slug — none found. In-browser (dev): `/candidate/java-8` shows
+  **"10 LIVE"** and is listed; `threadlocal-caching-virtual-threads`, `structured-concurrency-deep-dive`,
+  `completablefuture-timeout-ortimeout`, and the corrected `virtual-threads-pinning-structured` all
+  render every FIG section with the `seoTitle` in the tab title, no console errors. **No regression:**
+  shared First Load JS **102 kB unchanged**, `/q/[slug]` **111 kB unchanged**; no URL/UI/schema change.
+- **Files:** new `lib/questions-extra/java-8.ts`; modified `lib/questions-extra/{core-java,
+  java-collections, multithreading, jvm, advanced-java}.ts` (append-only plus the CE3 surgical
+  correction below) and `lib/questions-extra/index.ts` (import + spread); docs (`04_ARCHITECTURE.md`,
+  `05_ROADMAP.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`), root `CLAUDE.md` (testing-checklist page
+  count → 355).
+- **Not pushed.** Left for owner review per `CLAUDE.md` — no commit created, no branch pushed, no deploy.
+
+### Fixed (CE4 review-driven corrections — overlap, wording, and version accuracy) — 2026-08-12
+Same-day, owner-directed correction pass on the CE4 batch above, scoped to exactly six items raised in
+review. **No unrelated content or code touched; no route/schema/UI change.**
+
+- **Q15 replaced:** `virtual-thread-executor-vs-pooled` (overlapped CE3's Semaphore/downstream-capacity
+  guidance) → **`threadlocal-caching-virtual-threads`**, a genuinely distinct facet — the "one thread per
+  request" mental model's correctness survives virtual threads (each VT still gets isolated ThreadLocal
+  storage) but ThreadLocal-as-reuse-cache patterns (`ThreadLocal<SimpleDateFormat>`, scratch buffers)
+  silently stop working because virtual threads are never reused across tasks. No net change to question
+  totals (one slug out, one in) or to `java-8`'s live count.
+- **Q18 reframed:** `completablefuture-timeout-ortimeout` kept its slug but now answers "What actually
+  happens to the underlying work when `CompletableFuture.orTimeout()` fires?" — `orTimeout()` only flips
+  the future's own completion state; it does not cancel or interrupt the computation still running on its
+  executor, and `CompletableFuture.cancel()`'s `mayInterruptIfRunning` is documented to have no effect
+  (unlike a raw `ExecutorService` `Future`). Difficulty raised Medium → Hard to match the added depth.
+- **Q16 version-corrected:** `structured-concurrency-deep-dive` updated to the *current, live-verified*
+  StructuredTaskScope status — API shape changed in **JDK 25 (JEP 505, fifth preview)**: `open()` factory
+  + `Joiner` interface replace the JDK 21–24 constructor API (`ShutdownOnFailure`/`ShutdownOnSuccess`,
+  now removed); still preview with **no finalized version**, previewing again in JDK 26 (JEP 525). The
+  code example was rewritten to the current `open()`/`Joiner` shape, with the superseded constructor
+  shape called out explicitly for JDK 21–24 readers. Verified via live WebSearch/JEP lookup, not recalled
+  from training data.
+- **Q7 deepened:** `method-reference-vs-lambda-performance` — added the capturing-vs-non-capturing
+  distinction (a capturing lambda *or* a bound method reference allocates a new instance per evaluation;
+  non-capturing forms of either syntax are effectively reusable after the first `LambdaMetafactory`
+  bootstrap), softened the "identical performance" claim from unconditional to conditional, and added a
+  JMH recommendation for anything performance-sensitive. Cross-links to `jmh-microbenchmarking-pitfalls`.
+- **Q11 wording fixed:** `concurrenthashmap-compound-operations`'s `whatIf` answer no longer claims a
+  mapping function that modifies its own map "can throw `IllegalStateException` or deadlock" — reworded
+  to specification-safe language: this is not a supported pattern and the JDK does not guarantee what
+  happens (could be blocked/hung threads, an exception, or other incorrect behavior); the rule is simply
+  never to do it.
+- **CE3 correction:** `lib/questions-extra/advanced-java.ts`'s existing `virtual-threads-pinning-structured`
+  — a **surgical edit, not a rewrite** — gained a Java 21–23 vs Java 24+ (JEP 491) qualifier in exactly
+  the four spots (`shortAnswer`, two `mindMap` entries, `whatIf`) that previously stated pinning as an
+  unqualified, version-agnostic fact; a `related` link to the new, deeper
+  `virtual-thread-synchronized-pinning` was added. All other fields on that page (handsOn code,
+  follow-ups, mistakes, best practices, tags, difficulty, `askedIn`) are untouched.
+- **Verified:** `tsc --noEmit` clean; `npm run build` green — **355 pages** (unchanged), shared JS
+  **102 kB** (unchanged), `/q/[slug]` **111 kB** (unchanged); **312 unique slugs, no duplicates**; every
+  `related` link across the full 312-question bank resolves; no lingering reference to the removed
+  `virtual-thread-executor-vs-pooled` slug anywhere in `lib/`. Spot-checked in-browser: the four changed
+  pages plus the corrected CE3 page all render cleanly, no console errors.
+- **Files:** `lib/questions-extra/{multithreading, java-8, java-collections, advanced-java}.ts`
+  (content-only edits) — no other files touched this pass.
+- **Not pushed.** Same as the batch above — left for owner review, no commit/branch/deploy.
+
 ### Changed (Donate nav removal, Store → "Guru's Picks" rename, "Real Talk from Guru" field) — 2026-08-09
 Owner-directed session: three scoped, non-breaking changes (see DECISIONS #037). **No URL changes, no
 SEO/structured-data regression, no page-count change** (330 pages, unchanged).
@@ -773,7 +903,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (Donate nav removal, "Guru's Picks" rename, "Real Talk from Guru" field; DECISIONS #037)
+- **Last Updated:** 2026-08-12 (CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions, plus same-day review-driven correction pass — Q15/Q18 replaced, Q7/Q11/Q16 corrected, CE3 accuracy fix)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

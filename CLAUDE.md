@@ -148,7 +148,7 @@ and a prod build corrupts the running dev server).
 
 ## Testing Checklist (before every release)
 
-- [ ] **Build** — `npm run build` green (expected page count; currently **330**).
+- [ ] **Build** — `npm run build` green (expected page count; currently **355**).
 - [ ] **TypeScript** — `npx tsc --noEmit` clean.
 - [ ] **ESLint** — *not configured in this project*; `tsc` + `build` are the standing gates. If a lint
       gate is introduced, migrate to the ESLint CLI (`next lint` is deprecated for Next 16).
@@ -204,7 +204,7 @@ Full catalogue + implementation guidance: [docs/14_ANALYTICS.md](docs/14_ANALYTI
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (Logo/favicon refresh — FIG badge logo; testing-checklist page count 329 → 330)
+- **Last Updated:** 2026-08-12 (CE4 Java content batch — 25 questions, +java-8.ts; testing-checklist page count 330 → 355)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

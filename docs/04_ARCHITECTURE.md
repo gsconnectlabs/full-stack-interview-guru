@@ -75,8 +75,10 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
   categories.ts              Category catalog (19 categories)
   questions.ts               Base question bank (32) + merges questions-extra; getQuestion,
                              questionsByCategory, getQuestionNav (category position + prev/next)
-  questions-extra/           Expansion bank (255 questions, 12 files + index):
-                             9 flagship categories × 20 + Python × 25 + JSON × 25 + Advanced Java × 25 (content expansion)
+  questions-extra/           Expansion bank (280 questions, 13 files + index):
+                             9 flagship categories × 20 + Python × 25 + JSON × 25 + Advanced Java × 25 +
+                             Java 8+/CE4 × 25 (content expansion, split across java-8.ts (new, 8) plus
+                             core-java/java-collections/multithreading/jvm (appended, 17))
   category-visibility.ts     Live-count helpers: MIN_LIVE_TO_LIST, liveCount, isListed,
                              listedCategories, totalLiveQuestions (drives browse/sitemap — DECISIONS #034)
   search.ts                  Prebuilt client-side search index
@@ -235,7 +237,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (FIG Teal + Gold visual identity — token recolor + editorial serif; DECISIONS #036)
+- **Last Updated:** 2026-08-12 (CE4 Java content batch — java-8.ts + appended questions, 255 → 280 expansion questions)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

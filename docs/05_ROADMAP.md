@@ -531,6 +531,75 @@ pick them up with zero extra wiring — see [04_ARCHITECTURE.md](./04_ARCHITECTU
 - **SEO affected:** Positive (a category flips to indexed + 25 keyword-led pages + internal linking) —
   no URL/schema change.
 
+### CE4 — Modern Java / Concurrency / Production Engineering question bank (25 questions)
+- **Status:** ✅ **Completed and corrected 2026-08-12, not yet released** — owner proposed an initial
+  25-topic pool (HashMap/JMM/ExecutorService/CompletableFuture/Streams/GC fundamentals); Phase 1–4
+  analysis against the full 117-question Java inventory found nearly every proposed topic already had a
+  canonical page, several at two depth levels. Re-scoped to genuinely uncovered current (Java 17–21+)
+  senior/production topics and **presented to the owner for approval before any content was written**
+  (per `CLAUDE.md`'s golden rule) — approved as proposed, then implemented, then **reviewed and
+  corrected the same day** once a full-text (not title-level) comparison against CE3 surfaced two real
+  overlaps and a version-accuracy gap (see the correction sub-entry below). Final state: **8** questions
+  in the new `lib/questions-extra/java-8.ts` (`java8Extra`) and **17** appended to the existing
+  `core-java.ts` (+2), `java-collections.ts` (+3), `multithreading.ts` (+7), `jvm.ts` (+5) — wired
+  into `lib/questions-extra/index.ts`. Coverage: parallelStream production pitfalls, Stream
+  laziness/short-circuiting/pipeline cost, `Collectors.toMap()` merge conflicts, `Optional`
+  anti-patterns, method-reference vs lambda performance (capturing vs non-capturing, JMH-verified
+  claims), custom functional interfaces (java-8); Java 21 Sequenced Collections, `ConcurrentHashMap.size()`
+  vs `mappingCount()`, atomic compound operations with specification-safe wording (java-collections);
+  `StampedLock` optimistic reads, thread-pool exhaustion / bulkhead pattern, `thenApply` vs
+  `thenApplyAsync` thread semantics, ThreadLocal-based caching under the virtual-thread mental model,
+  structured concurrency (current JDK 25 `open()`/`Joiner` API, **preview through JDK 26/JEP 525, no
+  finalized version**), `synchronized`/virtual-thread pinning (version-accurate: Java 21–23 pins,
+  **JEP 491/Java 24 removed it**), what `CompletableFuture.orTimeout()` does — and does not — do to the
+  underlying computation (multithreading); CDS/AppCDS cold-start, GraalVM Native Image trade-offs, JMH
+  micro-benchmarking pitfalls, diagnosing high CPU via async-profiler/JFR, lambda/Stream closure memory
+  leaks (jvm); primitive-stream object-creation cost, Records vs Lombok (core-java). Full FIG schema
+  per question plus SEO overrides; no new schema fields — "green/red flags" and "strong candidate
+  answer" reuse the existing `interviewerExpectation`/`commonMistakes`/`guruTake` fields.
+  **No duplicate content** (verified against full question text, not just titles, after the correction
+  pass below): every question near existing coverage (ConcurrentHashMap, ExecutorService,
+  CompletableFuture, virtual threads, object-creation cost) takes a distinct deeper facet and
+  cross-links via `related` (the CE3 pattern). `java-8` category goes **2 → 10 live**, crossing
+  `MIN_LIVE_TO_LIST` — becomes **listed + indexed + in the sitemap**. Verified (post-correction):
+  TypeScript clean; production build green (**355 pages**, +25 `/q/[slug]`, was 330); **312 unique
+  slugs, no duplicates**; all `related` refs resolve **bank-wide**; sampled new/corrected pages render
+  every FIG section, no console errors; shared JS **102 kB unchanged**, `/q/[slug]` **111 kB
+  unchanged**.
+  - **Correction sub-pass (same day):** owner-directed review compared the batch against full CE3
+    question text and found `virtual-thread-executor-vs-pooled` restated CE3's
+    `virtual-threads-pinning-structured` Semaphore/downstream-capacity guidance, and the original
+    `completablefuture-timeout-ortimeout` restated a point already in CE3's
+    `completablefuture-error-handling`. It also found the *existing* `virtual-threads-pinning-structured`
+    stated pre-JEP-491 pinning as an unqualified fact, and that the `structured-concurrency-deep-dive`
+    example used the JDK 21–24 API superseded by JDK 25's `open()`/`Joiner` shape (JEP 505 — confirmed
+    via live JEP/Javadoc lookup, not training-data recall). Fixes: Q15 replaced with
+    `threadlocal-caching-virtual-threads` (ThreadLocal reuse-caching vs the virtual-thread mental model
+    — no Semaphore/pooling overlap); Q18 reframed to "what actually happens to the underlying work when
+    orTimeout() fires" (cancellation semantics, not a repeat of the API names); Q16 updated to the
+    current JDK 25 API + accurate preview status; Q7 deepened with the capturing/non-capturing
+    distinction; Q11's wording de-risked to avoid claiming a guaranteed exception; and a **surgical**
+    (not full-rewrite) correction to CE3's `virtual-threads-pinning-structured` adding the Java 21–23 vs
+    24+ qualifier in the four spots that needed it. Full detail in
+    [06_CHANGELOG.md](./06_CHANGELOG.md)'s "Fixed" entry.
+- **Reason:** Phase 2 content growth + a real duplication risk surfaced during analysis — the owner's
+  original topic pool overlapped heavily with existing content, so the batch was redirected toward
+  under-covered, currently-relevant senior Java topics instead, which also happened to unlock the
+  `java-8` category (parallel to how CE1–CE3 each unlocked a thin category). A same-day review then
+  caught deeper, text-level overlaps and a version-accuracy gap that a title-only duplicate check had
+  missed, prompting the scoped correction pass.
+- **Benefits:** Newly indexed `java-8` category + 25 indexable, non-cannibalizing long-tail pages;
+  version-accurate coverage of Java 21–25 changes (virtual-thread pinning/JEP 491, structured
+  concurrency's JDK 25 API reshape/JEP 505) that most competing content gets wrong or leaves outdated.
+- **Complexity:** M (content authoring + duplicate/version-accuracy research, including a live-verified
+  correction pass; no code/architecture change).
+- **Files:** new `lib/questions-extra/java-8.ts`; `lib/questions-extra/{core-java, java-collections,
+  multithreading, jvm, advanced-java}.ts` (append-only, plus the CE3 surgical correction);
+  `lib/questions-extra/index.ts` (import + spread).
+- **SEO affected:** Positive (a category flips to indexed + 25 keyword-led pages + internal linking) —
+  no URL/schema change.
+- **Not released:** commit/push/deploy left for explicit owner action.
+
 ---
 
 ## 🔮 Future Improvements
@@ -564,7 +633,7 @@ its scope is explicitly approved:
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (H4 — Teal + Gold palette, dark-only; DECISIONS #036)
+- **Last Updated:** 2026-08-12 (CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions, completed and corrected same day)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

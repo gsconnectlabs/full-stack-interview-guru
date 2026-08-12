@@ -1699,18 +1699,19 @@ static double area(Shape s) {
     heading: "Virtual Threads in Production — Interview Questions",
     tags: ["virtual threads", "pinning", "structured concurrency", "carrier thread", "project loom"],
     shortAnswer:
-      "Virtual threads run on a small pool of platform 'carrier' threads and unmount while blocked on I/O — so millions can exist cheaply. They 'pin' (stay mounted, blocking the carrier) inside synchronized blocks that block, or during native/JNI calls; replace those with ReentrantLock to avoid pinning. Don't pool virtual threads — create one per task (they're disposable) and limit concurrency with a Semaphore instead. Structured concurrency (StructuredTaskScope) ties subtask lifetimes to the parent for clean cancellation and error propagation.",
+      "Virtual threads run on a small pool of platform 'carrier' threads and unmount while blocked on I/O — so millions can exist cheaply. On Java 21–23, they 'pin' (stay mounted, blocking the carrier) inside synchronized blocks that block, or during native/JNI calls; the workaround on those versions is to replace hot synchronized blocks with ReentrantLock. As of Java 24 (JEP 491), the JVM reimplemented monitor support so synchronized no longer pins the carrier in the common case — check which JDK a codebase targets before applying the ReentrantLock workaround. Don't pool virtual threads — create one per task (they're disposable) and limit concurrency with a Semaphore instead. Structured concurrency (StructuredTaskScope) ties subtask lifetimes to the parent for clean cancellation and error propagation.",
     mindMap: [
       {
         type: "kv",
         rows: [
           { k: "Carrier thread", v: "Platform thread that runs a virtual thread" },
           { k: "Unmount", v: "VT frees the carrier while blocked on I/O" },
-          { k: "Pinning", v: "synchronized-blocking / native keeps it mounted" },
+          { k: "Pinning (Java 21–23)", v: "synchronized-blocking / native keeps it mounted" },
+          { k: "Java 24+ (JEP 491)", v: "synchronized no longer pins the carrier in the common case" },
           { k: "Don't pool", v: "one VT per task; limit with a Semaphore" },
         ],
       },
-      { type: "text", content: "**Pinning** defeats the point: a pinned virtual thread holds its carrier while blocked, so you lose the concurrency win. The usual culprit is blocking inside a `synchronized` block — swap it for a `ReentrantLock`, which lets the VT unmount." },
+      { type: "text", content: "**Pinning** defeats the point: a pinned virtual thread holds its carrier while blocked, so you lose the concurrency win. On Java 21–23 the usual culprit is blocking inside a `synchronized` block — swap it for a `ReentrantLock`, which lets the VT unmount. As of Java 24, JEP 491 removed this specific pinning problem for synchronized in the common case, so confirm the target JDK before assuming the ReentrantLock workaround is still necessary." },
       { type: "text", content: "Pooling virtual threads is an anti-pattern — they're cheap and disposable, so use `newVirtualThreadPerTaskExecutor()` and cap real concurrency (e.g. to a downstream connection limit) with a `Semaphore`, not a fixed pool." },
       { type: "text", content: "**Key takeaway:** virtual threads make blocking code scale — as long as you avoid pinning (prefer locks over synchronized), don't pool them, and use structured concurrency to manage subtask lifetimes." },
     ],
@@ -1727,7 +1728,7 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
     },
     whatIf: {
       q: "You migrated to virtual threads but throughput didn't improve — what would you check first?",
-      a: "Pinning. If your hot path blocks inside synchronized blocks or makes native/JNI calls, the virtual thread stays mounted on its carrier while blocked, so you're effectively back to a small fixed pool of platform threads. Enable jdk.tracePinnedThreads (or JFR's pinned-thread events) to find the offenders, then replace blocking synchronized with ReentrantLock so the VT can unmount. Also verify you're not pooling virtual threads or funnelling everything through a shared bounded resource that serialises the work.",
+      a: "Pinning. If your hot path blocks inside synchronized blocks or makes native/JNI calls, the virtual thread stays mounted on its carrier while blocked, so you're effectively back to a small fixed pool of platform threads. Enable jdk.tracePinnedThreads (or JFR's pinned-thread events) to find the offenders. On Java 21–23, replace blocking synchronized with ReentrantLock so the VT can unmount; on Java 24+, JEP 491 removed synchronized-caused pinning in the common case, so check your target JDK before assuming that fix is still needed. Also verify you're not pooling virtual threads or funnelling everything through a shared bounded resource that serialises the work.",
     },
     realWorld:
       "Virtual threads let a thread-per-request server handle huge concurrency with simple blocking code — no reactive rewrite. The real migration work is auditing for pinning (legacy synchronized around I/O, old JDBC drivers), replacing thread pools with per-task virtual threads plus Semaphore-based limits, and adopting StructuredTaskScope for clean fan-out/cancellation of downstream calls.",
@@ -1751,6 +1752,6 @@ try (var scope = new StructuredTaskScope.ShutdownOnFailure()) {
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Netflix", "Google", "Microsoft"],
-    related: ["virtual-threads", "threadlocal-context-scopedvalues", "forkjoin-recursivetask-commonpool"],
+    related: ["virtual-threads", "threadlocal-context-scopedvalues", "forkjoin-recursivetask-commonpool", "virtual-thread-synchronized-pinning"],
   },
 ];

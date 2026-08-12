@@ -11,6 +11,7 @@ import { systemDesignExtra } from "./system-design";
 import { pythonExtra } from "./python";
 import { jsonExtra } from "./json";
 import { advancedJavaExtra } from "./advanced-java";
+import { java8Extra } from "./java-8";
 
 /**
  * Aggregated expansion batches. Each flagship category adds its own file here and
@@ -26,6 +27,12 @@ import { advancedJavaExtra } from "./advanced-java";
  * Python — 25 questions (Phase 2 content expansion, CE1).
  * JSON — 25 questions (Phase 2 content expansion, CE2).
  * Advanced Java — 25 questions (Phase 2 content expansion, CE3 / Release 10).
+ * CE4 (2026-08) — 25 modern Java / concurrency / production-engineering questions,
+ * split across existing files by natural topical fit: 8 new to `java-8.ts` (new
+ * file — takes the category 2 -> 10 live, crossing MIN_LIVE_TO_LIST), 3 appended
+ * to `java-collections.ts`, 7 to `multithreading.ts`, 5 to `jvm.ts`, 2 to
+ * `core-java.ts`. Every question that sits near existing coverage takes a
+ * distinct, deeper facet and cross-links via `related` (the CE3 pattern).
  */
 export const extraQuestions: Question[] = [
   ...coreJavaExtra,
@@ -40,4 +47,5 @@ export const extraQuestions: Question[] = [
   ...pythonExtra,
   ...jsonExtra,
   ...advancedJavaExtra,
+  ...java8Extra,
 ];

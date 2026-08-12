@@ -955,4 +955,376 @@ export const jvmExtra: Question[] = [
     askedIn: ["Amazon", "Microsoft", "Deloitte"],
     related: ["metaspace-vs-permgen", "jvm-jre-jdk"],
   },
+
+  // ---------------------------------------------------- CE4 additions (2026-08)
+  {
+    slug: "jvm-cds-appcds-startup",
+    categoryId: "jvm",
+    topic: "Troubleshooting",
+    question: "How does Class-Data Sharing (CDS/AppCDS) cut JVM startup time, and why does it matter for containers and serverless?",
+    seoTitle: "Class-Data Sharing (CDS/AppCDS) Explained: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "How Class-Data Sharing and AppCDS cut JVM startup and reduce memory by pre-parsing class metadata into a shareable archive — and why cold-start time matters for containers and serverless Java.",
+    heading: "Class-Data Sharing (CDS/AppCDS) — Interview Questions",
+    tags: ["cds", "appcds", "startup time", "cold start", "containers"],
+    shortAnswer:
+      "Every JVM start normally has to parse and verify the bytecode of every class it loads, including java.lang.String and the rest of the core library, from scratch. Class-Data Sharing pre-parses core-library classes once into a shareable archive file that the JVM can memory-map directly on subsequent starts, skipping that parsing/verification work; AppCDS extends the same mechanism to your own application and third-party library classes. The practical payoff is faster startup and lower memory (the archive can be shared across JVM processes on the same machine) — which matters far more for short-lived containers and serverless functions, where startup time is a direct cost, than for a long-running server where a slower start is a one-time, amortized expense.",
+    mindMap: [
+      { type: "text", content: "CDS attacks a cost that's easy to overlook when you're used to long-running servers: **class loading and verification is real, repeated work** the JVM redoes on every single process start, for the same core classes every time. A pre-built, memory-mapped archive turns that repeated parse into a fast mmap." },
+      {
+        type: "kv",
+        rows: [
+          { k: "CDS (base)", v: "Shares core JDK class metadata via a pre-built archive" },
+          { k: "AppCDS", v: "Extends sharing to your app + library classes" },
+          { k: "Dynamic CDS", v: "Auto-generates the app archive at JVM exit — less manual setup" },
+          { k: "Matters most for", v: "Containers/serverless — many short-lived JVM starts" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** CDS is a startup/memory optimization, not a throughput one — it doesn't make a long-running service faster once it's warmed up, it makes getting to 'started' faster and cheaper, which is exactly the cost that dominates in scale-to-zero, per-request-cold-start environments." },
+    ],
+    handsOn: {
+      lang: "bash",
+      code: `# Dynamic CDS (JDK 13+): generate an app-class archive automatically at exit
+java -XX:ArchiveClassesAtExit=app-cds.jsa -jar app.jar
+
+# Reuse the archive on subsequent starts for faster startup
+java -XX:SharedArchiveFile=app-cds.jsa -jar app.jar
+
+# Base CDS is on by default in modern JDKs for core classes;
+# AppCDS/dynamic CDS is what you opt into for your own application classes.`,
+    },
+    whatIf: {
+      q: "Does CDS help a long-running microservice the same way it helps a serverless function?",
+      a: "It still shaves real time off startup either way, but the impact is proportionally much smaller for a service that runs for hours or days — the one-time startup cost is amortized. For a serverless function or an autoscaling pod that starts fresh per invocation or per scale-up event, that same fixed startup cost is paid repeatedly and directly affects cold-start latency and cost.",
+    },
+    realWorld:
+      "Teams moving Java workloads to Lambda, Cloud Run, or Kubernetes with aggressive autoscaling specifically chase startup time because it's on the critical path for user-facing latency (cold start) or billed compute time — CDS/AppCDS is one of the lower-effort levers available before reaching for heavier options like GraalVM Native Image, and Spring Boot's own CDS support exists precisely because of this pressure.",
+    guruTake:
+      "I'd frame CDS as 'the JVM startup optimization you get for a config flag, before you consider Native Image.' It's a good sign of practical cloud-native Java awareness if a candidate brings it up unprompted when discussing container startup latency.",
+    interviewerExpectation: [
+      "Explains CDS pre-parses/shares class metadata to skip repeated work",
+      "Distinguishes base CDS (JDK classes) from AppCDS (app classes)",
+      "Connects the benefit specifically to startup time, not steady-state throughput",
+      "Names containers/serverless as the environments where this matters most",
+    ],
+    followUps: [
+      "How does dynamic CDS differ from the older, more manual AppCDS workflow?",
+      "How does CDS compare to GraalVM Native Image for solving the same cold-start problem?",
+      "Why can a CDS archive be shared in memory across multiple JVM processes on the same host?",
+    ],
+    commonMistakes: [
+      "Assuming CDS speeds up steady-state throughput, not just startup",
+      "Not knowing the difference between base CDS and AppCDS",
+      "Overlooking CDS in favor of jumping straight to Native Image",
+    ],
+    bestPractices: [
+      "Enable dynamic CDS for app classes on startup-sensitive deployments",
+      "Measure actual cold-start improvement before adding complexity",
+      "Consider CDS before reaching for Native Image's larger trade-offs",
+    ],
+    relatedTech: ["GraalVM", "jlink", "Spring Boot"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Google"],
+    related: ["jdk-jre-jvm-internals", "graalvm-native-image-tradeoffs"],
+  },
+  {
+    slug: "graalvm-native-image-tradeoffs",
+    categoryId: "jvm",
+    topic: "JIT",
+    question: "GraalVM Native Image vs a jlink'd JVM runtime — what do you actually give up for instant startup?",
+    seoTitle: "GraalVM Native Image Trade-offs: Interview Questions & Answers | Full Stack Interview Guru",
+    seoDescription:
+      "GraalVM Native Image AOT compilation vs a jlink'd JVM: instant startup and lower memory vs no JIT warm-up ceiling, closed-world reflection limits, and longer build times.",
+    heading: "GraalVM Native Image Trade-offs — Interview Questions",
+    tags: ["graalvm", "native image", "aot", "jit", "reflection"],
+    shortAnswer:
+      "Native Image ahead-of-time compiles your application and a closed-world analysis of everything it can prove is reachable into a standalone native executable — no JVM startup, no class loading, no JIT warm-up, so it starts in milliseconds and uses less memory. The trade-off is real: the closed-world assumption means reflection, dynamic class loading, and JNI have to be explicitly configured (or they silently fail at runtime, not compile time), build times are much longer, and because there's no JIT profiling hot paths at runtime, peak throughput after a long warm-up can be lower than a traditional JVM that's had time to tier up to C2-optimized code.",
+    mindMap: [
+      { type: "text", content: "The JIT's advantage is that it optimizes based on **actual runtime behavior** — which branches are hot, which types actually show up at a call site. Native Image's AOT compilation has to make those decisions at build time with only static analysis, which is why it trades away the JIT's peak-throughput ceiling for the startup speed a JIT can never match." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Startup", v: "Native Image: milliseconds. JVM (even jlink'd): still has JIT warm-up" },
+          { k: "Peak throughput", v: "JVM/JIT usually wins after sufficient warm-up" },
+          { k: "Reflection/dynamic loading", v: "Must be explicitly configured for Native Image (closed-world)" },
+          { k: "Build time", v: "Native Image builds are significantly slower than a normal compile" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** Native Image isn't strictly 'better' — it's a different point on the startup-vs-peak-throughput curve, and the closed-world reflection constraint is a real engineering cost, not a footnote, for any codebase leaning on Spring/Jackson-style runtime reflection." },
+    ],
+    handsOn: {
+      lang: "bash",
+      code: `# Build a native executable (requires GraalVM + native-image tool)
+native-image -jar app.jar
+
+# Reflection needs explicit configuration or it fails at runtime, not compile time
+native-image -H:ReflectionConfigurationFiles=reflect-config.json -jar app.jar
+
+# Frameworks like Spring Boot 3 / Quarkus generate this config automatically
+# at build time via their own native-image support`,
+    },
+    whatIf: {
+      q: "Why would reflection that works fine on a normal JVM silently fail in a Native Image build?",
+      a: "Native Image performs a closed-world static analysis at build time to decide exactly which classes/methods to include in the executable — anything reached only through reflection (a class name built from a string, a Jackson deserializer discovered dynamically) isn't visible to that analysis unless you explicitly declare it in a reflection-config file, so it's simply missing from the binary and throws at runtime instead of failing to compile.",
+    },
+    realWorld:
+      "This is exactly why Spring Boot 3+ and Quarkus invested heavily in Native Image support — they generate the required reflection/resource configuration automatically from framework metadata, because hand-writing it for a typical Spring app's dependency-injection and serialization reflection usage would be impractical. Teams evaluating Native Image for cold-start-sensitive deployments (serverless, fast-autoscaling pods) need a framework with that tooling, not just GraalVM itself.",
+    guruTake:
+      "I'd position it as: Native Image is the right call when startup latency is directly on the user- or cost-critical path and the framework has mature native support — otherwise a jlink'd runtime with CDS gets you most of the startup win with far less build complexity and no closed-world reflection tax.",
+    interviewerExpectation: [
+      "Explains AOT vs JIT and the resulting startup-vs-peak-throughput trade-off",
+      "Knows the closed-world assumption and its reflection/dynamic-loading implications",
+      "Mentions framework-level native support (Spring Boot, Quarkus) as a practical requirement",
+      "Doesn't present Native Image as a strictly superior replacement for the JVM",
+    ],
+    followUps: [
+      "How do Spring Boot and Quarkus generate the reflection configuration automatically?",
+      "Why might a long-running, high-throughput service actually be worse off on Native Image?",
+      "How does Native Image's approach compare to CDS for solving cold-start?",
+    ],
+    commonMistakes: [
+      "Assuming Native Image is a drop-in replacement with no trade-offs",
+      "Not accounting for reflection-config maintenance overhead",
+      "Ignoring the peak-throughput difference for long-running services",
+    ],
+    bestPractices: [
+      "Reach for Native Image when startup latency is genuinely on the critical path",
+      "Rely on framework-generated reflection config rather than hand-writing it",
+      "Benchmark peak throughput, not just startup, before committing",
+    ],
+    relatedTech: ["Spring Boot", "Quarkus", "CDS"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Google", "Oracle"],
+    related: ["jvm-cds-appcds-startup", "jdk-jre-jvm-internals"],
+  },
+  {
+    slug: "jmh-microbenchmarking-pitfalls",
+    categoryId: "jvm",
+    topic: "JIT",
+    question: "Why does timing a loop with System.currentTimeMillis() lie to you, and how does JMH avoid those traps?",
+    seoTitle: "JMH Microbenchmarking Pitfalls: Interview Questions & Answers | Full Stack Interview Guru",
+    seoDescription:
+      "Why hand-rolled Java micro-benchmarks lie: JIT warm-up, dead-code elimination, and constant folding — and how JMH's forking, warm-up iterations and blackholes produce trustworthy numbers.",
+    heading: "JMH Microbenchmarking Pitfalls — Interview Questions",
+    tags: ["jmh", "microbenchmark", "jit warmup", "dead code elimination", "performance"],
+    shortAnswer:
+      "A hand-written loop timed with System.currentTimeMillis() gets skewed by at least three JIT-related effects: the code runs interpreted or under low-tier C1 compilation for the first many iterations before C2 kicks in, so early iterations are much slower than steady-state; the JIT can eliminate 'dead' code whose result is never used, silently benchmarking nothing; and constant folding can pre-compute a result at compile time if inputs look constant to the optimizer, again measuring nothing real. JMH (Java Microbenchmark Harness) exists specifically to defeat these: it runs dedicated warm-up iterations before measuring, forks a fresh JVM process per benchmark to avoid cross-benchmark JIT pollution, and uses Blackhole to consume results so the JIT can't optimize the 'unused' computation away.",
+    mindMap: [
+      { type: "text", content: "The core problem is that **modern JVMs are adaptive optimizers**, and a naive timing loop measures the optimizer warming up, not the code's steady-state cost — plus the optimizer is smart enough to delete work it can prove is pointless, which a benchmark's whole purpose is to avoid." },
+      {
+        type: "kv",
+        rows: [
+          { k: "JIT warm-up", v: "Early iterations run interpreted/C1 — much slower than C2 steady-state" },
+          { k: "Dead-code elimination", v: "Unused results get optimized away — you benchmark nothing" },
+          { k: "Constant folding", v: "Compile-time-constant-looking inputs get pre-computed away" },
+          { k: "JMH's fix", v: "Warm-up iterations, forked JVMs, Blackhole to consume results" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** 'I benchmarked it and it's faster' is only credible with a methodology that accounts for JIT warm-up and prevents dead-code elimination — naming JMH by name, and why it's needed, is what separates a real performance claim from a guess." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `@Benchmark
+@Warmup(iterations = 5)
+@Measurement(iterations = 5)
+@Fork(1)
+public void stringConcat(Blackhole bh) {
+    String result = "a" + "b" + counter++;
+    bh.consume(result);   // prevents dead-code elimination of "result"
+}
+
+// Naive (misleading) alternative:
+long start = System.currentTimeMillis();
+for (int i = 0; i < 1_000_000; i++) {
+    String s = "a" + "b" + i;   // JIT may eliminate this — result is unused
+}
+long elapsed = System.currentTimeMillis() - start; // measures ~nothing reliable`,
+    },
+    whatIf: {
+      q: "If you just print the result inside the loop, does that fix dead-code elimination?",
+      a: "It helps but isn't sufficient or standardized — printing has its own I/O overhead that pollutes the measurement, and the JIT can still optimize surrounding code in ways a manual loop doesn't control for. Blackhole.consume() is specifically designed to force the JIT to treat the value as used without the side effects of real I/O, which is why JMH is the accepted standard rather than ad-hoc print statements.",
+    },
+    realWorld:
+      "This comes up whenever a PR claims a performance improvement backed only by 'I timed it before and after with System.currentTimeMillis()' — without JMH, that claim could easily be measuring JIT warm-up noise, dead-code elimination artifacts, or just JVM-to-JVM variance, and a careful reviewer will ask for a JMH benchmark before trusting a performance-motivated code change, especially one that trades off readability for speed.",
+    guruTake:
+      "If someone shows me a 'proof' with a manual timing loop, my first question is whether the JIT could have eliminated the work being measured — it's not pedantry, it's the single most common way well-intentioned benchmarks lie. I'd reach for JMH before making any performance claim I actually plan to defend.",
+    interviewerExpectation: [
+      "Names JIT warm-up as a source of skew in naive timing",
+      "Explains dead-code elimination and constant folding as measurement risks",
+      "Knows JMH's mitigations: warm-up iterations, forking, Blackhole",
+      "Treats unverified performance claims with appropriate skepticism",
+    ],
+    followUps: [
+      "Why does JMH fork a separate JVM process per benchmark instead of running them all in one?",
+      "What does Blackhole.consume() actually do to prevent dead-code elimination?",
+      "How would you benchmark code that has side effects, where JMH's isolation doesn't neatly apply?",
+    ],
+    commonMistakes: [
+      "Trusting a System.currentTimeMillis() loop as a real performance measurement",
+      "Not accounting for JIT warm-up before measuring",
+      "Writing benchmark code whose result is never consumed, inviting dead-code elimination",
+    ],
+    bestPractices: [
+      "Use JMH for any performance claim meant to be trusted or defended",
+      "Always include warm-up iterations before measuring",
+      "Consume benchmark results (Blackhole) to prevent the JIT from eliminating them",
+    ],
+    relatedTech: ["JIT", "Escape Analysis", "Tiered Compilation"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Google", "Oracle"],
+    related: ["jit-compilation", "stream-pipeline-vs-loop-hot-path"],
+  },
+  {
+    slug: "diagnosing-high-cpu-production-jvm",
+    categoryId: "jvm",
+    topic: "Troubleshooting",
+    question: "A Java service is pegging CPU with no errors logged — how do you find out why?",
+    seoTitle: "Diagnosing High CPU in Production Java (JFR/async-profiler) | Full Stack Interview Guru",
+    seoDescription:
+      "A practical, tool-by-tool method for diagnosing high CPU in a production JVM: distinguishing hot application code, GC overhead, and lock contention using async-profiler flame graphs and JFR.",
+    heading: "Diagnosing High CPU in Production Java — Interview Questions",
+    tags: ["cpu profiling", "async-profiler", "jfr", "flame graph", "production troubleshooting"],
+    shortAnswer:
+      "High CPU with no errors means the JVM is legitimately busy doing something — the diagnostic job is figuring out whether that something is your application's hot code, garbage collection, or threads spinning on lock contention, because each has a completely different fix. The modern, low-overhead approach is a CPU flame graph from async-profiler (or JDK Flight Recorder, which ships in the JDK itself) taken directly against the running production process — it samples native and Java stack frames together and renders where CPU time is actually going, which is far more reliable than guessing from a thread dump alone.",
+    mindMap: [
+      { type: "text", content: "'High CPU' isn't one problem — it's a symptom with **at least three different root causes** that look identical from a CPU graph alone: your own code doing real (or wasteful) work, the GC running more than expected, or threads burning cycles spinning on a contended lock instead of blocking. A flame graph is how you tell them apart without guessing." },
+      {
+        type: "kv",
+        rows: [
+          { k: "Hot application code", v: "Flame graph shows wide bars in your own method stacks" },
+          { k: "GC overhead", v: "Wide bars in GC threads/frames — points to heap/allocation tuning" },
+          { k: "Lock contention", v: "Threads spinning/blocked — pair CPU profile with thread dumps" },
+          { k: "Tools", v: "async-profiler (flame graphs), JFR (built into the JDK), jstack" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** the methodology matters more than any single tool — capture a CPU profile first to see WHERE the cycles go (app code vs GC vs lock spin), then drill into that specific area, rather than starting with a thread dump and guessing." },
+    ],
+    handsOn: {
+      lang: "bash",
+      code: `# async-profiler: attach to a running JVM, produce a CPU flame graph
+./profiler.sh -d 30 -f cpu-profile.html <pid>
+
+# Or use JDK Flight Recorder — built into the JDK, low overhead, safe for prod
+jcmd <pid> JFR.start duration=60s filename=recording.jfr
+jcmd <pid> JFR.dump filename=recording.jfr
+
+# Open recording.jfr in JDK Mission Control to see CPU, GC and lock-contention views`,
+    },
+    whatIf: {
+      q: "What if the flame graph shows most CPU time inside JVM/GC frames rather than your own code?",
+      a: "That points you toward GC tuning rather than application code — check the allocation rate (are you creating far more short-lived objects than expected?), the collector's pause/CPU behavior, and heap sizing, using the same diagnostic path as a dedicated GC-pause investigation rather than treating it as an application logic bug.",
+    },
+    realWorld:
+      "This is a standard on-call runbook step at companies running JVM services at scale: CPU alerts fire, and instead of guessing, the responder pulls a 30-60 second async-profiler or JFR CPU profile directly from the affected pod/instance — safe to do in production because both tools are designed for low overhead — and the flame graph usually points immediately at either a specific hot method, an unexpectedly GC-heavy period, or a lock a thread dump can then confirm.",
+    guruTake:
+      "My answer to 'how do you debug high CPU' is never 'add print statements and redeploy' — it's 'take a profile of the process that's actually having the problem, right now, in production, with a tool built for that.' That distinction — profiling live instead of trying to reproduce locally — is usually what separates a senior answer here.",
+    interviewerExpectation: [
+      "Distinguishes hot code, GC overhead, and lock contention as separate causes",
+      "Names async-profiler and/or JFR as the tools, not just 'add logging'",
+      "Knows these tools are low-overhead enough for production use",
+      "Describes a methodology (profile first, then drill in), not a single trick",
+    ],
+    followUps: [
+      "How does async-profiler capture native frames that a pure-Java profiler would miss?",
+      "How would you distinguish GC-caused CPU from application-caused CPU in a flame graph?",
+      "What's the difference between a CPU profile and a wall-clock (latency) profile?",
+    ],
+    commonMistakes: [
+      "Jumping straight to a thread dump without a CPU profile for context",
+      "Assuming high CPU always means inefficient application code",
+      "Avoiding profiling tools in production due to overhead concerns that don't apply to modern low-overhead profilers",
+    ],
+    bestPractices: [
+      "Take a CPU flame graph (async-profiler or JFR) as the first diagnostic step",
+      "Correlate CPU profiles with thread dumps for lock-contention cases",
+      "Use JFR for its built-in, always-available low overhead in production",
+    ],
+    relatedTech: ["JDK Mission Control", "jstack", "async-profiler"],
+    difficulty: "Hard",
+    experience: ["8-15 years"],
+    askedIn: ["Amazon", "Microsoft", "Google", "Deloitte"],
+    related: ["diagnosing-gc-pauses", "thread-dump-diagnosis", "reading-gc-logs"],
+  },
+  {
+    slug: "lambda-stream-closure-memory-leak",
+    categoryId: "jvm",
+    topic: "Troubleshooting",
+    question: "How can a Stream or lambda closure quietly leak memory in a long-lived cache?",
+    seoTitle: "Lambda/Stream Closure Memory Leaks: Interview Questions & Answers | Full Stack Interview Guru",
+    seoDescription:
+      "How a lambda's captured variables can keep a large object graph reachable far longer than intended in caches, callback registries, and CompletableFuture chains — with a fix pattern.",
+    heading: "Lambda & Stream Closure Memory Leaks — Interview Questions",
+    tags: ["lambda", "closure", "memory leak", "cache", "gc roots"],
+    shortAnswer:
+      "A Java lambda captures the effectively-final local variables it references by holding a reference to them inside the generated implementation object — if that lambda is itself long-lived (stored in a cache, registered as a callback, held by a CompletableFuture chain that hasn't completed), everything it captured stays reachable from a GC-roots perspective for exactly as long as the lambda does, even if the capturing method returned long ago. The classic leak shape is a lambda that only needed one small field off a large object but captured the whole object (or 'this') by reference, keeping the entire object graph alive.",
+    mindMap: [
+      { type: "text", content: "A lambda isn't magic — it's a generated object with fields for whatever it captured, same as an old-school anonymous inner class. **Capturing 'this' or a large object when you only need one small piece of it** is the same mistake as any other object holding a reference longer than necessary — lambdas just make it easy to do without noticing." },
+      {
+        type: "kv",
+        rows: [
+          { k: "What's captured", v: "Effectively-final locals referenced inside the lambda body" },
+          { k: "Leak shape", v: "Long-lived lambda (cache, callback, pending future) capturing a large/rooted object" },
+          { k: "Common trigger", v: "Capturing 'this' inside an instance method for one small field" },
+          { k: "Fix", v: "Capture only the specific value needed, not the enclosing object" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** ask 'how long does this lambda live, and what does it hold onto?' the same way you'd ask it about any object reference — closures don't get a free pass from normal Java reachability rules." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `class ReportService {
+    private final byte[] largeTemplateBuffer = loadTemplate();  // several MB
+
+    // LEAK: captures 'this' (and therefore largeTemplateBuffer) just to read one field
+    Runnable buildCallback(String reportId) {
+        return () -> logger.info("Report {} done, template size {}", reportId, largeTemplateBuffer.length);
+    }
+    // If this Runnable ends up in a long-lived callback registry, largeTemplateBuffer
+    // — and the whole ReportService instance — stays reachable indefinitely.
+
+    // FIX: capture only what's actually needed
+    Runnable buildCallbackFixed(String reportId) {
+        int templateSize = largeTemplateBuffer.length;   // capture a primitive, not 'this'
+        return () -> logger.info("Report {} done, template size {}", reportId, templateSize);
+    }
+}`,
+    },
+    whatIf: {
+      q: "Does this apply to Stream pipelines the same way it applies to a stored Runnable/Callback?",
+      a: "A Stream pipeline's lambdas are typically short-lived — created and consumed within one pipeline execution — so they rarely leak on their own. The risk is specifically when a lambda (whether it came from a Stream pipeline or not) is stored somewhere long-lived: a cache value, a static callback registry, or a CompletableFuture that's still pending, because that's what extends the captured references' lifetime beyond the enclosing method call.",
+    },
+    realWorld:
+      "This is a genuinely hard leak to spot in a heap dump at first — the dominator tree shows a huge retained-size object, and tracing back through 'referenced by a Runnable, referenced by an event-bus subscriber list' eventually leads to a lambda that captured way more than it needed. Event-driven and reactive codebases (subscriber registries, pending CompletableFuture chains that never complete) are especially prone to this because 'register a callback and forget about it' is the exact pattern that creates it.",
+    guruTake:
+      "When I review code registering a lambda as a long-lived callback, I specifically check what it closes over — if it's capturing 'this' or a large object just for convenience, I'll ask whether it actually needs the whole thing or just one value, because that's the difference between a clean callback and a slow leak nobody notices until a heap dump six months later.",
+    interviewerExpectation: [
+      "Explains that lambdas capture references, same as any object field",
+      "Identifies long-lived storage (cache/callback registry/pending future) as the actual leak trigger",
+      "Recognizes 'capturing this for one field' as the classic mistake",
+      "Suggests capturing minimal state instead of the enclosing object",
+    ],
+    followUps: [
+      "How would you find this kind of leak in a heap dump using the dominator tree?",
+      "Does this differ between a lambda and an equivalent anonymous inner class?",
+      "How does this relate to ThreadLocal-based memory leaks in a thread pool?",
+    ],
+    commonMistakes: [
+      "Capturing 'this' or a large object for a single field's worth of data",
+      "Registering long-lived callbacks without considering what they retain",
+      "Assuming lambdas are exempt from normal Java reachability/GC rules",
+    ],
+    bestPractices: [
+      "Capture the minimal specific value a long-lived lambda needs",
+      "Audit callback/subscriber registries for what their lambdas close over",
+      "Use a heap dump's dominator tree to trace unexpectedly large retained sizes back to a capturing lambda",
+    ],
+    relatedTech: ["Eclipse MAT", "GC Roots", "Event Bus"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft"],
+    related: ["threadlocal-memory-leak", "java-memory-leak-diagnosis"],
+  },
 ];

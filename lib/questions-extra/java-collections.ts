@@ -995,4 +995,224 @@ if (t == POISON) break;`,
     askedIn: ["Amazon", "Microsoft", "Google", "Deloitte"],
     related: ["priorityqueue-top-k", "concurrent-counter-collections"],
   },
+
+  // ---------------------------------------------------- CE4 additions (2026-08)
+  {
+    slug: "sequenced-collections-java21",
+    categoryId: "java-collections",
+    topic: "Sequenced Collections",
+    question: "What do SequencedCollection, SequencedSet and SequencedMap (Java 21) fix that List and LinkedHashMap couldn't?",
+    seoTitle: "Sequenced Collections (Java 21) Explained: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Java 21's SequencedCollection, SequencedSet and SequencedMap interfaces: getFirst/getLast/addFirst/addLast/reversed(), and why they replace inconsistent per-type first/last workarounds.",
+    heading: "Java 21 Sequenced Collections — Interview Questions",
+    tags: ["sequenced collections", "java 21", "list", "linkedhashmap", "reversed"],
+    shortAnswer:
+      "Before Java 21, only some collection types (List, Deque) had a defined encounter order with first/last access, and each exposed it differently — list.get(0)/list.get(list.size()-1), deque.getFirst()/getLast(), while LinkedHashMap and TreeMap had no uniform way to get the first/last entry or an easy reversed view at all. Java 21's SequencedCollection, SequencedSet, and SequencedMap interfaces retrofit a single consistent contract — getFirst(), getLast(), addFirst(), addLast(), and reversed() — across List, LinkedHashSet, LinkedHashMap, TreeMap and more, without changing any existing class hierarchy.",
+    mindMap: [
+      { type: "text", content: "Before JEP 431, 'give me the first/last element' meant a different call per type — and some ordered types (`LinkedHashMap`, `TreeMap`) had **no direct API for it at all**, forcing awkward workarounds like `entrySet().iterator().next()`. The new interfaces retrofit a single contract onto existing types with **no class-hierarchy changes** — pure interface addition." },
+      {
+        type: "kv",
+        rows: [
+          { k: "SequencedCollection", v: "getFirst/getLast, addFirst/addLast, reversed() — List, Deque implement it" },
+          { k: "SequencedSet", v: "LinkedHashSet, TreeSet — ordered iteration + first/last" },
+          { k: "SequencedMap", v: "LinkedHashMap, TreeMap — firstEntry/lastEntry, reversed()" },
+          { k: "reversed()", v: "Returns a live reversed VIEW, not a copy" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** this is a retrofit, not a new data structure — recognizing it in an interview shows you're current with Java 21+ without needing to know internals, just the consistent first/last/reversed contract." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `LinkedHashMap<String, Integer> scores = new LinkedHashMap<>();
+scores.put("alice", 90);
+scores.put("bob", 75);
+
+// Before Java 21: no direct API for first/last entry
+// Java 21+:
+var first = scores.firstEntry();   // alice=90
+var last = scores.lastEntry();     // bob=75
+var view  = scores.reversed();     // live view, iterates bob -> alice
+
+List<Integer> nums = new ArrayList<>(List.of(1, 2, 3));
+nums.addFirst(0);                  // SequencedCollection method on List now`,
+    },
+    whatIf: {
+      q: "Does calling .reversed() copy the collection?",
+      a: "No — it returns a live, reversed VIEW backed by the original collection. Mutations through either the original or the reversed view are visible in both, the same relationship Collections.unmodifiableList() or a Map's keySet() has with its backing collection.",
+    },
+    realWorld:
+      "This mostly shows up as a quality-of-life win in code review — a team migrating to Java 21 replaces custom 'get last inserted entry' helper methods with the built-in lastEntry()/getLast(), and reversed() replaces manual Collections.reverse()-on-a-copy patterns that previously mutated or duplicated the source unnecessarily.",
+    guruTake:
+      "If this comes up, I'd mention it shows I keep current with LTS releases beyond just 'virtual threads and records' — SequencedCollection is a small, practical Java 21 addition that removes real per-type inconsistency, not a headline feature but a genuine daily-use improvement.",
+    interviewerExpectation: [
+      "Knows this is a Java 21 (JEP 431) addition",
+      "Names getFirst/getLast/addFirst/addLast/reversed()",
+      "Knows reversed() is a live view, not a copy",
+      "Knows it's a retrofit onto existing types, not a new collection",
+    ],
+    followUps: [
+      "Which existing collection types now implement these new interfaces?",
+      "Why is reversed() a view instead of a copy — what's the trade-off?",
+      "Does TreeMap's natural ordering interact with SequencedMap in any special way?",
+    ],
+    commonMistakes: [
+      "Assuming reversed() returns a new independent collection",
+      "Not knowing LinkedHashMap/TreeMap gained first/last access",
+      "Confusing this with a brand-new collection implementation",
+    ],
+    bestPractices: [
+      "Replace custom first/last helper methods with the built-in API on Java 21+",
+      "Remember reversed() is a live view when reasoning about mutation",
+      "Use SequencedMap.firstEntry()/lastEntry() instead of iterator-based workarounds",
+    ],
+    relatedTech: ["List", "LinkedHashMap", "TreeMap", "Deque"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft"],
+    related: ["linkedhashmap-lru-cache", "treemap-navigablemap"],
+  },
+  {
+    slug: "concurrenthashmap-size-vs-mappingcount",
+    categoryId: "java-collections",
+    topic: "ConcurrentHashMap",
+    question: "ConcurrentHashMap.size() vs mappingCount() — why does the Javadoc specifically call one of them 'an estimate'?",
+    seoTitle: "ConcurrentHashMap size() vs mappingCount(): Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "ConcurrentHashMap.size() vs mappingCount(): why size() is capped at Integer.MAX_VALUE, why mappingCount()'s Javadoc explicitly documents its return value as an estimate under concurrent updates, and what that means for correctness.",
+    heading: "ConcurrentHashMap size() vs mappingCount() — Interview Questions",
+    tags: ["concurrenthashmap", "size", "mappingcount", "concurrency", "weakly consistent"],
+    shortAnswer:
+      "Both size() and mappingCount() derive from the same underlying mechanism — striped counters summed on demand, with no global lock — so both reflect the map at a moment in time rather than a true snapshot under concurrent modification. The difference is in the contract: size() implements the legacy Map interface, returns int, and caps at Integer.MAX_VALUE for maps that exceed it; mappingCount() returns long and its Javadoc explicitly states 'the value returned is an estimate; the actual count may differ if there are concurrent insertions or removals' — making it both the correct choice for very large maps and the one method where 'this number can be stale' is a documented guarantee, not just an implementation detail you have to infer.",
+    mindMap: [
+      { type: "text", content: "ConcurrentHashMap never takes a global lock to count entries — doing so would defeat the point of a concurrent map. Instead it maintains striped counters and sums them on demand, the same technique `LongAdder` uses internally. Both `size()` and `mappingCount()` read that sum; they differ in **type and documented contract**, not in how the number is computed." },
+      {
+        type: "kv",
+        rows: [
+          { k: "size()", v: "Map interface method — returns int, caps at Integer.MAX_VALUE" },
+          { k: "mappingCount()", v: "CHM-specific — returns long, Javadoc says 'estimate'" },
+          { k: "Under concurrent writes", v: "Neither is a consistent snapshot — both can be stale" },
+          { k: "Recommended for large maps", v: "mappingCount() — avoids the int overflow entirely" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** the 'estimate' language is mappingCount()'s explicit Javadoc contract — but treat size() with the same caution under concurrent modification, since it's built the same way; it just doesn't say so in its own doc text because it's constrained by the inherited Map contract." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `ConcurrentHashMap<String, Integer> map = new ConcurrentHashMap<>();
+
+int n = map.size();          // int; capped at Integer.MAX_VALUE; may be stale under concurrent writes
+long n2 = map.mappingCount(); // long; Javadoc-documented estimate; correct choice for maps that may exceed Integer.MAX_VALUE
+
+// Neither call locks the map — both read striped counters, summed on demand
+// isEmpty() has a stronger, cheaper guarantee: it just checks whether any counter is non-zero`,
+    },
+    whatIf: {
+      q: "If you need an exact count for a correctness check (not just monitoring), what should you actually do?",
+      a: "Recognize that no method on a live, concurrently-modified ConcurrentHashMap can give you a truly exact count — 'exact' requires either external synchronization that stops writers, or redesigning the check so it doesn't depend on a precise count at all (e.g. using computeIfAbsent for existence checks instead of size()-based logic).",
+    },
+    realWorld:
+      "This distinction matters in monitoring/metrics code (size() as a gauge is fine — it's an approximation, and that's an acceptable trade-off for a dashboard) versus correctness-critical logic that mistakenly branches on map.size() == 0 as if it were atomic with a previous write — under concurrency that comparison can be stale the instant it's read, which is a subtly different bug from the classic get-then-put race.",
+    guruTake:
+      "I'd point out that both methods are approximations under load — I wouldn't want an interviewer to think I believe size() is exact just because mappingCount() is the one with 'estimate' in its Javadoc. The real lesson is: don't use size() for correctness decisions on a concurrent map, only for observability.",
+    interviewerExpectation: [
+      "Knows both use the same striped-counter mechanism, no global lock",
+      "Correctly attributes the 'estimate' Javadoc language to mappingCount()",
+      "Knows size() is int-capped, mappingCount() is long",
+      "Doesn't treat either as a consistent snapshot under concurrent writes",
+    ],
+    followUps: [
+      "Why doesn't ConcurrentHashMap just lock the whole map to compute an exact size?",
+      "What guarantee does isEmpty() give that size() doesn't?",
+      "How would LongAdder relate to how these counts are maintained internally?",
+    ],
+    commonMistakes: [
+      "Assuming size() is exact on a concurrently-modified map",
+      "Branching correctness-critical logic on a stale size()/mappingCount() read",
+      "Not knowing mappingCount() exists as the long-returning, large-map-safe alternative",
+    ],
+    bestPractices: [
+      "Use mappingCount() over size() when the map may be very large",
+      "Treat both as observability signals, not correctness guarantees, under concurrent writes",
+      "Use isEmpty() or atomic compound methods (computeIfAbsent/merge) for correctness checks instead",
+    ],
+    relatedTech: ["LongAdder", "AtomicLong", "Map"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Google", "Oracle"],
+    related: ["concurrenthashmap-internals", "concurrenthashmap-compound-operations"],
+  },
+  {
+    slug: "concurrenthashmap-compound-operations",
+    categoryId: "java-collections",
+    topic: "ConcurrentHashMap",
+    question: "ConcurrentHashMap is thread-safe — so why can a get-then-put sequence still race, and how do computeIfAbsent/merge fix it?",
+    seoTitle: "ConcurrentHashMap Compound Operations: Interview Q&A | Full Stack Interview Guru",
+    seoDescription:
+      "Why ConcurrentHashMap's individual method thread-safety doesn't cover multi-step get-then-put logic, and how computeIfAbsent/merge/compute provide the missing atomicity.",
+    heading: "ConcurrentHashMap Compound Operations — Interview Questions",
+    tags: ["concurrenthashmap", "compound operations", "computeifabsent", "merge", "race condition"],
+    shortAnswer:
+      "ConcurrentHashMap guarantees each individual method call (get, put, remove) is thread-safe — but a get() followed by a put() based on that result is two separate operations with a window between them where another thread can interleave, the same check-then-act race a plain HashMap has, just with a thread-safe map underneath it. computeIfAbsent(), compute(), and merge() close that window because the whole read-modify-write happens atomically under the map's internal per-bin lock, as a single operation.",
+    mindMap: [
+      { type: "text", content: "'Thread-safe' on a ConcurrentHashMap means each *individual* method call is atomic and safely published across threads — it says nothing about a sequence of calls you compose yourself. `if (!map.containsKey(k)) map.put(k, v)` is exactly as racy as it would be on a plain `HashMap`; the map's internal safety doesn't extend across your own multi-statement logic." },
+      {
+        type: "kv",
+        rows: [
+          { k: "get() then put()", v: "Two separate atomic ops — a race window exists between them" },
+          { k: "computeIfAbsent()", v: "Atomic: check-and-insert as ONE operation, no window" },
+          { k: "merge()", v: "Atomic: combine-or-insert as ONE operation" },
+          { k: "Caveat", v: "The mapping function itself should be fast — it runs while holding a lock on that bin" },
+        ],
+      },
+      { type: "text", content: "**Key takeaway:** thread-safety is per-call, not per-transaction — any time your logic spans more than one map call, reach for the compound methods instead of composing get/put yourself." },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `ConcurrentHashMap<String, List<String>> index = new ConcurrentHashMap<>();
+
+// RACY: two threads can both see containsKey()==false and both create a new list
+if (!index.containsKey(key)) {
+    index.put(key, new ArrayList<>());
+}
+index.get(key).add(value);   // also unsafe if the List itself isn't thread-safe
+
+// CORRECT: atomic check-and-insert, single operation
+index.computeIfAbsent(key, k -> new CopyOnWriteArrayList<>()).add(value);`,
+    },
+    whatIf: {
+      q: "What happens if the mapping function passed to computeIfAbsent() is slow or tries to modify the same map?",
+      a: "It runs while the map holds a lock on that key's bin, so a slow function blocks other threads touching keys in the same bin. Modifying the same map from inside its own mapping function is not a safe, supported pattern — the JDK documents this as unsupported, and doesn't guarantee what happens: depending on the exact operation it can manifest as blocked/hung threads, an exception, or other incorrect behavior. The rule to follow isn't 'expect exception X' — it's simply: never touch the same map from within its own mapping function.",
+    },
+    realWorld:
+      "This is the classic 'we used ConcurrentHashMap so it must be safe' bug — a caching layer built on get()-then-put() under load creates duplicate cache entries or, worse, wraps the value in a non-thread-safe collection (a plain ArrayList) that then corrupts under concurrent add() calls even though the outer map was never the problem.",
+    guruTake:
+      "In an interview I'd say: swapping HashMap for ConcurrentHashMap fixes the map's internal safety, but it doesn't automatically fix your algorithm — if your logic reads then writes based on that read, you need computeIfAbsent/merge/compute, full stop.",
+    interviewerExpectation: [
+      "Distinguishes per-method thread-safety from multi-step compound safety",
+      "Can name and use computeIfAbsent/merge/compute correctly",
+      "Knows the mapping function runs under a per-bin lock",
+      "Warns against slow or recursive mapping functions",
+    ],
+    followUps: [
+      "What's the difference between compute() and computeIfAbsent()?",
+      "Why must the value type stored (e.g. a List) also be thread-safe on its own?",
+      "What happens if two threads call computeIfAbsent() with the same key simultaneously?",
+    ],
+    commonMistakes: [
+      "Composing get()/containsKey() and put() as if the sequence were atomic",
+      "Storing a non-thread-safe collection as the map's value",
+      "Writing slow or map-mutating logic inside a mapping function",
+    ],
+    bestPractices: [
+      "Use computeIfAbsent/compute/merge for any read-modify-write on a shared map",
+      "Keep mapping functions fast and free of side effects on the same map",
+      "Pair with a thread-safe value type (CopyOnWriteArrayList, another ConcurrentHashMap) when needed",
+    ],
+    relatedTech: ["HashMap", "AtomicReference", "compute"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft", "Google", "Deloitte"],
+    related: ["concurrenthashmap-internals", "race-condition-check-then-act", "concurrenthashmap-size-vs-mappingcount"],
+  },
 ];
