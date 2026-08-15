@@ -82,7 +82,10 @@ search intent. **Same slug/URL, no route change.**
   links resolve 200, no console/hydration errors.
 - **Files:** `lib/types.ts`, `app/q/[slug]/page.tsx`, `lib/questions.ts` (single entry), docs
   (`02_DECISIONS.md`, `04_ARCHITECTURE.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`).
-- **Not pushed.** Left for owner review per `CLAUDE.md` — commit prepared, no push, no deploy.
+- **Pushed and deployed** (`72a4b72`, GitHub → Vercel). Re-verified live on
+  `https://fullstackinterviewguru.com/q/rest-idempotency`: title/meta/canonical/H1 correct, table +
+  all 6 code blocks render, `QAPage`+`BreadcrumbList` JSON-LD valid, all 6 `related` links resolve
+  200, no console errors.
 
 ### Added (ROADMAP CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions) — 2026-08-12
 Content expansion — **no route, UI, layout, or schema change**. Owner supplied an initial 25-question

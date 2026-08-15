@@ -19,8 +19,9 @@
   since Phase 1 but `MindMapBlock` never rendered it — wired that up rather than inventing a new
   concept. `FAQPage` structured data was explicitly **not** added (still an unapproved Idea in
   `99_IDEAS_BACKLOG.md`; the brief itself said not to add schema just for schema's sake).
-- **Release Status:** ✅ Implemented and validated. **Not committed or pushed** — left for owner
-  review per `CLAUDE.md` ("do not push unless explicitly asked").
+- **Release Status:** ✅ Implemented, validated, committed (`72a4b72`), pushed to `origin/main`, and
+  deployed to production via the existing GitHub → Vercel workflow. Verified live on
+  `https://fullstackinterviewguru.com/q/rest-idempotency`.
 
 ---
 
@@ -75,7 +76,12 @@ asterisks in-browser. Caught via `get_page_text`, fixed by removing the markdown
   construction) but a live mobile-viewport **screenshot** could not be captured this session (Browser
   pane wasn't compositing frames in this environment). Flagged for the owner to eyeball on next visual
   pass if desired.
-- ⏸️ **Not pushed / not deployed** — awaiting owner review, commit, and explicit push instruction.
+- ✅ **Pushed and deployed:** `git push origin main` (`171d3ef..72a4b72`), Vercel build succeeded
+  (GitHub commit status `success`). Re-verified live on production — title, meta description,
+  canonical, H1, 4-column table, all 6 code blocks, and JSON-LD (`QAPage` + `BreadcrumbList`, no
+  `FAQPage`) all correct; all 6 `related` links resolve `200` on `fullstackinterviewguru.com`; no
+  console errors. Production **screenshot could not be captured** in this environment (Browser pane
+  not compositing) — verified via DOM/JS extraction instead.
 
 ---
 
@@ -91,12 +97,11 @@ asterisks in-browser. Caught via `get_page_text`, fixed by removing the markdown
 
 # Current Roadmap Status
 
-- **This session** — ✅ completed and validated locally, **not yet released**. See
+- **This session** — ✅ completed, validated, pushed, and verified live in production. See
   [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" → "Improved (REST Idempotency content/SEO/
   interview-depth pass, DECISIONS #038)" for the full change list.
-- Next action is the owner's: review the rewritten page (and the new `table`/`code` block types, which
-  are now available for future comparison-heavy pages), then explicitly request commit + push if
-  satisfied. After push, production verification (`https://fullstackinterviewguru.com/q/rest-idempotency`)
-  and — only if the owner wants it — a Search Console "Request Indexing" are the logical next steps,
-  per the brief's own instruction not to assume indexing or ranking improvements immediately after
-  deploy.
+- The new `table`/`code` `mindMap` block types are now available for future comparison-heavy pages.
+- **Not done (intentionally):** Search Console "Request Indexing" — the brief itself says not to
+  assume indexing/ranking improvements immediately after deploy; GSC re-crawl is a separate, owner-
+  initiated step if/when desired. Impressions/clicks/position for this page should be re-checked in
+  GSC after Google re-crawls, not immediately.
