@@ -355,16 +355,36 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "How does the DynamoDB partition key affect performance, and what is a hot partition?",
-    tags: ["dynamodb", "partition key", "hot partition", "throughput", "scaling"],
+    seoTitle: "DynamoDB Partition Key: Hot Partitions Explained | Full Stack Interview Guru",
+    seoDescription:
+      "What is a DynamoDB partition key, and how does it affect performance? Hot partitions, high-cardinality key design, and partition key vs sort key explained.",
+    heading: "DynamoDB Partition Key — Hot Partitions & Key Design",
+    tags: ["dynamodb", "partition key", "sort key", "hot partition", "throughput", "scaling"],
+    updated: "2026-08-15",
     shortAnswer:
       "DynamoDB distributes data across partitions by the partition key's hash. If many requests target one key (or a low-cardinality key), that partition gets 'hot' — throttling even when total capacity is fine. Choose a high-cardinality, evenly-accessed key; add a suffix/sharding for hot keys.",
     mindMap: [
+      {
+        type: "text",
+        content:
+          "The **partition key** (hash key) is the attribute DynamoDB hashes to decide which physical partition stores an item. It's how DynamoDB scales horizontally — every item's partition key hash maps to one of many partitions, so read/write load spreads across the fleet instead of hitting a single server. There's no ad-hoc query flexibility like SQL: you look up by partition key (and optionally a sort key or GSI), so access patterns have to be known before the table is designed.",
+      },
       {
         type: "kv",
         rows: [
           { k: "Partition key", v: "hashed → decides the partition" },
           { k: "Hot partition", v: "skewed access → throttling" },
           { k: "Fix", v: "high-cardinality key / write sharding" },
+        ],
+      },
+      {
+        type: "table",
+        headers: ["", "Partition Key", "Sort Key"],
+        tableRows: [
+          ["Required?", "Always", "Optional"],
+          ["Determines", "Which partition stores the item (hash)", "Item order/uniqueness within that partition"],
+          ["Query support", "Exact match only (=)", "Range, begins_with, between"],
+          ["Uniqueness", "Must be unique alone, unless paired with a sort key", "PK + SK together must be unique"],
         ],
       },
     ],
@@ -376,9 +396,12 @@ export const awsExtra: Question[] = [
       "Hot-partition throttling from low-cardinality or skewed keys is the #1 DynamoDB performance pitfall; key design (and write sharding for hotspots) is the fix, not raising capacity.",
     interviewerExpectation: ["hash-based distribution", "hot partition from skew/low cardinality", "high-cardinality key", "write sharding", "adaptive capacity limits"],
     followUps: [
+      "What is a DynamoDB partition key?",
+      "How does DynamoDB distribute data across partitions?",
+      "What makes a partition key 'high-cardinality', and why does it matter?",
+      "Partition key vs sort key — what's the difference?",
       "How does adaptive capacity help (and not)?",
       "How do you shard a hot write key?",
-      "Partition key vs sort key roles?",
     ],
     commonMistakes: [
       "Low-cardinality partition keys",
@@ -778,11 +801,12 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "What is DynamoDB single-table design, and why do experts use it?",
-    seoTitle: "Amazon DynamoDB Interview Questions & Answers (2026)",
+    seoTitle: "DynamoDB Single Table Design Explained | Full Stack Interview Guru",
     seoDescription:
-      "Prepare for DynamoDB interviews with partition keys, sort keys, GSIs, LSIs, single-table design, scalability, and real-world interview questions with detailed answers.",
-    heading: "Amazon DynamoDB Interview Questions",
-    tags: ["dynamodb", "single-table design", "access patterns", "gsi", "nosql modeling"],
+      "What is DynamoDB single-table design, and when should you use it? Partition/sort key patterns, access-pattern modeling, trade-offs, and common mistakes explained.",
+    heading: "DynamoDB Single Table Design — Interview Guide",
+    tags: ["dynamodb", "single-table design", "access patterns", "partition key", "sort key", "gsi", "nosql modeling"],
+    updated: "2026-08-15",
     shortAnswer:
       "Single-table design stores multiple entity types in ONE table, using composite keys (PK/SK) and GSIs crafted so each known access pattern is served by a single efficient query — no joins, no multiple round-trips. It trades modeling complexity and rigidity for low latency and cost at scale.",
     mindMap: [
@@ -794,6 +818,21 @@ export const awsExtra: Question[] = [
           { k: "GSIs", v: "serve additional access patterns" },
           { k: "Goal", v: "one query per access pattern, no joins" },
         ],
+      },
+      {
+        type: "table",
+        headers: ["PK", "SK", "Item"],
+        tableRows: [
+          ["CUSTOMER#123", "METADATA", "Customer profile"],
+          ["CUSTOMER#123", "ORDER#001", "Order 1, belongs to this customer"],
+          ["CUSTOMER#123", "ORDER#002", "Order 2, belongs to this customer"],
+          ["ORDER#001", "METADATA", "Order details, fetched directly by order id"],
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "One table, two access patterns, no join: `Query PK = CUSTOMER#123` returns the customer's profile **and** every one of their orders in a single request (they share the same partition). `Query PK = ORDER#001` fetches that order's own details directly. The keys are modeled around the *known* access patterns — not around normalized entities the way a relational schema would be.",
       },
     ],
     whatIf: {
