@@ -123,6 +123,52 @@ function MindMapBlock({ block }: { block: AnswerBlock }) {
       </div>
     );
   }
+  if (block.type === "table" && block.headers && block.tableRows) {
+    return (
+      <div className="my-3 overflow-x-auto rounded-xl border border-white/10">
+        <table className="w-full min-w-[560px] border-collapse text-left text-sm">
+          <thead>
+            <tr className="bg-white/[0.04]">
+              {block.headers.map((h, i) => (
+                <th
+                  key={i}
+                  scope="col"
+                  className="border-b border-white/10 px-4 py-2.5 font-semibold text-slate-200"
+                >
+                  {h}
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {block.tableRows.map((row, i) => (
+              <tr key={i} className="border-b border-white/[0.06] bg-white/[0.02] last:border-0">
+                {row.map((cell, j) => (
+                  <td
+                    key={j}
+                    className={
+                      j === 0
+                        ? "px-4 py-2.5 font-mono font-semibold text-brand-300"
+                        : "px-4 py-2.5 text-slate-300"
+                    }
+                  >
+                    {cell}
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    );
+  }
+  if (block.type === "code" && block.content) {
+    return (
+      <div className="my-3">
+        <CodeBlock code={block.content} lang={block.lang ?? "text"} />
+      </div>
+    );
+  }
   return null;
 }
 

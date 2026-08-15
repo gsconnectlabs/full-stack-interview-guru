@@ -2,13 +2,17 @@ export type Difficulty = "Easy" | "Medium" | "Hard";
 export type Experience = "0-2 years" | "3-5 years" | "8-15 years";
 
 export interface AnswerBlock {
-  type: "text" | "code" | "kv";
-  /** for text: paragraph; for code: source; for kv: not used */
+  type: "text" | "code" | "kv" | "table";
+  /** for text: paragraph; for code: source; for kv/table: not used */
   content?: string;
   /** code language */
   lang?: string;
   /** key/value rows for mind-map style */
   rows?: { k: string; v: string }[];
+  /** for table: column headers */
+  headers?: string[];
+  /** for table: one string[] per row, aligned to headers */
+  tableRows?: string[][];
 }
 
 export interface Question {

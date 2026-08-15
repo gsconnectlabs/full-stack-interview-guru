@@ -107,6 +107,14 @@ Business logic lives in `lib/`, not in pages — pages compose data + components
   "Updated" freshness chip + `QAPage.dateModified`), `seoTitle?`/`seoDescription?`/`heading?`
   (optional per-page SEO overrides — DECISIONS #033), `difficulty`, `experience`, `askedIn`,
   `related?`.
+- **`mindMap` block types (`AnswerBlock`, DECISIONS #038):** `"text"` (paragraph, supports inline
+  `` `code` `` and `**bold**` via `inlineCode()`), `"kv"` (2-column key→value rows — also used for
+  numbered step lists), `"table"` (`headers: string[]` + `tableRows: string[][]` — an accessible,
+  `overflow-x-auto`-wrapped `<table>`, for genuinely multi-column comparisons where `kv` can't fit),
+  and `"code"` (`content`/`lang`, rendered via the existing `CodeBlock` — was declared in the type
+  since Phase 1 but never wired into `MindMapBlock`; now renders, enabling multiple code/ASCII
+  examples per question beyond the single `handsOn` slot). All four are optional per block; existing
+  `text`/`kv`-only questions are unaffected.
 - **Adding content** = append typed objects to a `lib/questions-extra/*` file. No UI or
   route changes required.
 - **Category visibility (DECISIONS #034):** the `count` field is an aspirational catalog target, not the
@@ -237,7 +245,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-12 (CE4 Java content batch — java-8.ts + appended questions, 255 → 280 expansion questions)
+- **Last Updated:** 2026-08-15 (Decision #038 — `table` + `code` Mind Map block types, REST Idempotency content depth pass)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

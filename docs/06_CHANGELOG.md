@@ -50,6 +50,40 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Improved (REST Idempotency content/SEO/interview-depth pass, DECISIONS #038) — 2026-08-15
+Owner-directed depth pass on `/q/rest-idempotency` (~106 impressions / 0 clicks / avg. position ~48.6
+in Search Console) — content was short and didn't fully cover the "which HTTP methods are idempotent"
+search intent. **Same slug/URL, no route change.**
+
+- **SEO:** `seoTitle` → "Idempotent HTTP Methods in REST: Which Methods Are Idempotent? (2026) | Full
+  Stack Interview Guru"; `seoDescription` rewritten and tightened (~180 chars, was ~245); `heading`
+  (H1) → "Idempotent HTTP Methods in REST – Complete Interview Guide", deliberately distinct from the
+  SEO title per the existing DECISIONS #033 convention. `tags` added for on-site search.
+- **Content — new schema capability:** `AnswerBlock` (`lib/types.ts`) gains a `"table"` variant
+  (`headers`/`tableRows`), and the previously-declared-but-never-rendered `"code"` block type is now
+  wired into `MindMapBlock` (`app/q/[slug]/page.tsx`) via the existing `CodeBlock` component. See
+  DECISIONS #038 for the full rationale (including why `FAQPage` schema was explicitly **not** added —
+  still an unapproved Idea in `99_IDEAS_BACKLOG.md`).
+- **Content — this question only:** precise `shortAnswer` (Quick Answer) avoiding the "POST, PATCH =
+  Not Idempotent" oversimplification; a 4-column HTTP Method Comparison table (Method/Idempotent?/
+  Safe?/Explanation); a Safe-vs-Idempotent explainer; PUT and POST examples; a production
+  "why retries happen" narrative with a timeout/retry ASCII flow; an `Idempotency-Key` header example
+  + 6-step server flow (generate → check → process → store → replay) + lookup flowchart; a thermostat
+  vs "add ₹500" analogy; `whatIf` repurposed for the DELETE+404 "still idempotent?" interviewer trap;
+  `realWorld` repurposed for the banking/payment retry scenario; refreshed
+  `interviewerExpectation`/`commonMistakes`/`bestPractices`; `followUps` refreshed to the 10 questions
+  from the brief (questions-only, matching the sitewide convention — answers live in the sections
+  above); `related` recurated to 6 verified-existing slugs (`idempotency-keys`, `put-vs-patch`,
+  `rest-status-codes`, `consumer-idempotency`, `saga-pattern`, `design-payment-system`); one external
+  reference (RFC 9110 §9.2.2); `updated: "2026-08-15"` (drives the freshness chip + `QAPage.dateModified`).
+- **Verified:** `npx tsc --noEmit` clean; `npm run build` green — **355 pages** (unchanged), shared
+  First Load JS **102 kB unchanged**. In-browser (dev): title/meta/canonical/H1 correct, table + all
+  5 code blocks render, `QAPage`+`BreadcrumbList` JSON-LD valid (no `FAQPage` added), all 6 `related`
+  links resolve 200, no console/hydration errors.
+- **Files:** `lib/types.ts`, `app/q/[slug]/page.tsx`, `lib/questions.ts` (single entry), docs
+  (`02_DECISIONS.md`, `04_ARCHITECTURE.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`).
+- **Not pushed.** Left for owner review per `CLAUDE.md` — commit prepared, no push, no deploy.
+
 ### Added (ROADMAP CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions) — 2026-08-12
 Content expansion — **no route, UI, layout, or schema change**. Owner supplied an initial 25-question
 topic pool (HashMap/JMM/volatile/ExecutorService/CompletableFuture/Streams/GC fundamentals); Phase
@@ -903,7 +937,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-12 (CE4 — Modern Java / Concurrency / Production Engineering question bank, 25 questions, plus same-day review-driven correction pass — Q15/Q18 replaced, Q7/Q11/Q16 corrected, CE3 accuracy fix)
+- **Last Updated:** 2026-08-15 (REST Idempotency content/SEO/interview-depth pass — DECISIONS #038)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

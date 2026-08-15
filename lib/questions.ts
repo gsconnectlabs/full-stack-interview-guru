@@ -292,37 +292,180 @@ print(greet("john"))`,
     categoryId: "rest-apis",
     topic: "Idempotency",
     question: "Which HTTP methods are idempotent and why does it matter?",
-    seoTitle: "REST Idempotency Interview Questions & Answers (2026) | Full Stack Interview Guru",
+    seoTitle: "Idempotent HTTP Methods in REST: Which Methods Are Idempotent? (2026) | Full Stack Interview Guru",
     seoDescription:
-      "Learn REST Idempotency with interview questions, real-world examples, HTTP methods, PUT vs POST, idempotent APIs, and expert answers. Perfect for Java, Spring Boot, and backend developer interviews.",
-    heading: "REST Idempotency Interview Questions",
+      "Which HTTP methods are idempotent in REST? GET, PUT, DELETE and POST explained with real examples, Safe vs Idempotent, and how Idempotency-Key makes POST requests safely retryable.",
+    heading: "Idempotent HTTP Methods in REST – Complete Interview Guide",
+    tags: ["idempotent", "idempotency", "http methods", "safe methods", "put", "delete", "post", "patch", "idempotency-key", "rest"],
+    shortAnswer:
+      "An operation is idempotent when making the same request multiple times has the same intended effect on server state as making it once. GET, PUT, and DELETE are idempotent. POST is not inherently idempotent. PATCH isn't necessarily idempotent — it depends on what the patch operation does.",
+    updated: "2026-08-15",
     mindMap: [
-      { type: "text", content: "Idempotent = calling it once or many times has the same effect on the server. It matters for safe retries on flaky networks." },
+      {
+        type: "text",
+        content:
+          "Idempotency is about the **effect on server state**, not about the HTTP response looking identical every time. Calling an idempotent operation once or five times in a row should leave the resource in the same state as calling it once.",
+      },
+      {
+        type: "table",
+        headers: ["Method", "Idempotent?", "Safe?", "Explanation"],
+        tableRows: [
+          ["GET", "Yes", "Yes", "Reads a resource without changing intended server state"],
+          ["PUT", "Yes", "No", "Repeatedly replacing a resource with the same representation has the same intended effect"],
+          ["DELETE", "Yes", "No", "Repeating deletion does not further change the intended resource state"],
+          ["POST", "Not inherently", "No", "Repeated requests can create multiple resources or trigger repeated effects"],
+          ["PATCH", "Depends on implementation", "No", "Idempotency depends on what the patch operation does"],
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "**Safe** and **idempotent** are different HTTP properties — safe does not mean idempotent. Safe means the request isn't intended to modify server state (`GET`, `HEAD`, `OPTIONS`). Idempotent means repeating the same request has the same intended effect on server state, whether or not that request is safe. From the table above: GET is both safe and idempotent; PUT and DELETE are idempotent but not safe (they do change state); POST is neither.",
+      },
+      {
+        type: "code",
+        lang: "http",
+        content: `PUT /users/101
+Content-Type: application/json
+
+{ "name": "John" }
+
+# Call this 5 times in a row -> user 101 still just has name "John".
+# The resource ends up in the same state either way.`,
+      },
+      {
+        type: "code",
+        lang: "http",
+        content: `POST /users
+Content-Type: application/json
+
+{ "name": "John" }
+
+# Call this 5 times in a row -> 5 new user resources are created.
+# POST is not inherently idempotent - each call has an additional effect.`,
+      },
+      {
+        type: "text",
+        content:
+          "In production, clients don't always know whether a request succeeded. A network timeout can happen **after** the server already processed the request — the client only knows the response never arrived, not whether the operation ran. So it retries.",
+      },
+      {
+        type: "code",
+        lang: "text",
+        content: `Client
+  |
+  | POST /payments
+  v
+Server processes payment
+  |
+  | response lost / timeout
+  v
+Client retries
+  |
+  | POST /payments
+  v
+Potential duplicate payment`,
+      },
+      {
+        type: "code",
+        lang: "http",
+        content: `POST /payments
+Idempotency-Key: 8f14e45f-ea...
+Content-Type: application/json
+
+{ "amount": 5000, "currency": "INR" }`,
+      },
       {
         type: "kv",
         rows: [
-          { k: "GET, PUT, DELETE", v: "Idempotent ✅" },
-          { k: "POST", v: "Not idempotent ❌" },
-          { k: "Why", v: "Clients can safely retry idempotent calls" },
+          { k: "1. Generate", v: "Client generates a unique idempotency key per logical operation" },
+          { k: "2. Receive", v: "Server receives the request with the Idempotency-Key header" },
+          { k: "3. Check", v: "Server checks whether that key was already processed (Redis, DynamoDB, or a relational table — key → result)" },
+          { k: "4. Process", v: "If not processed yet, the server executes the operation" },
+          { k: "5. Store", v: "The result is stored against the key" },
+          { k: "6. Replay", v: "If the same key arrives again, the server returns the stored result instead of re-executing" },
         ],
+      },
+      {
+        type: "code",
+        lang: "text",
+        content: `Idempotency-Key
+        ↓
+Lookup existing result
+        ↓
+Already processed?
+   ↙             ↘
+ YES             NO
+  ↓               ↓
+Return result   Process request
+                  ↓
+              Store result`,
+      },
+      {
+        type: "text",
+        content:
+          "Simple analogy: setting a thermostat to 22°C is idempotent — setting it once, or five times, leaves the room at the same target temperature. Compare that to **\"add ₹500 to my account\"** — repeating that instruction five times adds ₹2,500, not ₹500. Same-looking request, very different behavior under repetition — that's exactly the difference idempotency captures.",
       },
     ],
     handsOn: {
       lang: "http",
-      code: `PUT /users/101
-{ "name": "John" }
+      code: `POST /payments
+Idempotency-Key: 3f1c-...-9a
+{ "amount": 5000, "currency": "INR" }
 
-# Call it 5 times → user 101 still just has name "John"
-# POST /users called 5 times → 5 new users`,
+# Retry with the SAME key -> same 201 response, same payment,
+# no double charge. The server recognizes the key and returns
+# the stored result instead of processing the payment again.`,
     },
     whatIf: {
-      q: "How do you make POST safe to retry?",
-      a: "Use an idempotency key — the client sends a unique header (e.g. Idempotency-Key) and the server returns the original result for duplicates instead of creating a new resource.",
+      q: "Is DELETE still idempotent if the second request returns 404 instead of 204?",
+      a: "Yes. First request: DELETE /users/101 → 204 No Content (resource deleted). Second request: DELETE /users/101 → 404 Not Found (already gone). The HTTP response differs, but idempotency is about the intended effect on server state — after either request, user 101 does not exist. The response code is allowed to change; the resulting state is not.",
     },
+    realWorld:
+      "A payment client sends POST /payments, the network stalls, and the client times out without knowing whether the charge went through. Without an idempotency mechanism, retrying risks a duplicate charge. With an Idempotency-Key, the retry carries the same key — the server recognizes it already processed that operation and returns the original result instead of charging the customer again. This is exactly why banking and payment APIs (Stripe and most payment gateways) require an idempotency key on POST /payments-style endpoints.",
+    interviewerExpectation: [
+      "GET, PUT, DELETE are idempotent",
+      "POST is not inherently idempotent",
+      "PATCH depends on the implementation",
+      "Safe and idempotent are different properties",
+      "DELETE stays idempotent even if the 2nd call returns 404",
+      "Idempotency-Key makes POST safely retryable",
+      "Persist the key atomically before processing",
+    ],
+    commonMistakes: [
+      "Saying \"POST and PATCH are not idempotent\" as a blanket rule — POST isn't inherently idempotent, PATCH depends on what it does",
+      "Confusing Safe with Idempotent — they're different HTTP properties",
+      "Assuming idempotent means the HTTP response must be identical every time",
+      "Skipping Idempotency-Key on retryable POST endpoints (payments, order creation)",
+      "Processing the request before persisting the idempotency key, leaving a race window for concurrent retries",
+    ],
+    bestPractices: [
+      "Use PUT for full replacement; it's naturally idempotent",
+      "Add an Idempotency-Key to any POST that creates side effects and might be retried",
+      "Persist the key atomically (DB unique index or Redis SETNX) before processing, not after",
+      "Document exactly what a PATCH operation does and whether it's safe to retry",
+      "Judge idempotency by effect on state, not by whether the response looks the same",
+    ],
+    followUps: [
+      "What does idempotent mean in REST?",
+      "Which HTTP methods are idempotent?",
+      "What is the difference between Safe and Idempotent?",
+      "Is DELETE idempotent if the second request returns 404?",
+      "Can PATCH be idempotent?",
+      "Why is POST not inherently idempotent?",
+      "How can POST be made idempotent?",
+      "What is an Idempotency-Key?",
+      "Why is idempotency important in distributed systems?",
+      "Why is idempotency especially important for payment APIs?",
+    ],
+    relatedTech: ["Idempotency-Key", "Redis SETNX", "DB unique index", "Stripe idempotency", "RFC 9110"],
+    references: [
+      { label: "RFC 9110 §9.2.2 — HTTP Semantics: Idempotent Methods", url: "https://www.rfc-editor.org/rfc/rfc9110#section-9.2.2" },
+    ],
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Deloitte", "Accenture"],
-    related: ["rest-status-codes", "what-is-jwt", "rest-waiter", "idempotency-keys", "consumer-idempotency"],
+    related: ["idempotency-keys", "put-vs-patch", "rest-status-codes", "consumer-idempotency", "saga-pattern", "design-payment-system"],
   },
   {
     slug: "rest-status-codes",

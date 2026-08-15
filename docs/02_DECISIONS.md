@@ -1153,6 +1153,70 @@ the page/config are fully intact) and **renames the public label introduced in D
 
 ---
 
+# Decision #038
+
+## Title
+
+Additive `table` Mind Map Block Type + Wired-Up `code` Block Rendering (REST Idempotency Content Depth Pass)
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-15 — content/SEO/interview-depth improvement for `/q/rest-idempotency`)
+
+### Reason
+
+`/q/rest-idempotency` was earning ~106 impressions / 0 clicks / avg. position ~48.6 in Search Console —
+thin content, incomplete search-intent coverage. The owner requested a full depth pass: an HTTP-method
+comparison (Method / Idempotent? / Safe? / Explanation — 4 columns), a Safe-vs-Idempotent explainer, a
+DELETE+404 interviewer trap, and a production Idempotency-Key section with multiple HTTP/ASCII examples.
+`AnswerBlock` (`lib/types.ts`) only supported `"text"` and `"kv"` (2-column key→value) inside `mindMap` —
+no way to render a genuine multi-column table, and only one code sample per question via `handsOn`.
+Separately, `AnswerBlock.type` has declared `"code"` in its union since the Phase 1 schema, but
+`MindMapBlock` (`app/q/[slug]/page.tsx`) never actually rendered that case — a dead branch, not a design
+choice. FAQPage schema was considered (the owner's brief mentioned an "FAQ" section) but
+`99_IDEAS_BACKLOG.md` already logs `FAQPage` structured data as an unapproved **Idea** — per the
+project's existing-decisions-first process and the brief's own "don't add schema for its own sake" rule,
+it was **not** added here; `QAPage` is unchanged.
+
+### Implementation
+
+- **`lib/types.ts` — `AnswerBlock`:** `type` union extended to `"text" | "code" | "kv" | "table"`; added
+  optional `headers?: string[]` and `tableRows?: string[][]` for the table variant. Purely additive — the
+  existing `rows: {k,v}[]` (`kv`) shape is untouched, and every other question's `mindMap` array (still
+  `text`/`kv` only) is unaffected.
+- **`app/q/[slug]/page.tsx` — `MindMapBlock`:** added a `type === "table"` case rendering an accessible
+  `<table>` (`scope="col"` headers) wrapped in `overflow-x-auto` (matches the no-horizontal-page-scroll
+  pattern `CodeBlock` already uses for its `<pre>`) and styled with the existing `card`/border-token
+  system — no new design language. Added the `type === "code"` case, rendering the already-imported
+  `CodeBlock` component — this fixes the dead branch rather than introducing new UI, and lets a question
+  carry multiple code/ASCII examples inside the Mind Map section instead of only the single `handsOn`
+  slot.
+- **`lib/questions.ts` — `rest-idempotency` (only this slug touched):** full content rewrite in place —
+  `seoTitle`/`seoDescription`/`heading` refreshed (same mechanism as DECISIONS #033, same slug/URL),
+  `shortAnswer` now states the precise definition (avoids the "POST, PATCH = Not Idempotent"
+  oversimplification the brief explicitly flagged as wrong), one `table` block (the 4-column method
+  comparison), five `code` blocks (PUT/POST examples, the timeout-retry ASCII flow, the
+  `Idempotency-Key` header example, the key-lookup flowchart), a `kv` block for the 6-step
+  Idempotency-Key server flow, `whatIf` repurposed for the DELETE+404 "still idempotent?" interviewer
+  trap, `realWorld` repurposed for the banking/payment retry scenario, refreshed
+  `interviewerExpectation`/`commonMistakes`/`bestPractices`/`followUps` (10 questions, unanswered —
+  matches the sitewide `followUps` convention; answers live in the sections above instead of a new
+  paired Q&A structure), `tags` added for search, `updated: "2026-08-15"`, and `related` recurated to
+  verified-existing slugs (`idempotency-keys`, `put-vs-patch`, `rest-status-codes`,
+  `consumer-idempotency`, `saga-pattern`, `design-payment-system`).
+- **Not changed:** the question's `slug` (URL unchanged), the conversational `question` text (`QAPage`
+  `name` + ☕ Coffee Chat block), `difficulty`/`experience`/`askedIn`, and every other question in the
+  bank.
+
+### Verified
+
+`npx tsc --noEmit` clean; `npm run build` green — **355 pages** (unchanged, no route added/removed),
+shared First Load JS **102 kB unchanged**. In-browser (dev): title/meta description/canonical/H1 correct,
+table and all five code blocks render, `QAPage` + `BreadcrumbList` JSON-LD valid (no `FAQPage` added), all
+6 `related` links resolve 200, no console/hydration errors.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1164,7 +1228,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (Decision #037 — Donate nav removal, "Guru's Picks" rename, "Real Talk from Guru" field)
+- **Last Updated:** 2026-08-15 (Decision #038 — `table` Mind Map block type + REST Idempotency content depth pass)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
