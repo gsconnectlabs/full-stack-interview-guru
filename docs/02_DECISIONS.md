@@ -1217,6 +1217,77 @@ table and all five code blocks render, `QAPage` + `BreadcrumbList` JSON-LD valid
 
 ---
 
+# Decision #039
+
+## Title
+
+SEO On-Page Improvement Cycle — 9 Pages, Using REST Idempotency as a Quality Benchmark (Not a Template)
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-15 — Search Console opportunity pages)
+
+### Reason
+
+Owner supplied 9 target pages with specific Search Console queries (`/q/hashmap-resize-load-factor`,
+`/q/dynamodb-partition-key`, `/q/dynamodb-single-table`, `/q/two-sum`, `/q/dynamic-proxy`, `/environment`,
+`/q/what-is-json`, `/candidate/json`, `/`), instructing that the already-improved `/q/rest-idempotency`
+(DECISIONS #038) be used as a **content-quality benchmark** — not copied structurally onto pages of a
+different type. Each page's existing page type (interview question, category collection, developer
+utility, homepage) had to be identified and preserved before any change.
+
+### Implementation
+
+- **Question pages** (`hashmap-resize-load-factor`, `dynamodb-partition-key`, `dynamodb-single-table`,
+  `two-sum`, `dynamic-proxy`) — content-only edits within the existing `Question` schema, no new fields.
+  Reused the `table` block type from DECISIONS #038 exactly three times, only where a genuine multi-column
+  comparison helps (HashMap capacity/threshold progression; DynamoDB partition-key-vs-sort-key roles;
+  a single-table-design PK/SK worked example) — not added to the other pages, since a table wasn't the
+  right fit there. `seoTitle`/`seoDescription`/`heading` added or refreshed on `hashmap-resize-load-factor`
+  and `dynamodb-partition-key` (had none before) and retargeted on `dynamodb-single-table` (its old title,
+  "Amazon DynamoDB Interview Questions & Answers (2026)", didn't mention single-table design at all,
+  the actual target query). **`two-sum` and `dynamic-proxy` kept their existing, already-indexed titles
+  unchanged** — both already led with the target keyword and already ranked; per `05_ROADMAP.md`'s title-
+  change caution ("SEO-sensitive... avoid churn, preserve primary keywords"), only their content
+  (`followUps`/`commonMistakes`/`bestPractices`/`tags`, missing on `two-sum`; two extra `followUps` on
+  `dynamic-proxy`) was deepened. `what-is-json` was reviewed and left unchanged — already at benchmark
+  depth from the CE2 JSON batch (DECISIONS #033-style overrides, full FIG schema already present).
+- **`/candidate/json` (category collection page, not a `Question`):** the category listing route
+  (`app/candidate/[category]/page.tsx`) generates its title/description from a **shared template**
+  (`${cat.name} Interview Questions` / `${cat.name} interview questions and answers — ${cat.blurb}
+  ${live} curated questions.`) used by all 19 categories — deliberately **not** special-cased for one
+  category. Instead, `lib/categories.ts`'s `json` category `blurb` was rewritten (still matching every
+  sibling category's terse-noun-phrase style) to cover syntax/data-types/parsing/serialization/schema/
+  JSON-vs-XML, which flows into the description automatically. Zero code/architecture change.
+- **`/environment` (developer utility page, not an interview page):** reviewed against its actual
+  existing purpose (version-check commands + config guides) — title and description already precisely
+  match that utility intent. **Left unchanged** — forcing interview-page framing or invented keywords
+  onto it would misrepresent the page, which the brief explicitly warned against.
+- **Homepage `/`:** `app/page.tsx`'s `metadata` previously had no `title` (inherited the root layout's
+  `"FIG – %s"` templated default, so the rendered title led with "FIG –" rather than the brand phrase).
+  Added an explicit `title: { absolute: "Full Stack Interview Guru — Interview Tomorrow? Start Here." }`
+  — the exact same absolute-title bypass technique DECISIONS #033 established for `Question.seoTitle`,
+  applied here at the route-metadata level since the homepage isn't a `Question`. Reuses copy already
+  approved for the homepage's own Open Graph title (no new claims). Description left inherited (already
+  brand-appropriate); no interview content, no keyword stuffing, no UX/conversion structure touched.
+- **Internal linking:** added a reciprocal `related` link between `hashmap-resize-load-factor` and
+  `two-sum` (both already existed; genuinely related via the HashMap-for-lookup pattern). DynamoDB
+  partition-key ↔ single-table and the JSON question cluster were already bidirectionally linked —
+  no change needed there. No placeholder/dead links introduced.
+- **Not added:** `FAQPage` or any new structured-data type — none of these 9 pages' architecture
+  supports it today (same `99_IDEAS_BACKLOG.md` status as DECISIONS #038); the existing `QAPage` /
+  category-page metadata / homepage `WebSite`+`Organization` schema is unchanged.
+
+### Verified
+
+`npx tsc --noEmit` clean; `npm run build` green — **355 pages** (unchanged, no route added/removed),
+shared First Load JS **102 kB unchanged** (homepage `/` +2 kB from the extra title metadata object,
+immaterial). In-browser (dev): all 9 pages return 200 with the intended title/H1/description; all 3
+new `table` blocks render (headers verified); `QAPage`+`BreadcrumbList` JSON-LD valid on question
+pages; all cross-linked slugs resolve 200; no console/hydration errors.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1228,7 +1299,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-15 (Decision #038 — `table` Mind Map block type + REST Idempotency content depth pass)
+- **Last Updated:** 2026-08-15 (Decision #039 — SEO on-page improvement cycle, 9 pages)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

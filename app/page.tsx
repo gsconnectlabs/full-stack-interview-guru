@@ -9,6 +9,7 @@ import { listedCategories, totalLiveQuestions } from "@/lib/category-visibility"
 import { questionMap } from "@/lib/questions";
 
 export const metadata: Metadata = {
+  title: { absolute: "Full Stack Interview Guru — Interview Tomorrow? Start Here." },
   alternates: { canonical: "/" },
 };
 

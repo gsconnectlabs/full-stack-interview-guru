@@ -875,6 +875,8 @@ ls -l deploy.sh
     seoDescription:
       "Master the Two Sum interview problem with Python solutions, brute force vs HashMap approach, time complexity analysis, dry run, and common interview follow-up questions.",
     heading: "Two Sum Interview Question",
+    tags: ["two sum", "hashmap", "leetcode", "array", "python", "time complexity", "space complexity"],
+    updated: "2026-08-15",
     mindMap: [
       { type: "text", content: "Brute force is O(n²) with nested loops. The trick: as you scan, remember what you have seen in a HashMap so you can look up the complement in O(1)." },
       {
@@ -884,6 +886,11 @@ ls -l deploy.sh
           { k: "Store", v: "value → index seen so far" },
           { k: "Time", v: "O(n), one pass" },
         ],
+      },
+      {
+        type: "text",
+        content:
+          "**Why indices, not values?** The same value can appear twice in the array, so returning the values themselves would be ambiguous — the index is what unambiguously identifies *which* element was used. It's also why the lookup happens **before** inserting the current number: checking `target - n in seen` first stops an element from pairing with itself.",
       },
     ],
     handsOn: {
@@ -897,17 +904,38 @@ ls -l deploy.sh
 
 print(two_sum([2, 7, 11, 15], 9))`,
       output: "[0, 1]",
+      time: "O(n) — one pass",
+      space: "O(n) — the hash map storing up to n values",
     },
     whatIf: {
       q: "What if the array is already sorted?",
       a: "Use the two-pointer technique — one at each end, move them inward based on the sum. That is O(n) time and O(1) space, beating the HashMap on memory.",
     },
     realWorld: "Two Sum is the 'hello world' of the HashMap-for-lookup pattern. The same trick — remember what you've seen so the complement is O(1) — shows up in deduplication, caching, and detecting pairs/anagrams across real codebases.",
-    interviewerExpectation: ["brute force O(n²) first", "HashMap → O(n)", "space-time trade-off", "two-pointer if sorted"],
+    interviewerExpectation: ["brute force O(n²) first", "HashMap → O(n)", "space-time trade-off", "two-pointer if sorted", "why indices, not values"],
+    followUps: [
+      "Why does the problem ask for indices instead of the actual values?",
+      "What's the time and space complexity of the HashMap approach?",
+      "What if the array has duplicate values?",
+      "What should the function return if no valid pair exists?",
+      "How would you solve Two Sum if the array were already sorted?",
+    ],
+    commonMistakes: [
+      "Checking `n in seen` after inserting the current number — lets an element pair with itself",
+      "Jumping straight to the HashMap solution without first stating the brute-force O(n²) baseline",
+      "Not stating space complexity alongside time complexity",
+      "Not clarifying whether duplicates are allowed or exactly one solution is guaranteed",
+    ],
+    bestPractices: [
+      "Start with brute force, then optimize — show the trade-off, don't skip to the answer",
+      "State time AND space complexity explicitly",
+      "Ask clarifying questions: duplicates allowed? Exactly one solution guaranteed?",
+    ],
+    relatedTech: ["HashMap", "two-pointer technique", "LeetCode"],
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Amazon", "Accenture", "Deloitte"],
-    related: ["what-is-hashmap", "choosing-the-right-collection", "what-is-arraylist"],
+    related: ["what-is-hashmap", "choosing-the-right-collection", "what-is-arraylist", "hashmap-resize-load-factor"],
   },
   {
     slug: "behavioral-conflict",
