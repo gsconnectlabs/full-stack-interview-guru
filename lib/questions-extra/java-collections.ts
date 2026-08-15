@@ -258,10 +258,20 @@ orders.removeIf(Order::isCancelled);`,
     categoryId: "java-collections",
     topic: "Performance",
     question: "How do load factor and resizing affect HashMap performance, and how do you tune it?",
-    tags: ["hashmap", "load factor", "resize", "capacity", "performance tuning"],
+    seoTitle: "HashMap Resize & Load Factor Explained (Java) | Full Stack Interview Guru",
+    seoDescription:
+      "How HashMap resize and load factor work in Java: the 0.75 default, exactly when resizing/rehashing triggers, and how to pre-size a HashMap to avoid latency spikes.",
+    heading: "HashMap Resize and Load Factor — Java Interview Guide",
+    tags: ["hashmap", "load factor", "resize", "rehash", "capacity", "java collections", "performance tuning"],
+    updated: "2026-08-15",
     shortAnswer:
       "When size exceeds capacity × load factor (default 0.75), the table doubles and every entry rehashes — an O(n) spike. For known sizes, pre-size with initialCapacity = expected / 0.75 to avoid repeated resizes.",
     mindMap: [
+      {
+        type: "text",
+        content:
+          "**Load factor** is the fraction of capacity that can fill up before HashMap grows — default **0.75**. The **threshold** is `capacity × loadFactor`; once `size` exceeds it, HashMap doubles capacity and rehashes every existing entry into the new, larger table.",
+      },
       {
         type: "kv",
         rows: [
@@ -269,6 +279,21 @@ orders.removeIf(Order::isCancelled);`,
           { k: "Resize", v: "double table, rehash all — O(n)" },
           { k: "Pre-size", v: "new HashMap<>(expected / 0.75 + 1)" },
         ],
+      },
+      {
+        type: "table",
+        headers: ["Capacity", "Threshold (× 0.75)", "Resizes when size exceeds"],
+        tableRows: [
+          ["16 (default)", "12", "12 entries"],
+          ["32", "24", "24 entries"],
+          ["64", "48", "48 entries"],
+          ["128", "96", "96 entries"],
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "Resizing isn't a cheap copy — every entry's bucket index depends on `hash(key) & (capacity - 1)`, so a bigger capacity means most entries land in a **different** bucket. HashMap has to walk every existing entry and re-insert it into the new table, which is why a resize is O(n) even though `put()` is normally amortized O(1).",
       },
     ],
     handsOn: {
@@ -286,6 +311,10 @@ records.forEach(r -> m.put(r.id(), r));`,
       "Pre-sizing maps/lists before bulk loads is a standard performance fix in ETL and caching code — it turns a series of O(n) rehash pauses into a single allocation.",
     interviewerExpectation: ["load factor 0.75 default", "resize = double + rehash", "pre-size formula", "amortized vs spike cost"],
     followUps: [
+      "What is the default load factor for a Java HashMap?",
+      "When exactly does a Java HashMap resize?",
+      "What is the relationship between capacity, size, and load factor?",
+      "Why does resizing require rehashing and bucket redistribution?",
       "Why is the load factor 0.75 a space/time compromise?",
       "Does a higher load factor save memory? At what cost?",
       "How does this differ for ConcurrentHashMap?",
@@ -304,7 +333,7 @@ records.forEach(r -> m.put(r.id(), r));`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Google", "Wipro"],
-    related: ["hashmap-internals-java8", "collection-memory-overhead"],
+    related: ["hashmap-internals-java8", "collection-memory-overhead", "two-sum"],
   },
   {
     slug: "concurrent-modification-exception",
