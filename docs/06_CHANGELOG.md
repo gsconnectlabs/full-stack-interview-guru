@@ -50,6 +50,57 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Improved (SEO on-page cycle, 9 pages, DECISIONS #039) — 2026-08-15
+Owner-directed cycle targeting specific Search Console queries across 9 pages, using
+`/q/rest-idempotency` (DECISIONS #038) as a **content-quality benchmark, not a template** — each
+page's existing type (question, category, utility, homepage) was preserved. Branch
+`seo/onpage-improvements`, PR-based (see PR link in `07_SESSION_HANDOVER.md`). **No new routes, no
+FAQPage schema, no design changes.**
+
+- **`/q/hashmap-resize-load-factor`** (`lib/questions-extra/java-collections.ts`) — added
+  `seoTitle`/`seoDescription`/`heading`/`tags` (had none); new capacity/threshold `table` block; new
+  rehashing explainer; `followUps` expanded 3 → 7 to cover the brief's suggested queries; reciprocal
+  `related` link to `two-sum`.
+- **`/q/dynamodb-partition-key`** (`lib/questions-extra/aws.ts`) — added
+  `seoTitle`/`seoDescription`/`heading` (had none); new partition-key-vs-sort-key `table`; new
+  "how DynamoDB distributes data" explainer; `followUps` expanded 3 → 6.
+- **`/q/dynamodb-single-table`** (`lib/questions-extra/aws.ts`) — `seoTitle`/`heading` retargeted from
+  generic "Amazon DynamoDB Interview Questions" to explicitly name single-table design (the actual
+  target query); new PK/SK worked-example `table` + explainer.
+- **`/q/two-sum`** (`lib/questions.ts`) — title/description **intentionally left unchanged** (already
+  keyword-leading and indexed — avoiding SEO-sensitive churn per `05_ROADMAP.md`); added `tags`,
+  `handsOn.time`/`.space`, a "why indices not values" explainer, `followUps`/`commonMistakes`/
+  `bestPractices`/`relatedTech` (previously absent), reciprocal `related` link to
+  `hashmap-resize-load-factor`.
+- **`/q/dynamic-proxy`** (`lib/questions-extra/advanced-java.ts`) — already near benchmark depth; title
+  **unchanged** (already indexed, already keyword-leading); tightened `seoDescription` (~200 → ~175
+  chars) to naturally include "dynamic proxy pattern" (secondary target); 2 more `followUps`.
+- **`/q/what-is-json`** — reviewed, **left unchanged**; already at benchmark depth (CE2 batch, full
+  schema + SEO overrides already present).
+- **`/candidate/json`** (`lib/categories.ts`) — the category route's title/description come from a
+  **shared template** used by all 19 categories (not special-cased); only the `json` category's
+  `blurb` was rewritten (same terse style as every sibling category) to cover
+  syntax/data-types/parsing/serialization/schema/JSON-vs-XML, flowing automatically into the page's
+  meta description. Zero code change.
+- **`/environment`** — reviewed against its actual existing purpose (dev-environment version-check
+  utility, not an interview page); title/description already precisely matched that intent —
+  **left unchanged**, no interview-page framing forced onto it.
+- **`/` (homepage)** (`app/page.tsx`) — added an explicit `title: { absolute: ... }` override
+  ("Full Stack Interview Guru — Interview Tomorrow? Start Here.") so the rendered title leads with the
+  brand phrase instead of the root layout's "FIG – " template prefix — same absolute-title technique
+  as DECISIONS #033's `Question.seoTitle`, reusing copy already approved as the page's OG title.
+  Description, layout, and conversion structure untouched.
+- **Verified:** `npx tsc --noEmit` clean (`next lint` confirmed not configured, per `CLAUDE.md`);
+  `npm run build` green — **355 pages** (unchanged), shared First Load JS **102 kB unchanged**.
+  In-browser (dev): all 9 pages return 200 with intended title/H1/description; all 3 new `table`
+  blocks render; `QAPage`+`BreadcrumbList` JSON-LD valid; cross-linked slugs resolve 200; no
+  console/hydration errors.
+- **Files:** `lib/questions-extra/java-collections.ts`, `lib/questions-extra/aws.ts`,
+  `lib/questions.ts`, `lib/questions-extra/advanced-java.ts`, `lib/categories.ts`, `app/page.tsx`,
+  docs (`02_DECISIONS.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`).
+- **PR opened, not merged.** Per `CLAUDE.md`/task instructions — stops after PR for explicit owner
+  merge/deploy confirmation.
+
 ### Improved (REST Idempotency content/SEO/interview-depth pass, DECISIONS #038) — 2026-08-15
 Owner-directed depth pass on `/q/rest-idempotency` (~106 impressions / 0 clicks / avg. position ~48.6
 in Search Console) — content was short and didn't fully cover the "which HTTP methods are idempotent"
@@ -940,7 +991,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-15 (REST Idempotency content/SEO/interview-depth pass — DECISIONS #038)
+- **Last Updated:** 2026-08-15 (SEO on-page improvement cycle, 9 pages — DECISIONS #039)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

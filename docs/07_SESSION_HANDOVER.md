@@ -2,106 +2,110 @@
 
 # Session Summary
 
-- **Session Name:** REST Idempotency page — content/SEO/interview-depth pass (`/q/rest-idempotency`,
-  DECISIONS #038)
+- **Session Name:** SEO on-page improvement cycle — 9 pages, using `/q/rest-idempotency` as a quality
+  benchmark (DECISIONS #039)
 - **Date:** 2026-08-15
-- **Overall Progress:** Owner supplied a detailed, fully-specified brief to deepen
-  `/q/rest-idempotency` (~106 impressions / 0 clicks / avg. position ~48.6 in Search Console — thin
-  content, incomplete search-intent coverage). Per `CLAUDE.md`'s golden rule, the repo, its `/docs`
-  workflow, and the existing `Question`/`AnswerBlock` schema were analyzed first (including the exact
-  slug's history — DECISIONS #033 had already added `seoTitle`/`seoDescription`/`heading` overrides
-  here). Two genuine architecture questions surfaced — how to render a 4-column HTTP method comparison
-  (no table block existed) and how to present 10 follow-up questions with answers (the sitewide
-  `followUps` field is questions-only) — and were put to the owner explicitly before writing any code
-  (plan mode, `AskUserQuestion`). Approved direction: add a minimal, additive `table` block type to
-  `AnswerBlock`, and keep `followUps` questions-only (answers woven into the narrative sections
-  instead of a new paired Q&A structure). Also discovered `AnswerBlock.type` had declared `"code"`
-  since Phase 1 but `MindMapBlock` never rendered it — wired that up rather than inventing a new
-  concept. `FAQPage` structured data was explicitly **not** added (still an unapproved Idea in
-  `99_IDEAS_BACKLOG.md`; the brief itself said not to add schema just for schema's sake).
-- **Release Status:** ✅ Implemented, validated, committed (`72a4b72`), pushed to `origin/main`, and
-  deployed to production via the existing GitHub → Vercel workflow. Verified live on
-  `https://fullstackinterviewguru.com/q/rest-idempotency`.
+- **Overall Progress:** Owner supplied 9 target pages with specific Search Console queries
+  (`/q/hashmap-resize-load-factor`, `/q/dynamodb-partition-key`, `/q/dynamodb-single-table`,
+  `/q/two-sum`, `/q/dynamic-proxy`, `/environment`, `/q/what-is-json`, `/candidate/json`, `/`),
+  explicitly instructing that `/q/rest-idempotency` (this repo's prior session, DECISIONS #038) be
+  used as a **content-quality benchmark, not a literal template**. Per `CLAUDE.md`'s golden rule and
+  the task's own "page-type preservation" requirement, each page's actual type (interview question,
+  category collection, developer utility, homepage) and existing architecture were identified first —
+  no interview-page sections (e.g. "Interviewer's Expectation") were forced onto `/environment` or the
+  homepage. Two pages (`two-sum`, `dynamic-proxy`) already had live, keyword-leading, indexed titles —
+  per `05_ROADMAP.md`'s SEO-sensitivity note ("title changes affect ranking... avoid churn"), their
+  titles were deliberately **left unchanged** and only their content was deepened. `/q/what-is-json`
+  and `/environment` were reviewed and found already well-matched to their actual intent — **left
+  unchanged** rather than rewritten for the sake of touching every listed page. `/candidate/json`'s
+  metadata comes from a template shared by all 19 categories, so only its `blurb` content field was
+  edited (no special-cased code). The homepage got a small, reversible `title` override reusing
+  already-approved OG copy, with no content/UX change. No `FAQPage` or other new structured data was
+  added — none of these page types' architecture supports it, matching the DECISIONS #038 precedent.
+- **Release Status:** ✅ Implemented and validated on branch `seo/onpage-improvements`. PR opened —
+  **not merged, not deployed** — per the task's explicit "stop after opening PR" instruction.
 
 ---
 
 # Implementation Summary
 
-**Schema (additive, two files):**
-- `lib/types.ts` — `AnswerBlock.type` extended to `"text" | "code" | "kv" | "table"`; added optional
-  `headers?: string[]` / `tableRows?: string[][]`. Existing `kv` shape (`rows: {k,v}[]`) untouched; no
-  other question's `mindMap` is affected.
-- `app/q/[slug]/page.tsx` (`MindMapBlock`) — added the `"table"` render case (accessible
-  `overflow-x-auto`-wrapped `<table>`, `scope="col"` headers, matches the existing `card` styling) and
-  the `"code"` render case (uses the already-imported `CodeBlock` — this was a dead branch before,
-  now wired up).
+**Question pages (content-only, existing `Question` schema — reused the `table` block from
+DECISIONS #038 only where genuinely useful):**
+- `lib/questions-extra/java-collections.ts` — `hashmap-resize-load-factor`: added
+  `seoTitle`/`seoDescription`/`heading`/`tags` (had none); new capacity/threshold `table`; rehashing
+  explainer text; `followUps` 3 → 7; reciprocal `related` link to `two-sum`.
+- `lib/questions-extra/aws.ts` — `dynamodb-partition-key`: added
+  `seoTitle`/`seoDescription`/`heading` (had none); partition-key-vs-sort-key `table`; "how DynamoDB
+  distributes data" explainer; `followUps` 3 → 6. `dynamodb-single-table`: `seoTitle`/`heading`
+  retargeted from generic "Amazon DynamoDB Interview Questions" to explicitly name single-table
+  design; new PK/SK worked-example `table` + explainer.
+- `lib/questions.ts` — `two-sum`: title/description **unchanged** (already indexed and keyword-
+  leading); added `tags`, `handsOn.time`/`.space`, a "why indices not values" explainer,
+  `followUps`/`commonMistakes`/`bestPractices`/`relatedTech` (all previously absent), reciprocal
+  `related` link to `hashmap-resize-load-factor`.
+- `lib/questions-extra/advanced-java.ts` — `dynamic-proxy`: title **unchanged**; `seoDescription`
+  tightened (~200 → ~175 chars) to naturally include "dynamic proxy pattern"; 2 more `followUps`.
+- `lib/questions-extra/json.ts` — `what-is-json`: reviewed, **no change** (already at benchmark depth
+  from the CE2 batch).
 
-**Content — `lib/questions.ts`, `rest-idempotency` entry only (rewritten in place, same slug/URL):**
-- `seoTitle`/`seoDescription`/`heading` refreshed (same override mechanism as DECISIONS #033).
-- `shortAnswer`: precise idempotency definition, avoids "POST, PATCH = Not Idempotent".
-- `mindMap`: definition text → 4-column method comparison `table` → Safe-vs-Idempotent `text` → PUT
-  `code` example → POST `code` example → production-retry `text` → timeout/retry ASCII `code` →
-  `Idempotency-Key` header `code` → 6-step server flow `kv` → lookup-flowchart ASCII `code` →
-  thermostat/₹500 analogy `text`.
-- `handsOn`: `POST /payments` + `Idempotency-Key` retry example (replaces the old PUT/POST snippet,
-  now covered by two `mindMap` code blocks instead).
-- `whatIf`: repurposed for the DELETE + 404 "still idempotent?" interviewer trap.
-- `realWorld`: repurposed for the banking/payment retry scenario.
-- `interviewerExpectation` / `commonMistakes` / `bestPractices`: refreshed to match the new content.
-- `followUps`: the 10 questions from the brief (questions-only, matches sitewide convention).
-- `tags`, `relatedTech`, one `references` entry (RFC 9110 §9.2.2), `updated: "2026-08-15"`.
-- `related`: recurated to 6 verified-existing slugs — `idempotency-keys`, `put-vs-patch`,
-  `rest-status-codes`, `consumer-idempotency`, `saga-pattern`, `design-payment-system`.
+**Category page (`/candidate/json`) — shared-template architecture preserved:**
+- `lib/categories.ts` — only the `json` category's `blurb` rewritten (same terse style as all 18
+  sibling categories), flowing automatically into the existing title/description template in
+  `app/candidate/[category]/page.tsx` (untouched). Zero code change.
 
-**Bug caught during verification:** `whatIf.a` renders as plain text (no markdown processing) unlike
-`mindMap` `text` blocks — an initial `**bold**` marker in the DELETE+404 answer showed as literal
-asterisks in-browser. Caught via `get_page_text`, fixed by removing the markdown syntax before commit.
+**Developer utility page (`/environment`) — reviewed, left unchanged:**
+- Confirmed its actual purpose (version-check commands + config guides) from the existing content;
+  title/description already precisely matched that intent. No interview-page framing added.
+
+**Homepage (`/`):**
+- `app/page.tsx` — added `title: { absolute: "Full Stack Interview Guru — Interview Tomorrow? Start
+  Here." }`, bypassing the root layout's `"FIG – %s"` template so the brand phrase leads (previously
+  inherited the templated default, which put "FIG – " first). Reuses the page's own already-approved
+  OG title copy — same absolute-title technique as DECISIONS #033's `Question.seoTitle`, applied at
+  the route-metadata level since the homepage isn't a `Question`. Description/layout/conversion
+  structure untouched.
 
 ---
 
 # Verification Summary
 
+- ✅ **Lint:** `next lint` confirmed **not actually configured** (prompts an interactive ESLint setup
+  wizard) — matches `CLAUDE.md`'s documented statement that `tsc`+`build` are the standing gates; did
+  not interactively configure ESLint (out of scope, not requested).
 - ✅ **TypeScript:** clean (`npx tsc --noEmit`).
-- ✅ **Production build:** green — **355 pages** (unchanged — content-only, no route added/removed),
-  shared First Load JS **102 kB unchanged**.
-- ✅ **In-browser (dev server, `guru-dev`):** tab title / `<title>` / meta description / canonical
-  (`/q/rest-idempotency` unchanged) / H1 all correct; table and all 5 code blocks render; `QAPage` +
-  `BreadcrumbList` JSON-LD valid via direct parse (no `FAQPage` added, confirming the scope decision);
-  no console or hydration errors (only the pre-existing, unrelated dev-only AdSense `data-nscript`
-  warning present sitewide).
-- ✅ **Internal links:** all 6 `related` slugs resolve `200` (`curl` against the dev server).
-- ✅ **External reference:** RFC 9110 §9.2.2 URL resolves (302 → canonical RFC page, expected).
-- ⚠️ **Mobile/table responsiveness:** verified at the code level (the table wrapper uses the identical
-  `overflow-x-auto` pattern `CodeBlock` already uses sitewide — no page-level horizontal scroll by
-  construction) but a live mobile-viewport **screenshot** could not be captured this session (Browser
-  pane wasn't compositing frames in this environment). Flagged for the owner to eyeball on next visual
-  pass if desired.
-- ✅ **Pushed and deployed:** `git push origin main` (`171d3ef..72a4b72`), Vercel build succeeded
-  (GitHub commit status `success`). Re-verified live on production — title, meta description,
-  canonical, H1, 4-column table, all 6 code blocks, and JSON-LD (`QAPage` + `BreadcrumbList`, no
-  `FAQPage`) all correct; all 6 `related` links resolve `200` on `fullstackinterviewguru.com`; no
-  console errors. Production **screenshot could not be captured** in this environment (Browser pane
-  not compositing) — verified via DOM/JS extraction instead.
+- ✅ **Production build:** green — **355 pages** (unchanged, no route added/removed), shared First
+  Load JS **102 kB unchanged** (homepage `/` +2 kB from the extra title metadata object, immaterial).
+- ✅ **In-browser (dev server, `guru-dev`):** all 9 target pages return `200` with the intended
+  title/H1/description (verified via `curl` + DOM extraction); all 3 new `table` blocks render with
+  correct headers/row counts; `QAPage`+`BreadcrumbList` JSON-LD valid on the question pages; no
+  console/hydration errors on spot-checked pages.
+- ✅ **Internal links:** all newly cross-linked slugs (`two-sum` ↔ `hashmap-resize-load-factor`) and
+  the pre-existing DynamoDB/JSON cluster links resolve `200` on the dev server.
+- ⏸️ **Not pushed to `main` / not deployed** — branch pushed, PR opened, awaiting owner review and
+  explicit merge instruction.
 
 ---
 
 # Current Architecture Status
 
 - **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG.
-- **Schema change (additive only):** `AnswerBlock` gains a `"table"` variant; the pre-existing `"code"`
-  variant is now actually rendered. See DECISIONS #038 and `04_ARCHITECTURE.md`.
-- **Question bank:** unchanged total (one existing entry rewritten in place, no slug added/removed).
-- No route, category-visibility, navigation, or design-token change.
+- **No new schema, no new routes, no new structured-data type.** Reused the `table`/`code` `mindMap`
+  blocks introduced in DECISIONS #038; reused the `seoTitle`/`heading` absolute-title override pattern
+  from DECISIONS #033, now also demonstrated at the route-metadata level (homepage).
+- **Category page architecture confirmed shared/template-driven** — improving one category's SEO
+  surface is a content-only (`categories.ts` `blurb`) change, not a per-category code special case.
 
 ---
 
 # Current Roadmap Status
 
-- **This session** — ✅ completed, validated, pushed, and verified live in production. See
-  [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" → "Improved (REST Idempotency content/SEO/
-  interview-depth pass, DECISIONS #038)" for the full change list.
-- The new `table`/`code` `mindMap` block types are now available for future comparison-heavy pages.
-- **Not done (intentionally):** Search Console "Request Indexing" — the brief itself says not to
-  assume indexing/ranking improvements immediately after deploy; GSC re-crawl is a separate, owner-
-  initiated step if/when desired. Impressions/clicks/position for this page should be re-checked in
-  GSC after Google re-crawls, not immediately.
+- **This session** — ✅ completed and validated locally on `seo/onpage-improvements`, **PR open, not
+  merged**. See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" → "Improved (SEO on-page cycle, 9
+  pages, DECISIONS #039)" for the full change list, and the PR itself for the diff.
+- Next action is the owner's: review the PR, then explicitly request merge if satisfied. After merge,
+  Vercel deploys automatically (same GitHub → Vercel workflow verified in the prior session) — a
+  follow-up production verification pass (title/meta/H1/tables/JSON-LD/links per page) should run
+  after that merge, same as the DECISIONS #038 session did for `/q/rest-idempotency`.
+- **Not done (intentionally):** Search Console "Request Indexing" for any of these 9 pages — GSC
+  re-crawl is a separate, owner-initiated step; impressions/clicks/position should be re-checked in
+  GSC only after Google re-crawls, not immediately after deploy.
