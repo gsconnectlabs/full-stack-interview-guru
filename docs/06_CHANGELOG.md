@@ -98,8 +98,10 @@ FAQPage schema, no design changes.**
 - **Files:** `lib/questions-extra/java-collections.ts`, `lib/questions-extra/aws.ts`,
   `lib/questions.ts`, `lib/questions-extra/advanced-java.ts`, `lib/categories.ts`, `app/page.tsx`,
   docs (`02_DECISIONS.md`, `06_CHANGELOG.md`, `07_SESSION_HANDOVER.md`).
-- **PR opened, not merged.** Per `CLAUDE.md`/task instructions — stops after PR for explicit owner
-  merge/deploy confirmation.
+- **Merged and deployed** (PR [#1](https://github.com/gsconnectlabs/full-stack-interview-guru/pull/1),
+  `210a3bb`, GitHub → Vercel). Re-verified live on production: all 9 pages return correct
+  title/H1/description; the DynamoDB partition-key table renders; `QAPage`+`BreadcrumbList` JSON-LD
+  valid; no console errors.
 
 ### Improved (REST Idempotency content/SEO/interview-depth pass, DECISIONS #038) — 2026-08-15
 Owner-directed depth pass on `/q/rest-idempotency` (~106 impressions / 0 clicks / avg. position ~48.6

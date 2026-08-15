@@ -22,8 +22,9 @@
   edited (no special-cased code). The homepage got a small, reversible `title` override reusing
   already-approved OG copy, with no content/UX change. No `FAQPage` or other new structured data was
   added — none of these page types' architecture supports it, matching the DECISIONS #038 precedent.
-- **Release Status:** ✅ Implemented and validated on branch `seo/onpage-improvements`. PR opened —
-  **not merged, not deployed** — per the task's explicit "stop after opening PR" instruction.
+- **Release Status:** ✅ Implemented, validated, PR [#1](https://github.com/gsconnectlabs/full-stack-interview-guru/pull/1)
+  merged (`210a3bb`), and deployed to production via the existing GitHub → Vercel workflow. All 9
+  pages re-verified live on `fullstackinterviewguru.com`.
 
 ---
 
@@ -81,8 +82,10 @@ DECISIONS #038 only where genuinely useful):**
   console/hydration errors on spot-checked pages.
 - ✅ **Internal links:** all newly cross-linked slugs (`two-sum` ↔ `hashmap-resize-load-factor`) and
   the pre-existing DynamoDB/JSON cluster links resolve `200` on the dev server.
-- ⏸️ **Not pushed to `main` / not deployed** — branch pushed, PR opened, awaiting owner review and
-  explicit merge instruction.
+- ✅ **Merged and deployed:** PR #1 merged to `main` (`210a3bb`), Vercel build succeeded (GitHub commit
+  status `success`). Re-verified all 9 pages live on production — correct titles/H1s (`curl`), the
+  DynamoDB partition-key table renders (3 headers, JSON-LD `QAPage`+`BreadcrumbList` valid), no
+  console errors.
 
 ---
 
@@ -99,13 +102,10 @@ DECISIONS #038 only where genuinely useful):**
 
 # Current Roadmap Status
 
-- **This session** — ✅ completed and validated locally on `seo/onpage-improvements`, **PR open, not
-  merged**. See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" → "Improved (SEO on-page cycle, 9
-  pages, DECISIONS #039)" for the full change list, and the PR itself for the diff.
-- Next action is the owner's: review the PR, then explicitly request merge if satisfied. After merge,
-  Vercel deploys automatically (same GitHub → Vercel workflow verified in the prior session) — a
-  follow-up production verification pass (title/meta/H1/tables/JSON-LD/links per page) should run
-  after that merge, same as the DECISIONS #038 session did for `/q/rest-idempotency`.
+- **This session** — ✅ completed, merged, and verified live in production. See
+  [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" → "Improved (SEO on-page cycle, 9 pages,
+  DECISIONS #039)" for the full change list, and PR [#1](https://github.com/gsconnectlabs/full-stack-interview-guru/pull/1)
+  for the diff.
 - **Not done (intentionally):** Search Console "Request Indexing" for any of these 9 pages — GSC
   re-crawl is a separate, owner-initiated step; impressions/clicks/position should be re-checked in
   GSC only after Google re-crawls, not immediately after deploy.
