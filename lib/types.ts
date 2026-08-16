@@ -54,6 +54,10 @@ export interface Question {
   /** 🗓️ Content last-updated date (ISO `YYYY-MM-DD`). Optional; drives the
    *  "Updated …" freshness chip and the QAPage `dateModified` signal. */
   updated?: string;
+  /** 🗓️ Content first-published date (ISO `YYYY-MM-DD`). Optional; feeds the QAPage
+   *  `datePublished` signal. Leave unset rather than guessing — omitted fields are fine,
+   *  fabricated dates aren't. */
+  published?: string;
 
   // --- SEO overrides (optional) — used to tune high-impression pages for CTR ---
   /** Absolute `<title>` override that bypasses the root `"FIG – %s"` template

@@ -1288,6 +1288,57 @@ pages; all cross-linked slugs resolve 200; no console/hydration errors.
 
 ---
 
+# Decision #040
+
+## Title
+
+QAPage Structured-Data Enrichment — Fix Search Console "Improve Item Appearance" Rows, Don't Fake upvoteCount
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-16 — Search Console Q&A rich-result report)
+
+### Reason
+
+Search Console's Q&A enhancement report flagged 9 "Improve item appearance" rows on `/q/{slug}` pages
+(missing `author`/`text`/`datePublished`/`url`/`upvoteCount`, `dateModified` missing a timezone,
+invalid `dateModified` datetime) — all optional-enhancement rows, not errors; every page stayed valid
+and indexable throughout. Root cause: `app/q/[slug]/page.tsx`'s `QAPage` JSON-LD only ever emitted
+`name`, `url`, a conditional bare-date `dateModified`, `answerCount`, and `acceptedAnswer.text`.
+
+### Implementation
+
+- **`dateModified` timezone/invalid-datetime fix:** changed from a bare `YYYY-MM-DD` string to a full
+  ISO-8601 datetime with an explicit UTC offset (`${q.updated}T00:00:00.000Z`), only after the date
+  passes the existing `formatUpdated` validity check. Fixes both flagged sub-issues (5 items each).
+- **Added from existing data (no new fields needed):** `mainEntity.text` (mirrors `name` — Google's
+  `Question` type expects both); `mainEntity.author` and `acceptedAnswer.author` (`Organization`
+  `{ name: siteName, url: siteUrl }` from `lib/site.ts` — no per-question byline is tracked, and the
+  content is genuinely org-authored, not attributed to a fictitious person); `acceptedAnswer.url`
+  (same canonical page URL).
+- **`datePublished` (new optional field, deliberately not backfilled):** added `Question.published?`
+  to `lib/types.ts`, same `YYYY-MM-DD` shape as the existing `updated` field. Emitted on both
+  `mainEntity` and `acceptedAnswer` only when a question actually sets it. Existing questions are left
+  without it — no fabricated or `updated`-as-stand-in dates. Real publish dates get backfilled
+  incrementally as content is revisited, same pattern as `updated`.
+- **`upvoteCount` deliberately NOT added.** No server-side aggregate vote count exists anywhere in the
+  codebase — `components/HelpfulVote.tsx` writes votes to `localStorage` only (client-side, per-browser,
+  never aggregated or sent to a backend the site could read at build/request time). Inventing a number
+  here would be fabricated engagement data, which both violates Google's structured-data guidelines
+  and conflicts with this project's trust-first, no-dark-patterns stance (`01_PROJECT_CONTEXT.md`).
+  This GSC row stays permanently flagged as an available-but-skipped enhancement; it is optional, not
+  a defect. Wiring up real server-side vote aggregation (a separate, larger initiative — would need a
+  backend/API this currently-static site doesn't have) was explicitly declined as out of scope here.
+
+### Verified
+
+`npx tsc --noEmit` clean. In-browser (dev, `/q/what-is-json` — no `updated`/`published` set):
+`dateModified`/`datePublished` correctly absent; `author`, `text`, `acceptedAnswer.url` present.
+`/q/hashmap-resize-load-factor` (`updated: "2026-08-15"`): `dateModified` renders as
+`"2026-08-15T00:00:00.000Z"` on both `QAPage` and `mainEntity`.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1299,7 +1350,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-15 (Decision #039 — SEO on-page improvement cycle, 9 pages)
+- **Last Updated:** 2026-08-16 (Decision #040 — QAPage structured-data enrichment)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

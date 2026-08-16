@@ -14,7 +14,7 @@ import AdSlot from "@/components/AdSlot";
 import HelpfulVote from "@/components/HelpfulVote";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
-import { absoluteUrl } from "@/lib/site";
+import { absoluteUrl, siteName, siteUrl } from "@/lib/site";
 import Breadcrumb from "@/components/Breadcrumb";
 import AISection from "@/components/AISection";
 import { buildAiPrompts } from "@/lib/ai-prompts";
@@ -198,17 +198,33 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
   const reportHref = `/feedback?context=${encodeURIComponent(`Question: "${q.question}" (/q/${q.slug})`)}`;
   const nav = getQuestionNav(q.slug);
 
+  // Google's structured-data parser expects a full datetime with an explicit timezone
+  // offset, not a bare `YYYY-MM-DD` — append midnight UTC once the date has been validated.
+  const dateModifiedIso = q.updated && updatedLabel ? `${q.updated}T00:00:00.000Z` : null;
+  const datePublishedIso = q.published && formatUpdated(q.published) ? `${q.published}T00:00:00.000Z` : null;
+  const author = { "@type": "Organization" as const, name: siteName, url: siteUrl };
+  const pageUrl = absoluteUrl(`/q/${q.slug}`);
+
   const jsonLd = {
     "@context": "https://schema.org",
     "@type": "QAPage",
-    ...(q.updated && updatedLabel ? { dateModified: q.updated } : {}),
+    ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
     mainEntity: {
       "@type": "Question",
       name: q.question,
-      url: absoluteUrl(`/q/${q.slug}`),
-      ...(q.updated && updatedLabel ? { dateModified: q.updated } : {}),
+      text: q.question,
+      url: pageUrl,
+      author,
+      ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
+      ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
       answerCount: 1,
-      acceptedAnswer: { "@type": "Answer", text: plainAnswer(q) },
+      acceptedAnswer: {
+        "@type": "Answer",
+        text: plainAnswer(q),
+        url: pageUrl,
+        author,
+        ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
+      },
     },
   };
 

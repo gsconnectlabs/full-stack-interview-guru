@@ -50,6 +50,28 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (QAPage structured-data enrichment, DECISIONS #040) — 2026-08-16
+Owner-directed fix for Search Console's Q&A "Improve item appearance" report (all optional
+enhancement rows, not errors — every page stayed valid/indexable throughout).
+
+- **`app/q/[slug]/page.tsx`** — `dateModified` now emits a full ISO-8601 datetime with an explicit
+  UTC offset (`${date}T00:00:00.000Z`) instead of a bare `YYYY-MM-DD` string, fixing the "missing
+  timezone" / "invalid datetime value" rows (5 items each). Added `mainEntity.text` (mirrors `name`,
+  per Google's `Question` guidance), `mainEntity.author` and `acceptedAnswer.author` (both
+  `Organization` — no per-question byline exists), and `acceptedAnswer.url` (same canonical page URL).
+  New optional `datePublished` on both nodes, sourced from the new `Question.published` field —
+  emitted only when a question actually sets it (no backfilled/guessed dates).
+- **`lib/types.ts`** — added `published?: string` (ISO `YYYY-MM-DD`, same shape as `updated`).
+  Intentionally left unset on existing questions; backfill real dates over time rather than guess.
+- **Deliberately not added: `acceptedAnswer.upvoteCount`.** No server-side aggregate vote count
+  exists — `HelpfulVote.tsx` only writes to `localStorage` client-side. Fabricating an engagement
+  number would misrepresent real data and conflicts with the project's trust-first stance
+  (`01_PROJECT_CONTEXT.md`). This GSC row stays flagged; it's optional, not an error.
+- **Verified:** `npx tsc --noEmit` clean; dev-server JSON-LD spot-checked on a question without
+  `updated` (dates correctly omitted) and one with `updated` set (`dateModified` renders as
+  `2026-08-15T00:00:00.000Z`).
+- **Files:** `app/q/[slug]/page.tsx`, `lib/types.ts`, docs (`02_DECISIONS.md`, `06_CHANGELOG.md`).
+
 ### Improved (SEO on-page cycle, 9 pages, DECISIONS #039) — 2026-08-15
 Owner-directed cycle targeting specific Search Console queries across 9 pages, using
 `/q/rest-idempotency` (DECISIONS #038) as a **content-quality benchmark, not a template** — each
@@ -993,7 +1015,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-15 (SEO on-page improvement cycle, 9 pages — DECISIONS #039)
+- **Last Updated:** 2026-08-16 (QAPage structured-data enrichment — DECISIONS #040)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
