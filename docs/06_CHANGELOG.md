@@ -51,6 +51,13 @@ Phase 2 work is logged here as it is approved and implemented, one feature at a 
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
 ### Fixed (Floating ebook CTA reappearing after client-side navigation, DECISIONS #043) — 2026-08-21
+**Released to production 2026-08-21** (commit `5c98780`, pushed to `main`; Vercel deploy succeeded —
+GitHub commit status "Vercel: Deployment has completed"; post-deploy smoke test on
+https://fullstackinterviewguru.com/store passed — title, breadcrumb, and hero all show the new "Ebook
+Store" branding live). This single commit ships all three of DECISIONS #041/#042/#043 together — the
+floating CTA, the Guru's Picks → Ebook Store rebrand, and this navigation bug fix were reviewed and
+approved as one unit before commit.
+
 Found during a fresh validation pass: `EbookFloatingCta` is mounted once in the root layout, so its
 `visible` state persisted across Next.js client-side route changes. Clicking the CTA wrote
 `sessionStorage` and fired `ebook_cta_click` but never reset `visible` — so the card kept showing on

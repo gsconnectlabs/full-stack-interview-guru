@@ -12,10 +12,15 @@
   this session's work was almost entirely **re-verification** — which paid off: testing the click path
   via an actual `Link` click (rather than a full-page reload, which is how earlier passes had checked
   it) surfaced a real bug, described below, that was fixed and re-verified.
-- **Release Status:** ✅ Implemented, bug found and fixed, and re-verified locally (TypeScript clean,
-  production build green, exercised at both required viewports). **Not committed/pushed yet** —
-  awaiting owner review; all three sessions' work (#041, #042, #043) sits together in one uncommitted
-  working tree.
+- **Release Status:** ✅ **Shipped.** Owner reviewed the diff (grouped by area, with the UTM/canonical
+  constraint explicitly re-verified since this route is already linked from live LinkedIn/X posts),
+  approved, and the combined #041/#042/#043 work was committed as a single commit
+  (`5c98780`, `feat(store): reposition Guru's Picks as Ebook Store, add 10s free-ebook CTA`) and pushed
+  to `main`. Vercel deployed successfully (GitHub commit status: "Vercel — Deployment has completed");
+  post-deploy smoke test on https://fullstackinterviewguru.com/store confirmed the live site serves the
+  new Ebook Store branding. GA4 Realtime event verification (`ebook_cta_impression`/`_click`/`_dismiss`,
+  `gumroad_cta_click`) was handed to the owner to run manually — see **Post-Release Follow-Up** below;
+  I don't have access to the Google account that owns this property.
 
 ---
 
@@ -91,8 +96,16 @@ desktop/mobile 10s-trigger and positioning checks re-run after the fix, all stil
   limitation, not a code issue. Substituted precise `getBoundingClientRect`/`getComputedStyle` DOM
   verification at both required viewports instead (see above) — every number the owner asked to see
   visually was captured numerically.
-- ⏳ **Not yet done:** live GA4 event verification (`sendGAEvent` no-ops locally without
-  `NEXT_PUBLIC_GA_ID`, by design) — belongs after the commit/push decision.
+- ✅ **Post-deploy, production:** re-fetched `https://fullstackinterviewguru.com/store` after the push
+  — live title, breadcrumb, and hero all reflect the "Ebook Store" branding (build artifact matches
+  the reviewed source).
+- ⏳ **GA4 Realtime event verification — handed to the owner, not completed by me.** I checked GitHub's
+  Vercel deployment status (success) and confirmed the live page content, but checking GA4 Realtime for
+  `ebook_cta_impression`/`_click`/`_dismiss` and `gumroad_cta_click` requires the Google account that
+  owns this property's Analytics — the automated browser session I have access to is signed into a
+  different Google account with no GA property at all, and entering/switching credentials on the
+  owner's behalf is out of scope for me. Owner is running this manually (open the site, wait 10s,
+  trigger each event, watch GA4 Realtime's "Event count by Event name" table).
 
 ---
 
@@ -107,10 +120,14 @@ desktop/mobile 10s-trigger and positioning checks re-run after the fix, all stil
 
 # Current Roadmap Status
 
-- **This session** — ✅ bug found, fixed, and verified; **pending owner review + commit/push**, stacked
-  on the still-uncommitted #041/#042 work. See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" →
-  "Fixed (Floating ebook CTA reappearing after client-side navigation, DECISIONS #043)".
-- **Follow-up (not started, owner's call):** once `NEXT_PUBLIC_GA_ID` is live in production, confirm
-  `ebook_cta_*` and `gumroad_cta_click` register correctly in GA4; if real visual screenshots are
-  needed for review, they'll need to be captured outside this session's Browser pane (e.g. locally, or
-  in a session where the pane can display).
+- **This session — ✅ shipped.** Reviewed, approved, committed (`5c98780`), pushed to `main`, and
+  confirmed deployed to production by Vercel. See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" →
+  "Fixed (Floating ebook CTA reappearing after client-side navigation, DECISIONS #043)" for the
+  production-release confirmation covering all of #041/#042/#043.
+- **Follow-up in progress (owner):** GA4 Realtime verification for `ebook_cta_impression`/`_click`/
+  `_dismiss` and `gumroad_cta_click` — owner is running this manually against the live site since I
+  don't have access to the Google account that owns FIG's Analytics property. No code action pending
+  on this; it's a verification step only.
+- **Follow-up (not started, owner's call):** if real visual screenshots of the CTA are ever needed for
+  design review, they'll need to be captured outside this session's Browser pane (e.g. locally, or in
+  a session where the pane can display) — this session's pane could not composite frames.
