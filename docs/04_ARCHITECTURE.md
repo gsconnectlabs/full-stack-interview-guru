@@ -65,7 +65,10 @@ components/                  Reusable UI (25 components)
   LegalPage (server; shared shell for privacy/terms/disclaimer — header + breadcrumb + .prose-legal),
   Breadcrumb (visible trail + BreadcrumbList JSON-LD), JsonLd (schema.org emitter),
   StoreProductCard (server; renders a StoreProduct — cover, benefits, "What's inside", CTA),
-  GumroadCtaButton (client island; opens the product's Gumroad URL, fires `gumroad_cta_click`)
+  GumroadCtaButton (client island; opens the product's Gumroad URL, fires `gumroad_cta_click`),
+  EbookFloatingCta (client island; mounted in app/layout.tsx — 10s-delayed, session-capped floating
+    CTA to /store (Ebook Store), shows the real ebook cover + a one-shot settle animation, fires
+    ebook_cta_impression/_click/_dismiss; DECISIONS #041/#042)
 
 hooks/                       Client hooks
   useTemporaryFlag            transient on→auto-reset(1500ms) flag; shared by CopyButton/ShareButton
@@ -245,7 +248,7 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-15 (Decision #038 — `table` + `code` Mind Map block types, REST Idempotency content depth pass)
+- **Last Updated:** 2026-08-21 (Decision #042 — "Guru's Picks" → "Ebook Store" repositioning, `/store` hero + `EbookFloatingCta` refresh)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

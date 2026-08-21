@@ -1,30 +1,35 @@
 import type { Metadata } from "next";
 import Breadcrumb from "@/components/Breadcrumb";
 import StoreProductCard from "@/components/StoreProductCard";
+import GumroadCtaButton from "@/components/GumroadCtaButton";
 import { storeProducts } from "@/lib/store";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/store" },
-  title: "Guru's Picks — Interview Resources Beyond the Free Basics",
+  title: "Ebook Store — Get the Free Java Interview Ebook",
   description:
-    "Optional deeper resources from FullStackInterviewGuru — starting with a free Java interview question bank. Go beyond the free core content with structured, downloadable guides.",
+    "FIG's Ebook Store: a free, downloadable Java interview question bank you can read on your own time — built from the same content FIG's free site already trusts.",
   openGraph: {
-    title: "FIG — Guru's Picks",
+    title: "FIG — Ebook Store",
     description:
-      "Optional deeper resources from FullStackInterviewGuru — starting with a free Java interview question bank.",
+      "A free, downloadable Java interview question bank you can read on your own time.",
     url: "/store",
     type: "website",
   },
 };
 
-/** Personal framing shown under the H1 — edit here, no JSX changes needed. */
+/** Personal framing shown under the hero CTA — edit here, no JSX changes needed. */
 const GURU_INTRO =
-  "16 years in banking-domain interviews — these are the guides I'd hand a candidate the night before.";
+  "16 years in banking-domain interviews — this is the guide I'd hand a candidate the night before.";
+
+/** The Ebook Store currently has one product: the free ebook. Hero renders from this data
+ *  directly so it can never drift from the detailed card below. */
+const ebook = storeProducts[0];
 
 const POSITIONING = [
   { icon: "🆓", title: "Free FIG content", body: "Hundreds of interview questions, fully free, no login required — this stays true forever." },
   { icon: "🤝", title: "Build knowledge & trust", body: "The free content is how FIG earns trust — the same standard of accuracy applies everywhere." },
-  { icon: "📘", title: "Optional deeper resources", body: "Guru's Picks offers structured, downloadable guides for focused revision — currently free, more planned." },
+  { icon: "📘", title: "One focused, free ebook", body: "A structured, downloadable guide for focused revision — currently free, more planned." },
 ];
 
 const FUTURE_CATEGORIES = ["Java", "Microservices", "SQL", "System Design", "AWS", "Interview Preparation"];
@@ -32,15 +37,27 @@ const FUTURE_CATEGORIES = ["Java", "Microservices", "SQL", "System Design", "AWS
 export default function StorePage() {
   return (
     <div className="mx-auto max-w-5xl px-4 py-12 sm:px-6">
-      <Breadcrumb items={[{ name: "Home", href: "/" }, { name: "Guru's Picks" }]} />
+      <Breadcrumb items={[{ name: "Home", href: "/" }, { name: "Ebook Store" }]} />
 
       <div className="mt-6 text-center">
-        <span className="chip mx-auto border-gold-500/40 text-gold-200">🗝️ Guru&apos;s Picks</span>
-        <h1 className="mt-4 font-serif text-3xl font-black text-white sm:text-4xl">Guru&apos;s Picks</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-400">{GURU_INTRO}</p>
-        <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-500">
-          FIG is, and stays, a free interview preparation platform. Guru&apos;s Picks offers optional,
-          structured resources for focused revision — it never restricts or replaces the free content.
+        <div className="flex flex-wrap items-center justify-center gap-2">
+          <span className="chip border-brand-500/40 text-brand-200">📘 Ebook Store</span>
+          <span className="chip border-emerald-500/40 text-emerald-200">🆓 Free</span>
+        </div>
+        <h1 className="mx-auto mt-4 max-w-2xl font-serif text-3xl font-black text-white sm:text-4xl">
+          {ebook.title}
+        </h1>
+        <p className="mx-auto mt-2 max-w-xl text-lg font-medium text-brand-300">{ebook.subtitle}</p>
+        <p className="mx-auto mt-3 max-w-2xl text-sm text-slate-400">{ebook.audience}</p>
+
+        <div className="mt-6 flex justify-center">
+          <GumroadCtaButton href={ebook.gumroadUrl} product={ebook.slug}>
+            Get the Free Ebook <span aria-hidden="true">↗</span>
+          </GumroadCtaButton>
+        </div>
+
+        <p className="mx-auto mt-4 max-w-2xl text-xs text-slate-500">
+          {GURU_INTRO} FIG stays free — the Ebook Store never restricts or replaces the free content.
         </p>
       </div>
 
@@ -57,7 +74,7 @@ export default function StorePage() {
       </div>
 
       <section className="mt-14">
-        <h2 className="text-2xl font-bold text-white">Featured resource</h2>
+        <h2 className="text-2xl font-bold text-white">The Free Ebook</h2>
         <div className="mt-6">
           {storeProducts.map((product) => (
             <StoreProductCard key={product.slug} product={product} />

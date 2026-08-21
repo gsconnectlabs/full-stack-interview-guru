@@ -81,10 +81,18 @@ const config: Config = {
           "0%, 100%": { opacity: "1" },
           "50%": { opacity: "0.6" },
         },
+        // One-shot "settle" pop for the floating ebook CTA's cover thumbnail — draws the eye
+        // once on entrance, then holds still (no loop). See DECISIONS #042.
+        "cta-settle": {
+          "0%": { opacity: "0", transform: "scale(0.85) rotate(-6deg)" },
+          "60%": { opacity: "1", transform: "scale(1.06) rotate(2deg)" },
+          "100%": { opacity: "1", transform: "scale(1) rotate(0deg)" },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.4s ease-out both",
         "pulse-glow": "pulse-glow 2.5s ease-in-out infinite",
+        "cta-settle": "cta-settle 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
       },
     },
   },

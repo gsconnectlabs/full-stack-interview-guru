@@ -43,7 +43,7 @@ export default function Navbar() {
             href="/store"
             className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
           >
-            Guru&apos;s Picks
+            📘 Ebook Store
           </Link>
           <Link
             href="/environment"

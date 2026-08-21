@@ -134,13 +134,22 @@ Array.from(document.querySelectorAll('script[src]'))
 
 | Event | Trigger | Params | Since |
 |---|---|---|---|
-| **`gumroad_cta_click`** | The Store's Gumroad CTA (`components/GumroadCtaButton.tsx`) is clicked on `/store` | `product` (slug), `destination` (`"gumroad"`) | DECISIONS #035, 2026-08-09 |
+| **`gumroad_cta_click`** | A Gumroad CTA (`components/GumroadCtaButton.tsx`) is clicked on `/store` — either the Ebook Store hero button or the detailed `StoreProductCard` button (both same product, same event) | `product` (slug), `destination` (`"gumroad"`) | DECISIONS #035, 2026-08-09 (hero call site added #042, 2026-08-21) |
+| **`ebook_cta_impression`** | The floating ebook CTA (`components/EbookFloatingCta.tsx`) becomes visible (10s after page load, any page except `/store`) | `location` (pathname) | DECISIONS #041, 2026-08-21 |
+| **`ebook_cta_click`** | The floating ebook CTA's link is clicked | `location` (pathname), `destination` (`"/store"`) | DECISIONS #041, 2026-08-21 |
+| **`ebook_cta_dismiss`** | The floating ebook CTA's close button is clicked | `location` (pathname) | DECISIONS #041, 2026-08-21 |
 
 Implementation: `GumroadCtaButton` calls `sendGAEvent("event", "gumroad_cta_click", { product, destination })`
 from `@next/third-parties/google` — the same package already loading GA, no new dependency. `sendGAEvent`
 no-ops (with a console warning) when GA hasn't initialized, i.e. whenever `NEXT_PUBLIC_GA_ID` is unset —
 consistent with the site-wide "off until an ID is present" behavior (DECISIONS #031/#032). No new
 always-on client JS: the event only ships inside the one client island that needed it.
+
+`EbookFloatingCta` follows the same pattern for its three events — impression fires once when the 10s
+timer elapses and the CTA actually renders, click fires on the `/store` link, dismiss fires on the
+close button. All three carry `location` (the pathname the CTA was shown/acted on from) so
+impression → click → `/store` traffic can be funnel-analyzed in GA4. The frequency cap itself
+(session-scoped `sessionStorage`, not GA) lives entirely client-side — see DECISIONS #041.
 
 ## Future GA4 Events (planned — not yet implemented)
 
@@ -171,7 +180,7 @@ islands (no new always-on client JS); and document each event here as it ships.
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-09 (first custom event — `gumroad_cta_click` on `/store`; DECISIONS #035)
+- **Last Updated:** 2026-08-21 (Ebook Store repositioning added a second `gumroad_cta_click` call site in the new hero — DECISIONS #042; the three floating-CTA events from DECISIONS #041 are unchanged)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

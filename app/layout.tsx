@@ -3,6 +3,7 @@ import "./globals.css";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Analytics from "@/components/Analytics";
+import EbookFloatingCta from "@/components/EbookFloatingCta";
 import { siteUrl, siteName, adsenseClientId } from "@/lib/site";
 
 // AdSense site-verification meta (google-adsense-account). Uses the shared publisher id
@@ -85,6 +86,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           {children}
         </main>
         <Footer />
+        <EbookFloatingCta />
         <Analytics />
       </body>
     </html>

@@ -1339,6 +1339,204 @@ and indexable throughout. Root cause: `app/q/[slug]/page.tsx`'s `QAPage` JSON-LD
 
 ---
 
+# Decision #041
+
+## Title
+
+Free Ebook Floating CTA — Small, Non-Intrusive, Session-Capped
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-21)
+
+### Reason
+
+Drive a small share of existing traffic to the free ebook on `/store` without compromising the
+trust-first, no-dark-patterns reading experience (DECISIONS #001). Primary goal is `/store` traffic,
+not aggressive popup conversion — content must always come first.
+
+### Implementation
+
+- **New client island `components/EbookFloatingCta.tsx`**, mounted once in `app/layout.tsx` (after
+  `Footer`, before `Analytics`) so it appears on every page except `/store` itself (the destination —
+  showing it there would be redundant).
+- **Timing:** appears **10 seconds** after mount via `setTimeout`, not on initial render — no layout
+  shift (fixed positioning, outside document flow) and no blocking of initial page rendering.
+- **Two responsive variants, one component:** a compact bottom-right chat-style card on `sm:` and up
+  ("Preparing for your next interview? Get our FREE Ebook →"), and a smaller single-line pill on mobile
+  ("📘 Free Ebook →"), toggled purely via Tailwind `sm:hidden` / `hidden sm:flex` — never both visible
+  at once, no JS viewport detection needed.
+- **Destination:** links to the existing `/store` route (`Link href="/store"`) — the FIG page that
+  already features the free ebook and its Gumroad download flow (`lib/store.ts`, `GumroadCtaButton`).
+  No duplicate ebook route or download flow was created.
+- **Frequency capping — sessionStorage, no backend:** a single key (`fig-ebook-cta-status`, values
+  `"dismissed"` | `"clicked"`) checked before starting the timer. Dismissing or clicking suppresses the
+  CTA for the rest of the browser session (tab/session-scoped by design, unlike `HelpfulVote`'s
+  `localStorage` which persists indefinitely — this cap is intentionally session-only per the owner's
+  brief). Read/write wrapped in `try/catch` (storage can be unavailable in private browsing), matching
+  the existing `HelpfulVote` pattern.
+- **Entrance animation:** reuses the existing `animate-fade-up` keyframe (`tailwind.config.ts`) applied
+  via the `motion-safe:` variant, so it's skipped entirely under `prefers-reduced-motion`. No pulsing,
+  no sound, no darkened backdrop, no modal semantics — plain fixed-position `<div>`, scrolling and all
+  page content remain fully interactive underneath it.
+- **Design system reuse:** `.card-premium` (existing gold-accent card style, previously used only for
+  Guru's Picks/Store — thematically consistent reuse, not a new visual language), `btn`/focus-ring
+  tokens for the close control, `brand`/`gold`/`slate` palette from `tailwind.config.ts`. No new
+  dependency.
+- **Analytics:** three new GA4 events via the established `sendGAEvent` (`@next/third-parties/google`)
+  pattern (DECISIONS #035) — `ebook_cta_impression`, `ebook_cta_click`, `ebook_cta_dismiss` — each
+  carrying `location` (the pathname) so impression → click → `/store` traffic can be funnel-analyzed in
+  GA4. Documented in [14_ANALYTICS.md](./14_ANALYTICS.md). Off by default, same as all GA (DECISIONS
+  #031/#032) — no-ops locally when `NEXT_PUBLIC_GA_ID` is unset.
+- **Accessibility:** the CTA link and the "Dismiss free ebook offer" close button are both real,
+  labeled, keyboard-focusable elements (no custom `role`/modal semantics, no focus trap); the site-wide
+  `:focus-visible` ring plus an explicit ring on the close button cover keyboard visibility.
+
+### Verified
+
+`npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS unchanged at 102 kB —
+no measurable bundle-size regression). Manually verified in dev (desktop + mobile viewport): the CTA
+appears at exactly 10s, never on `/store`, the desktop card and mobile pill never render
+simultaneously (confirmed via computed `display`), dismiss/click both persist correctly in
+`sessionStorage` and suppress the CTA for the rest of the session (including after a full page
+reload), and no console errors/hydration warnings.
+
+---
+
+# Decision #042
+
+## Title
+
+"Guru's Picks" → "Ebook Store" — Repositioning `/store` Around the Free Ebook
+
+### Status
+
+✅ Approved (Owner-directed 2026-08-21)
+
+### Reason
+
+The site already had exactly one product on `/store`: the free Java interview ebook. Framing that
+page as "Guru's Picks" (a generic, multi-item marketplace concept) undersold it — visitors weren't
+immediately told this was a free, downloadable resource, what it covered, or why it mattered. The
+goal is a small, honest lift in ebook-page traffic (funnel: page visit → CTA impression → CTA click
+→ `/store` visit → ebook download), which requires the destination to read as an intentional,
+single-purpose "Ebook Store" the moment it loads — not a generic ecommerce catalog page.
+
+### Implementation
+
+- **No route/URL change** — `/store` is kept as-is (DECISIONS #001-adjacent: never change URLs
+  without a strong reason; none existed here). Only the user-facing label and page content changed.
+- **`app/store/page.tsx` rebuilt around a hero, not a headline:** the old centered "Guru's Picks" H1 +
+  generic trust paragraph is replaced by a hero that renders **from `storeProducts[0]` directly**
+  (`const ebook = storeProducts[0]`) — the ebook's real `title` as the page's one `<h1>`, real
+  `subtitle`, and real `audience` copy as the value proposition, with a `🆓 Free` + `📘 Ebook Store`
+  chip pair above it and a `GumroadCtaButton` immediately below. No invented claims — every hero string
+  is sourced from `lib/store.ts`, the same data the detailed card below already renders, so the two
+  can't drift out of sync.
+- **Nothing was deleted.** The existing trust-positioning 3-card grid, the full `StoreProductCard`
+  (cover image, benefits, what's-inside, audience, Gumroad CTA), and the "More resources are on the
+  way" planned-categories teaser are all preserved — only their copy was reworded away from "Guru's
+  Picks" phrasing (e.g. the 3rd positioning card: "Optional deeper resources" → "One focused, free
+  ebook"). **Only one product exists in `storeProducts`** (`lib/store.ts` unchanged), so there was
+  nothing else that could have been silently affected by this rebrand.
+- **Ebook download flow unchanged** — `GumroadCtaButton` and `lib/store.ts`'s `gumroadUrl` are reused
+  as-is, both in the new hero and in the existing `StoreProductCard`. No second/duplicate download
+  path was created.
+- **Rebrand applied everywhere the old label appeared:** `Navbar` ("Guru's Picks" → "📘 Ebook Store"),
+  `Footer` Resources group ("🗝️ Guru's Picks" → "📘 Ebook Store"), the homepage promo card
+  (`app/page.tsx` — icon, heading, and CTA copy updated to "Ebook Store" / "Get the Free Ebook →"),
+  page `<title>`/`description`/OpenGraph, and the breadcrumb trail. `EbookFloatingCta`
+  ([[DECISIONS #041]]) already pointed at `/store` and needed no route change.
+- **`EbookFloatingCta` copy + visual refresh** (still the same component/mechanism as #041): desktop
+  card now leads with "Get our FREE Ebook" / "Prepare smarter for your next interview →" and shows the
+  ebook's real cover thumbnail (`ebook.coverImage` via `next/image`, 44×44, decorative `alt=""` since
+  the adjacent text already conveys meaning) in place of the generic 📘 emoji. Mobile pill is unchanged
+  ("📘 Free Ebook →" — already small and on-brand). A new one-shot `cta-settle` keyframe
+  (`tailwind.config.ts`) makes the thumbnail pop in and settle on entrance (`animation-iteration-count:
+  1`, ~0.6s) — draws the eye once, then stays static; applied only via `motion-safe:`, so
+  `prefers-reduced-motion` gets no animation at all. No GIF was added: no ebook animation asset exists
+  in `public/`, and a lightweight CSS keyframe achieves the same "attract then settle" effect without a
+  new binary asset, extra network request, or risk of layout shift/blocking render — preferred per the
+  owner's own stated fallback ("if CSS can achieve the same result, prefer it").
+- **10s delay, session-cap (`sessionStorage`, `fig-ebook-cta-status`), never-on-`/store`, and
+  mutually-exclusive desktop/mobile variants are all unchanged from DECISIONS #041** — this decision
+  only touches copy, the destination page, and the entrance visual, not the CTA's timing/frequency
+  mechanism.
+
+### Verified
+
+`npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS unchanged at 102 kB;
+`/store` route size 427 B → 432 B, negligible). In-browser (dev): `/store` renders the new hero with
+the real ebook title/subtitle/audience and a working Gumroad CTA; `Navbar`/`Footer` show "📘 Ebook
+Store"; the floating CTA at both 1280×720 and 375×812 shows the correct variant only (confirmed via
+computed `display`), sits fully inside the viewport without overlapping the header, shows the real
+cover thumbnail with a one-shot (`animation-iteration-count: 1`) settle animation on desktop, and
+dismiss/click still persist to `sessionStorage` and suppress the CTA for the rest of the session,
+including after navigating to `/store` itself (never shown there). No console errors or hydration
+warnings observed.
+
+---
+
+# Decision #043
+
+## Title
+
+Fix: Floating Ebook CTA Reappearing After Client-Side Navigation (SPA Route-Change Bug)
+
+### Status
+
+✅ Fixed (found during a fresh validation pass, 2026-08-21)
+
+### Reason
+
+`EbookFloatingCta` ([[DECISIONS #041]]/[[DECISIONS #042]]) is mounted once in the root layout, so — as
+is standard for the Next.js App Router — it is **not** remounted on client-side route changes; its
+React state persists across navigation. Re-testing the click path specifically via a real `Link` click
+(rather than a full `navigate()`/reload, which is what earlier verification passes used) surfaced two
+related bugs this persistence caused:
+
+1. Clicking the CTA writes `sessionStorage` and fires `ebook_cta_click`, but `visible` stayed `true` —
+   so after the soft-navigation to `/store`, the card kept rendering **on the destination page**,
+   directly violating "never show the CTA on `/store`".
+2. Because `visible` was never reset, navigating away from `/store` to any *other* page afterward made
+   the stale `true` state resurface the card immediately (no 10s wait, no fresh impression event) —
+   the CTA "randomly" reappeared once per click, on whatever page the visitor went to next.
+
+The dismiss path was not affected — `handleDismiss` already called `setVisible(false)`; only
+`handleClick` was missing the equivalent reset.
+
+### Implementation
+
+- **`components/EbookFloatingCta.tsx`, `handleClick`:** now calls `setVisible(false)` immediately
+  (mirroring `handleDismiss`), alongside the existing `writeStatus("clicked")` and `sendGAEvent` calls.
+  This is the root fix — the card can no longer resurface after a click regardless of subsequent
+  navigation.
+- **Render-time defensive guard:** the render condition changed from `if (!visible) return null;` to
+  `if (!visible || pathname.startsWith("/store")) return null;` — belt-and-suspenders so the CTA can
+  never render while the current route is `/store`, even under a future code path that forgets to
+  reset `visible`.
+
+### Verified
+
+Re-ran the exact scenario that exposed the bug, this time via actual `Link` clicks (`element.click()`
+dispatched through React's event system) rather than full-page `navigate()`:
+- Home → wait 10s → click CTA → lands on `/store` → **0** CTA elements in the DOM (was 1 rendering,
+  `display: flex`, before the fix).
+- Home → wait 10s → click CTA → `/store` → click through to `/candidate` → **0** CTA elements (was 2
+  — the stale card had resurfaced immediately, with no new 10s wait).
+- Repeated for dismiss → `/interviewer`: **0** CTA elements (dismiss was already correct; confirmed no
+  regression).
+- Repeated the full desktop (1280×720) and mobile (375×812) 10s-trigger, positioning, and
+  mutually-exclusive-variant checks from DECISIONS #041/#042 — all still pass after this fix.
+- `npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS unchanged at
+  102 kB). No console errors.
+
+This retroactively corrects the "including after navigating to `/store` itself" verification claim
+in DECISIONS #042 above, which was only checked via full-page reloads at the time and did not catch
+this SPA-navigation-specific state bug.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1350,7 +1548,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-16 (Decision #040 — QAPage structured-data enrichment)
+- **Last Updated:** 2026-08-21 (Decision #043 — fixed floating CTA reappearing after client-side navigation)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

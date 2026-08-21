@@ -50,6 +50,60 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (Floating ebook CTA reappearing after client-side navigation, DECISIONS #043) — 2026-08-21
+Found during a fresh validation pass: `EbookFloatingCta` is mounted once in the root layout, so its
+`visible` state persisted across Next.js client-side route changes. Clicking the CTA wrote
+`sessionStorage` and fired `ebook_cta_click` but never reset `visible` — so the card kept showing on
+`/store` right after the click, and then resurfaced again (no wait, no fresh impression) on whatever
+page the visitor navigated to next. Dismiss was unaffected (`handleDismiss` already reset `visible`).
+
+- **`components/EbookFloatingCta.tsx`** — `handleClick` now calls `setVisible(false)` (mirroring
+  `handleDismiss`); render condition also defensively checks `pathname.startsWith("/store")` so the
+  card can never render on the destination page regardless of `visible` state.
+- Verified via real `Link` clicks (not full-page reloads, which is how earlier passes missed this):
+  home → CTA click → `/store` (0 CTA elements, was showing) → `/candidate` (0 CTA elements, was
+  resurfacing). `npx tsc --noEmit` clean; `npm run build` green (355 pages, 102 kB shared JS).
+
+### Changed (Guru's Picks → Ebook Store, floating CTA refresh, DECISIONS #042) — 2026-08-21
+Repositioned `/store` around the one product it already had — the free ebook — instead of a generic
+"Guru's Picks" multi-item framing. Same route (`/store`, no URL/SEO change), same Gumroad download
+flow, same single `storeProducts` entry — no product/content removed.
+
+- **`app/store/page.tsx`** — new hero rendered directly from `storeProducts[0]`: the ebook's real
+  title as the page's one `<h1>`, real subtitle + audience copy as the value proposition, `🆓 Free` /
+  `📘 Ebook Store` chips, and a `GumroadCtaButton` up top. Existing trust-positioning cards, the full
+  `StoreProductCard` detail section, and the "More resources are on the way" teaser are all preserved,
+  with copy reworded away from "Guru's Picks" phrasing. Metadata title/description/OG updated.
+- **`Navbar`, `Footer`, homepage promo card (`app/page.tsx`)** — label changed from "Guru's Picks" to
+  "📘 Ebook Store" everywhere it appeared; homepage card copy/CTA updated to match.
+- **`EbookFloatingCta`** — desktop copy changed to "Get our FREE Ebook" / "Prepare smarter for your
+  next interview →"; now shows the ebook's real cover thumbnail (via `next/image`) instead of a
+  generic emoji, with a new one-shot `cta-settle` entrance keyframe (`tailwind.config.ts`,
+  `motion-safe:` only, `animation-iteration-count: 1`) — pops in once, then holds static. No GIF added
+  (none exists; CSS achieves the same effect with no new asset/layout-shift risk). 10s delay, session
+  cap, never-shown-on-`/store`, and mutually-exclusive desktop/mobile variants are unchanged from
+  DECISIONS #041.
+- `npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS unchanged at 102 kB).
+
+### Added (Free Ebook floating CTA, DECISIONS #041) — 2026-08-21
+Small, dismissible floating CTA inviting visitors to the free ebook on `/store` — primary goal is
+`/store` traffic, not aggressive conversion; content always comes first.
+
+- New `components/EbookFloatingCta.tsx` (client island), mounted once in `app/layout.tsx`. Appears
+  10s after page load, bottom-right, on every page except `/store` itself. Desktop/tablet: compact
+  chat-style card ("Preparing for your next interview? Get our FREE Ebook →"). Mobile: smaller
+  single-line pill ("📘 Free Ebook →") — the two variants are mutually exclusive via `sm:` breakpoints,
+  never shown together. Links to the existing `/store` route; no duplicate ebook page/flow created.
+- Session-scoped frequency cap via `sessionStorage` (`fig-ebook-cta-status`): dismissing or clicking
+  suppresses it for the rest of the session. No backend, no new dependency.
+- Reuses the existing `.card-premium` gold-accent style and `animate-fade-up` entrance keyframe
+  (skipped under `prefers-reduced-motion` via `motion-safe:`); no pulsing, sound, backdrop, or modal
+  semantics — page stays fully scrollable/readable underneath it.
+- Three new GA4 events (`ebook_cta_impression`, `ebook_cta_click`, `ebook_cta_dismiss`) via the
+  established `sendGAEvent` pattern — see [14_ANALYTICS.md](./14_ANALYTICS.md).
+- No existing routes, content, or SEO URLs changed. `npx tsc --noEmit` clean; `npm run build` green
+  (355 pages, shared First Load JS unchanged at 102 kB).
+
 ### Fixed (QAPage structured-data enrichment, DECISIONS #040) — 2026-08-16
 Owner-directed fix for Search Console's Q&A "Improve item appearance" report (all optional
 enhancement rows, not errors — every page stayed valid/indexable throughout).
@@ -1015,7 +1069,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-16 (QAPage structured-data enrichment — DECISIONS #040)
+- **Last Updated:** 2026-08-21 (Fixed floating CTA reappearing after client-side navigation — DECISIONS #043)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
