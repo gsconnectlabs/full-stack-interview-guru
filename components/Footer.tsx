@@ -3,11 +3,12 @@ import Link from "next/link";
 import { listedCategories } from "@/lib/category-visibility";
 
 /**
- * Footer link columns. Every href resolves to a real route (verified against the
- * App Router tree) — no placeholder or dead links. "Topics" is served by the
- * Browse Topics grid below, so it isn't duplicated as a single link here.
+ * Footer link columns. Every internal href resolves to a real route (verified against
+ * the App Router tree) — no placeholder or dead links. "Topics" is served by the Browse
+ * Topics grid below, so it isn't duplicated as a single link here. `external: true` links
+ * (social profiles) open in a new tab via a plain `<a>` instead of `next/link`.
  */
-const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[] = [
+const LINK_GROUPS: { title: string; links: { href: string; label: string; external?: boolean }[] }[] = [
   {
     title: "Company",
     links: [
@@ -38,6 +39,13 @@ const LINK_GROUPS: { title: string; links: { href: string; label: string }[] }[]
     title: "Support",
     links: [{ href: "/feedback", label: "Feedback" }],
   },
+  {
+    title: "Connect",
+    links: [
+      { href: "https://www.linkedin.com/company/full-stack-interview-guru/", label: "LinkedIn", external: true },
+      { href: "https://www.reddit.com/user/FI-Guru/", label: "Reddit", external: true },
+    ],
+  },
 ];
 
 export default function Footer() {
@@ -64,16 +72,30 @@ export default function Footer() {
                   {group.title}
                 </h4>
                 <ul className="mt-4 space-y-2">
-                  {group.links.map((l) => (
-                    <li key={l.href}>
-                      <Link
-                        href={l.href}
-                        className="text-sm font-medium text-slate-300 transition-colors hover:text-brand-300"
-                      >
-                        {l.label}
-                      </Link>
-                    </li>
-                  ))}
+                  {group.links.map((l) =>
+                    l.external ? (
+                      <li key={l.href}>
+                        <a
+                          href={l.href}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-sm font-medium text-slate-300 transition-colors hover:text-brand-300"
+                        >
+                          {l.label}
+                          <span className="sr-only">, opens in a new tab</span>
+                        </a>
+                      </li>
+                    ) : (
+                      <li key={l.href}>
+                        <Link
+                          href={l.href}
+                          className="text-sm font-medium text-slate-300 transition-colors hover:text-brand-300"
+                        >
+                          {l.label}
+                        </Link>
+                      </li>
+                    ),
+                  )}
                 </ul>
               </div>
             ))}
