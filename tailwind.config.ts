@@ -88,11 +88,22 @@ const config: Config = {
           "60%": { opacity: "1", transform: "scale(1.06) rotate(2deg)" },
           "100%": { opacity: "1", transform: "scale(1) rotate(0deg)" },
         },
+        // One-shot confetti particle burst for the ebook CTA's first appearance — each
+        // piece travels to its own randomized --tx/--ty/--tr end state, then fades. No
+        // loop; the element is removed from the DOM once the animation completes.
+        "confetti-burst": {
+          "0%": { transform: "translate(0, 0) rotate(0deg) scale(1)", opacity: "1" },
+          "100%": {
+            transform: "translate(var(--tx, 0px), var(--ty, 0px)) rotate(var(--tr, 0deg)) scale(0.5)",
+            opacity: "0",
+          },
+        },
       },
       animation: {
         "fade-up": "fade-up 0.4s ease-out both",
         "pulse-glow": "pulse-glow 2.5s ease-in-out infinite",
         "cta-settle": "cta-settle 0.6s cubic-bezier(0.34,1.56,0.64,1) both",
+        "confetti-burst": "confetti-burst 0.7s cubic-bezier(0.25,0.8,0.35,1) forwards",
       },
     },
   },
