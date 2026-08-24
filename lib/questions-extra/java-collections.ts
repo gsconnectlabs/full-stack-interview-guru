@@ -1042,7 +1042,7 @@ if (t == POISON) break;`,
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Google", "Deloitte"],
-    related: ["priorityqueue-top-k", "concurrent-counter-collections"],
+    related: ["priorityqueue-top-k", "concurrent-counter-collections", "producer-consumer-wait-notify"],
   },
 
   // ---------------------------------------------------- CE4 additions (2026-08)

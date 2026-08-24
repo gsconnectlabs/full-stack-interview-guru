@@ -1347,4 +1347,90 @@ jcmd <pid> JFR.dump filename=recording.jfr
     askedIn: ["Amazon", "Microsoft"],
     related: ["threadlocal-memory-leak", "java-memory-leak-diagnosis"],
   },
+  {
+    slug: "shutdown-hooks-graceful-drain",
+    categoryId: "jvm",
+    topic: "Runtime",
+    question: "How do you use a JVM shutdown hook to drain in-flight requests before exit?",
+    seoTitle: "JVM Shutdown Hooks: Draining Requests Before Exit | FIG",
+    seoDescription:
+      "How Runtime.addShutdownHook works, why it never runs on SIGKILL, and how to drain in-flight requests and close connection pools within an orchestrator's grace period before the JVM exits.",
+    heading: "How to Use a JVM Shutdown Hook to Drain In-Flight Requests",
+    tags: ["shutdown hook", "graceful shutdown", "sigterm", "drain", "kubernetes"],
+    updated: "2026-08-24",
+    shortAnswer:
+      "Runtime.getRuntime().addShutdownHook(thread) registers a thread the JVM runs during an orderly shutdown — SIGTERM, normal exit, or System.exit() — but never on SIGKILL or a crash. Use it to stop accepting new work, wait (with a bounded timeout) for in-flight requests to finish, then release resources, all inside whatever grace period your orchestrator gives the process before force-killing it.",
+    mindMap: [
+      {
+        type: "text",
+        content:
+          "A shutdown hook is a `Thread` registered via `Runtime.getRuntime().addShutdownHook(hook)` that the JVM starts the moment it begins an **orderly** shutdown — normal `main()` return, `System.exit()`, or a signal like `SIGTERM` (`Ctrl+C`, `kill`, a Kubernetes pod being terminated). It never runs on `SIGKILL`/`kill -9` or a native crash — there's no orderly shutdown sequence for those to hook into.",
+      },
+      {
+        type: "kv",
+        rows: [
+          { k: "Runs on", v: "SIGTERM, System.exit(), normal exit" },
+          { k: "Does NOT run on", v: "kill -9 / SIGKILL, native crash" },
+          { k: "Typical use", v: "stop new work → drain in-flight → close resources" },
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "Kubernetes sends `SIGTERM`, then waits `terminationGracePeriodSeconds` (default 30s) before escalating to `SIGKILL`. A shutdown hook that takes longer than that window to drain gets killed mid-drain regardless of how correct its logic is — the grace period is a hard budget, not a suggestion.",
+      },
+      {
+        type: "code",
+        lang: "java",
+        content: `Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+    log.info("SIGTERM received, draining...");
+    server.stopAcceptingNewConnections();
+    boolean drained = server.awaitInFlightRequests(Duration.ofSeconds(25));
+    if (!drained) log.warn("Forced shutdown with requests still in flight");
+    connectionPool.close();
+}, "shutdown-hook"));`,
+      },
+      {
+        type: "text",
+        content:
+          "**Key takeaway:** the hook's job is sequencing, not magic — stop the front door first so the in-flight count can only shrink, then wait for it to hit zero (bounded), then release resources. Skip the 'stop accepting new work' step and the hook can chase a moving target until the grace period runs out.",
+      },
+    ],
+    whatIf: {
+      q: "Your shutdown hook takes 45s to drain but terminationGracePeriodSeconds is 30s — what happens?",
+      a: "Kubernetes sends SIGKILL at 30s regardless of the hook's progress — the JVM is killed mid-drain, and any requests still in flight at that instant are simply lost or reset from the client's perspective. Either shorten the drain budget to comfortably fit inside the grace period, or raise terminationGracePeriodSeconds to match the realistic worst case.",
+    },
+    realWorld:
+      "Every rolling deployment on Kubernetes or ECS depends on exactly this: a pod gets SIGTERM before it's removed from the load balancer's rotation and terminated, and a well-written shutdown hook is the difference between a clean deploy and a burst of connection-reset errors on every release.",
+    guruTake:
+      "I treat the shutdown hook's timeout as a real SLA, not a nice-to-have — I set it a few seconds under whatever the orchestrator's grace period is, log clearly when a shutdown was forced instead of clean, and alert on that log line. If forced shutdowns are common in practice, that's a signal the drain budget or the grace period needs to change, not something to quietly tolerate.",
+    interviewerExpectation: [
+      "addShutdownHook runs on SIGTERM/normal exit, not SIGKILL",
+      "stop accepting new work before draining old work",
+      "drain wait must be bounded by a timeout",
+      "orchestrator grace period must exceed worst-case drain time",
+    ],
+    followUps: [
+      "What signal does Kubernetes send before force-killing a pod?",
+      "Why doesn't a shutdown hook run on kill -9?",
+      "How do you make an HTTP server stop accepting new connections but finish existing ones?",
+      "What happens if the shutdown hook itself throws an exception?",
+    ],
+    commonMistakes: [
+      "Assuming the shutdown hook always runs (it doesn't on SIGKILL or a crash)",
+      "No timeout on the drain wait, so the hook can block indefinitely on one stuck request",
+      "terminationGracePeriodSeconds shorter than the realistic worst-case drain time",
+      "Draining before stopping new connections, so the in-flight count never actually reaches zero",
+    ],
+    bestPractices: [
+      "Stop accepting new connections first, then drain existing ones",
+      "Bound the drain wait with a timeout comfortably under the orchestrator's grace period",
+      "Log (and alert on) forced/incomplete shutdowns for visibility",
+    ],
+    relatedTech: ["Runtime.addShutdownHook", "SIGTERM", "Kubernetes terminationGracePeriodSeconds", "connection draining"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Microsoft"],
+    related: ["threadpoolexecutor-tuning", "thread-pool-exhaustion-cascading-failure"],
+  },
 ];

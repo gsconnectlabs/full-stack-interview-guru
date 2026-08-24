@@ -154,7 +154,7 @@ Integer result = f.get();   // blocks until done`,
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Cognizant", "Accenture", "Deloitte", "Amazon"],
-    related: ["thread-dump-diagnosis", "deadlock-prevention"],
+    related: ["thread-dump-diagnosis", "deadlock-prevention", "daemon-threads-jvm-exit"],
   },
   {
     slug: "sleep-vs-wait",
@@ -301,7 +301,7 @@ public void loop() { while (running) { /* ... */ } }`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Cognizant", "Wipro"],
-    related: ["threadpoolexecutor-tuning", "runnable-vs-callable-future"],
+    related: ["threadpoolexecutor-tuning", "runnable-vs-callable-future", "thread-interruption-cooperative-cancellation"],
   },
   {
     slug: "threadpoolexecutor-tuning",
@@ -356,7 +356,7 @@ public void loop() { while (running) { /* ... */ } }`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Google", "Deloitte"],
-    related: ["executorservice-thread-pools", "completablefuture-async"],
+    related: ["executorservice-thread-pools", "completablefuture-async", "shutdown-hooks-graceful-drain"],
   },
   {
     slug: "wait-notify-guarded-blocks",
@@ -404,7 +404,7 @@ public void loop() { while (running) { /* ... */ } }`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Deloitte"],
-    related: ["sleep-vs-wait", "reentrantlock-vs-synchronized"],
+    related: ["sleep-vs-wait", "reentrantlock-vs-synchronized", "producer-consumer-wait-notify"],
   },
   {
     slug: "reentrantlock-vs-synchronized",
@@ -1554,5 +1554,285 @@ future.orTimeout(1, TimeUnit.SECONDS)
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Microsoft"],
     related: ["completablefuture-async", "completablefuture-callback-thread-semantics"],
+  },
+  {
+    slug: "thread-interruption-cooperative-cancellation",
+    categoryId: "multithreading",
+    topic: "Cancellation",
+    question: "How does Thread.interrupt() actually work, and why must you never swallow InterruptedException?",
+    seoTitle: "Thread.interrupt(): How It Works & Why Never Swallow It | FIG",
+    seoDescription:
+      "What Thread.interrupt() actually does — it never force-stops a thread — how the interrupt-status flag and InterruptedException cooperate, and why silently catching InterruptedException breaks cancellation.",
+    heading: "How Does Thread.interrupt() Work, and Why Never Swallow InterruptedException?",
+    tags: ["thread interrupt", "interruptedexception", "cooperative cancellation", "interrupt status"],
+    updated: "2026-08-24",
+    shortAnswer:
+      "interrupt() doesn't stop a thread — it sets an internal boolean interrupt-status flag on it. Blocking methods that support interruption (sleep, wait, join, BlockingQueue.put/take) check that flag, clear it, and throw InterruptedException. CPU-bound code has to poll Thread.currentThread().isInterrupted() itself; nothing happens to it automatically. Cancellation in Java is cooperative — swallowing InterruptedException with an empty catch block discards the cancellation signal, and the thread keeps running as if nothing happened.",
+    mindMap: [
+      {
+        type: "text",
+        content:
+          "`interrupt()` is a **request**, not a command — calling it just sets a boolean flag on the target thread; nothing stops on its own. A thread currently blocked in a method that supports interruption (`Thread.sleep`, `Object.wait`, `Thread.join`, `BlockingQueue.take/put`) notices the flag, **clears it**, and throws `InterruptedException`. A thread doing plain CPU-bound work notices nothing automatically — the running code has to poll `isInterrupted()` itself for cancellation to have any effect.",
+      },
+      {
+        type: "kv",
+        rows: [
+          { k: "interrupt()", v: "sets a flag, doesn't stop anything" },
+          { k: "Blocking methods", v: "detect flag → clear it → throw InterruptedException" },
+          { k: "CPU-bound code", v: "must poll isInterrupted() itself" },
+          { k: "Swallowing it", v: "catch (InterruptedException e) {} discards the cancellation signal entirely" },
+        ],
+      },
+      {
+        type: "code",
+        lang: "java",
+        content: `// WRONG — silently discards the interrupt signal
+try {
+    Thread.sleep(1000);
+} catch (InterruptedException e) {
+    // swallowed — the thread has no idea it was asked to stop
+}
+
+// RIGHT — restore the flag (or propagate) so callers up the stack know
+try {
+    Thread.sleep(1000);
+} catch (InterruptedException e) {
+    Thread.currentThread().interrupt(); // restore status
+    return; // actually stop what you were doing
+}`,
+      },
+      {
+        type: "text",
+        content:
+          "**Key takeaway:** restoring the flag with `Thread.currentThread().interrupt()` — rather than just returning — matters because the blocking method already cleared it. If this code is called from something further up the stack that also checks `isInterrupted()` (a thread-pool worker loop, for example), that caller still needs to see the interrupt request. Restoring the flag hands the signal upward instead of losing it.",
+      },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `void run() {
+    while (!Thread.currentThread().isInterrupted()) {
+        doUnitOfWork();      // CPU-bound, no blocking call to catch the interrupt
+    }
+    // loop exits cleanly once interrupted
+}`,
+    },
+    whatIf: {
+      q: "ExecutorService.shutdownNow() doesn't seem to stop a running task — why?",
+      a: "shutdownNow() interrupts the worker threads running your tasks, but interruption only takes effect where the task actually cooperates. A blocking call (sleep, wait, a blocking queue op) throws InterruptedException on cue — but a tight CPU-bound loop with no isInterrupted() check just keeps running, because nothing forces it to stop. The task has to check the flag itself for cancellation to actually work.",
+    },
+    realWorld:
+      "Every graceful-shutdown or timeout path in Java — ExecutorService.shutdownNow(), a request timeout, a user cancelling a long operation — ultimately relies on the running task cooperating with interruption. A task that swallows InterruptedException, or never checks isInterrupted() in a long loop, simply cannot be cancelled no matter how correctly the caller requests it.",
+    guruTake:
+      "An empty catch (InterruptedException e) {} is one of the fastest ways to lose my confidence in a candidate's concurrency knowledge — it's a small thing that quietly breaks every cancellation and shutdown path built on top of that code. I'd rather see someone rethrow it as a RuntimeException than swallow it silently, because at least that fails loudly instead of pretending nothing happened.",
+    interviewerExpectation: [
+      "interrupt() sets a flag, never force-stops a thread",
+      "blocking methods clear the flag and throw InterruptedException",
+      "CPU-bound code must poll isInterrupted() for cancellation to work",
+      "never swallow InterruptedException — restore the flag or propagate it",
+    ],
+    followUps: [
+      "What's the difference between the instance method isInterrupted() and the static Thread.interrupted()?",
+      "Why does the static Thread.interrupted() clear the flag when you call it?",
+      "How does ExecutorService.shutdownNow() use interruption under the hood?",
+      "Can you interrupt a thread that's doing pure CPU work with no blocking calls?",
+    ],
+    commonMistakes: [
+      "catch (InterruptedException e) {} with an empty body",
+      "Assuming interrupt() forcibly stops whatever the thread is doing",
+      "Not checking isInterrupted() in long CPU-bound loops, making them effectively uncancellable",
+      "Catching InterruptedException and continuing the loop instead of stopping",
+    ],
+    bestPractices: [
+      "Either propagate InterruptedException up (declare it) or restore the flag with Thread.currentThread().interrupt() before handling it locally",
+      "Poll isInterrupted() periodically in long CPU-bound loops",
+      "Treat interruption as Java's standard cancellation mechanism, not an edge case to work around",
+    ],
+    relatedTech: ["InterruptedException", "Thread.interrupt", "ExecutorService.shutdownNow", "cooperative cancellation"],
+    difficulty: "Medium",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Google", "Microsoft"],
+    related: ["executorservice-thread-pools", "sleep-vs-wait"],
+  },
+  {
+    slug: "daemon-threads-jvm-exit",
+    categoryId: "multithreading",
+    topic: "Fundamentals",
+    question: "What is a daemon thread, and why does the JVM exit even while daemon threads are still running?",
+    seoTitle: "Daemon Threads: Why the JVM Exits Around Them | FIG",
+    seoDescription:
+      "What makes a thread a daemon thread, how setDaemon(true) changes JVM shutdown behavior, and why relying on a daemon thread to finish cleanup work is a common production bug.",
+    heading: "What Is a Daemon Thread, and Why Does the JVM Exit With Them Still Running?",
+    tags: ["daemon thread", "setdaemon", "jvm exit", "background threads"],
+    updated: "2026-08-24",
+    shortAnswer:
+      "The JVM keeps running as long as any non-daemon (user) thread is alive, and exits the instant the last one finishes — regardless of whether daemon threads are still running. Daemon threads are simply terminated at that point, mid-instruction, with no finally blocks guaranteed to run. Set via thread.setDaemon(true), called before start(). They're meant for background housekeeping (cache eviction, metrics collection) that shouldn't itself keep the process alive — never put work that must complete, like flushing a buffer or releasing an external lock, on a daemon thread.",
+    mindMap: [
+      {
+        type: "text",
+        content:
+          "Every thread is either a **user thread** or a **daemon thread**. The JVM stays alive as long as at least one user thread is running; the moment the last user thread finishes, the JVM exits immediately — and any daemon threads still executing are simply **terminated**, mid-instruction, with no `finally` block guaranteed to run and no cleanup performed.",
+      },
+      {
+        type: "kv",
+        rows: [
+          { k: "User thread", v: "JVM waits for these before exiting" },
+          { k: "Daemon thread", v: "does NOT keep the JVM alive; killed abruptly on exit" },
+          { k: "Set via", v: "thread.setDaemon(true) — must be called BEFORE start()" },
+          { k: "Typical use", v: "background housekeeping, not work that must complete" },
+        ],
+      },
+      {
+        type: "code",
+        lang: "java",
+        content: `Thread housekeeper = new Thread(() -> evictExpiredEntries());
+housekeeper.setDaemon(true);   // must be set before start()
+housekeeper.start();
+
+// If this is the last other thread running, main() returning ends
+// the JVM immediately - housekeeper is killed mid-eviction, no warning.`,
+      },
+      {
+        type: "text",
+        content:
+          "**Key takeaway:** the classic bug is making a thread daemon so it 'doesn't block shutdown,' then quietly relying on it to finish something that matters — flushing a write buffer, releasing an external lock, closing a file handle. Because daemon threads offer zero cleanup guarantee, that work may simply never happen. If completion matters, either use a user thread and shut it down explicitly (signal it, then join with a timeout), or accept that the work is genuinely disposable.",
+      },
+    ],
+    whatIf: {
+      q: "A background metrics-uploader is a daemon thread, and on shutdown the last few seconds of metrics are sometimes missing — why?",
+      a: "Because it's a daemon thread, the JVM doesn't wait for it — if the last user thread finishes first, the uploader is killed mid-upload with no chance to flush. Add a shutdown hook that explicitly signals the uploader to flush and join()s it with a timeout, or make it a non-daemon thread with a proper, explicit stop mechanism instead of relying on daemon semantics.",
+    },
+    realWorld:
+      "Scheduled background workers — cache evictors, metrics collectors, connection-pool reapers — are usually daemon threads by design, precisely because they shouldn't hold the process open on their own. The bug shows up when someone assumes 'daemon' just means 'runs quietly in the background' and forgets it also means 'can be killed at literally any instant with zero warning.'",
+    guruTake:
+      "When I see setDaemon(true) in a review, my first question is always 'what happens if this thread is killed mid-line, right now?' If the honest answer involves lost data or an unreleased resource, it shouldn't be a daemon thread — or it needs an explicit shutdown-hook-driven stop, not an assumption that it'll get to finish.",
+    interviewerExpectation: [
+      "JVM exits once the last non-daemon thread finishes",
+      "daemon threads are killed abruptly with no cleanup guaranteed",
+      "setDaemon(true) must be called before start()",
+      "never rely on a daemon thread to complete must-finish work",
+    ],
+    followUps: [
+      "What happens if you call setDaemon(true) after the thread has already started?",
+      "Are the worker threads in a default ExecutorService pool daemon or user threads?",
+      "How do you cleanly stop a background daemon thread instead of relying on it being killed?",
+      "Why is the garbage collector's own thread a daemon thread?",
+    ],
+    commonMistakes: [
+      "Calling setDaemon(true) after start() (throws IllegalThreadStateException)",
+      "Relying on a daemon thread to complete cleanup or flush work during shutdown",
+      "Assuming ExecutorService threads are daemon by default — they're user threads unless you supply a custom ThreadFactory",
+    ],
+    bestPractices: [
+      "Use daemon threads only for genuinely disposable background work",
+      "For work that must complete, use a shutdown hook to explicitly signal and join with a timeout",
+      "Set daemon status before start(), never after",
+    ],
+    relatedTech: ["Thread.setDaemon", "JVM exit", "shutdown hook", "ExecutorService ThreadFactory"],
+    difficulty: "Easy",
+    experience: ["0-2 years", "3-5 years"],
+    askedIn: ["Infosys", "TCS", "Cognizant"],
+    related: ["thread-lifecycle-states", "shutdown-hooks-graceful-drain"],
+  },
+  {
+    slug: "producer-consumer-wait-notify",
+    categoryId: "multithreading",
+    topic: "Coordination",
+    question: "How do you implement a producer-consumer queue with wait() and notifyAll() (not BlockingQueue)?",
+    seoTitle: "Producer-Consumer with wait()/notifyAll() (No BlockingQueue) | FIG",
+    seoDescription:
+      "How to build a bounded producer-consumer queue from scratch with synchronized, wait(), and notifyAll() — the mechanism BlockingQueue hides, and why interviewers still ask for it by hand.",
+    heading: "Producer-Consumer with wait() and notifyAll() — No BlockingQueue",
+    tags: ["producer consumer", "wait notify", "synchronized", "guarded blocks"],
+    updated: "2026-08-24",
+    shortAnswer:
+      "Wrap a fixed-size buffer in a synchronized class. A producer calls wait() while the buffer is full; a consumer calls wait() while it's empty. After adding or removing an item, call notifyAll() to wake any thread that might now be able to proceed. This is exactly the guarded-block mechanism ArrayBlockingQueue implements internally — interviewers ask for it by hand specifically to check you understand wait/notify, not just that you know the java.util.concurrent class name.",
+    mindMap: [
+      {
+        type: "text",
+        content:
+          "This is the standard guarded-block pattern applied to a bounded buffer: producers block while it's **full**, consumers block while it's **empty**, and every state change (a successful `add` or `remove`) wakes up threads that might now be able to proceed.",
+      },
+      {
+        type: "code",
+        lang: "java",
+        content: `class BoundedBuffer<T> {
+    private final Queue<T> queue = new LinkedList<>();
+    private final int capacity;
+    BoundedBuffer(int capacity) { this.capacity = capacity; }
+
+    synchronized void put(T item) throws InterruptedException {
+        while (queue.size() == capacity) {
+            wait(); // releases the lock, blocks until notified
+        }
+        queue.add(item);
+        notifyAll(); // wake any consumer(s) waiting on "not empty"
+    }
+
+    synchronized T take() throws InterruptedException {
+        while (queue.isEmpty()) {
+            wait();
+        }
+        T item = queue.remove();
+        notifyAll(); // wake any producer(s) waiting on "not full"
+        return item;
+    }
+}`,
+      },
+      {
+        type: "kv",
+        rows: [
+          { k: "Producer blocks when", v: "queue.size() == capacity" },
+          { k: "Consumer blocks when", v: "queue.isEmpty()" },
+          { k: "After put/take", v: "notifyAll() wakes threads waiting on the OTHER condition" },
+          { k: "Why while, not if", v: "spurious wakeups + multiple waiters — must re-check after waking" },
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "`notifyAll()` (not `notify()`) matters here specifically because producers and consumers share the **same** monitor. `notify()` wakes one arbitrary waiting thread, which might be another producer that still can't proceed instead of the consumer that just became unblocked. `notifyAll()` wakes everyone; each re-checks its own `while` condition, and only the ones that can actually proceed continue — the rest go straight back to waiting.",
+      },
+    ],
+    handsOn: {
+      lang: "java",
+      code: `BoundedBuffer<Integer> buf = new BoundedBuffer<>(10);
+new Thread(() -> { try { buf.put(42); } catch (InterruptedException ignored) {} }).start();
+new Thread(() -> { try { System.out.println(buf.take()); } catch (InterruptedException ignored) {} }).start();`,
+    },
+    whatIf: {
+      q: "You used notify() instead of notifyAll() and the buffer occasionally hangs under load — why?",
+      a: "With multiple producers and consumers waiting on the same monitor, notify() can wake a thread that still can't proceed — say it wakes another blocked producer while a waiting consumer was the one that actually needed the signal. That producer re-checks its while condition, fails it, and goes straight back to wait(), and the consumer that needed waking never gets notified. notifyAll() avoids this by waking every waiter so each can independently re-check its own condition.",
+    },
+    realWorld:
+      "ArrayBlockingQueue and LinkedBlockingQueue implement essentially this pattern internally — production code uses a Condition per direction instead of raw wait/notify for efficiency, but the logic is the same guarded-block shape. Building this by hand once is what lets you actually reason about BlockingQueue's behavior instead of treating it as a black box.",
+    guruTake:
+      "I still ask this in interviews even though nobody should write it in production — BlockingQueue exists precisely so you don't have to. What I'm checking for is whether someone understands why wait() has to be in a while loop and why notifyAll() beats notify() here, because that understanding is what lets them correctly reason about deadlocks and missed signals anywhere else wait/notify shows up.",
+    interviewerExpectation: [
+      "wait() releases the lock and blocks; must be called inside synchronized",
+      "always re-check the condition in a while loop, never an if",
+      "notifyAll() over notify() when multiple different conditions share one monitor",
+      "this is the mechanism BlockingQueue implements internally",
+    ],
+    followUps: [
+      "Why must wait() be called inside a synchronized block?",
+      "What's a spurious wakeup, and why does that alone require a while loop?",
+      "How does this relate to ArrayBlockingQueue's actual implementation?",
+      "When, if ever, is notify() safe to use instead of notifyAll()?",
+    ],
+    commonMistakes: [
+      "Using if instead of while around wait() — misses spurious wakeups and skips the re-check",
+      "Calling wait()/notify() outside a synchronized block (throws IllegalMonitorStateException)",
+      "Using notify() when multiple different wait conditions share one monitor",
+    ],
+    bestPractices: [
+      "Always loop on the condition with while, never if",
+      "Use notifyAll() unless you can prove only one type of waiter exists on the monitor",
+      "Reach for java.util.concurrent's BlockingQueue in real production code — build this by hand mainly to internalize the mechanism",
+    ],
+    relatedTech: ["wait/notify", "synchronized", "ArrayBlockingQueue", "guarded blocks"],
+    difficulty: "Hard",
+    experience: ["3-5 years", "8-15 years"],
+    askedIn: ["Amazon", "Google", "Microsoft", "Deloitte"],
+    related: ["wait-notify-guarded-blocks", "blockingqueue-producer-consumer"],
   },
 ];
