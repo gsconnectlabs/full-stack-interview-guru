@@ -196,6 +196,11 @@ export const jvmExtra: Question[] = [
     categoryId: "jvm",
     topic: "Garbage Collection",
     question: "Why is the heap split into young and old generations, and what's a minor vs major GC?",
+    seoTitle: "Young vs Old Generation: Minor vs Major GC Explained | FIG",
+    seoDescription:
+      "Why the Java heap splits into young and old generations, the weak generational hypothesis behind it, and the difference between a minor and a major GC.",
+    heading: "Young vs Old Generation — Minor vs Major GC",
+    updated: "2026-08-24",
     tags: ["generational gc", "young gen", "old gen", "eden", "survivor", "minor gc"],
     shortAnswer:
       "The weak generational hypothesis: most objects die young. So the heap splits into Young (Eden + 2 Survivors) collected often and cheaply (minor GC), and Old (tenured) collected rarely (major/full GC). Survivors that age past a threshold are promoted to Old.",
@@ -435,6 +440,11 @@ export const jvmExtra: Question[] = [
     categoryId: "jvm",
     topic: "GC Tuning",
     question: "What is a stop-the-world pause, and how do you reduce GC pause times?",
+    seoTitle: "Stop-the-World GC Pauses & How to Reduce Them | FIG",
+    seoDescription:
+      "What a stop-the-world GC pause is, and how to reduce it: lower allocation rate, right-size generations, set a G1 pause target, or move to ZGC/Shenandoah.",
+    heading: "Stop-the-World GC Pauses and How to Reduce Them",
+    updated: "2026-08-24",
     tags: ["stop-the-world", "gc pause", "latency", "tuning", "safepoint"],
     shortAnswer:
       "A STW pause halts all application threads (at a safepoint) so GC can work safely. Reduce pauses by lowering allocation rate, sizing generations to avoid full GCs, setting a pause target (G1), or switching to a concurrent collector (ZGC/Shenandoah).",
@@ -678,6 +688,11 @@ export const jvmExtra: Question[] = [
     categoryId: "jvm",
     topic: "Garbage Collection",
     question: "How does G1 GC work internally — regions, mixed collections and humongous objects?",
+    seoTitle: "How G1 GC Works: Regions & Mixed Collections | FIG",
+    seoDescription:
+      "How G1 garbage collection works internally: region-based heap layout, garbage-first region selection, mixed collections, and humongous object handling.",
+    heading: "How G1 GC Works — Regions, Mixed Collections & Humongous Objects",
+    updated: "2026-08-24",
     tags: ["g1", "regions", "mixed gc", "humongous", "pause target"],
     shortAnswer:
       "G1 divides the heap into equal-size regions dynamically tagged Eden/Survivor/Old. It collects the regions with the most garbage first ('garbage first') to meet a pause target. Mixed GCs collect young + some old regions; objects larger than half a region are 'humongous' and handled specially.",
@@ -866,6 +881,11 @@ export const jvmExtra: Question[] = [
     categoryId: "jvm",
     topic: "Troubleshooting",
     question: "What is off-heap / direct memory, and how do you track and bound it?",
+    seoTitle: "Java Off-Heap Memory: How to Track & Bound It | FIG",
+    seoDescription:
+      "What off-heap (direct) memory is in Java — used by NIO and Netty — why GC doesn't reclaim it, and how to bound and monitor it with Native Memory Tracking.",
+    heading: "Java Off-Heap / Direct Memory — Tracking and Bounding It",
+    updated: "2026-08-24",
     tags: ["direct memory", "off-heap", "directbytebuffer", "native memory tracking", "netty"],
     shortAnswer:
       "Direct (off-heap) memory is native memory outside the GC heap, allocated via DirectByteBuffer / Unsafe (used by NIO, Netty, caches). It avoids copy/GC overhead for I/O but isn't reclaimed by normal GC — bound it with -XX:MaxDirectMemorySize and watch it via Native Memory Tracking.",

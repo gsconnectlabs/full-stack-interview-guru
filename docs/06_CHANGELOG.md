@@ -50,6 +50,42 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Improved (SEO title/meta tuning, 21 pages, GSC-driven) — 2026-08-24
+**Not yet released — local working-tree changes only, not committed.** Owner supplied a live 3-month
+Search Console export (Queries/Pages/Countries/Devices breakdown). Per-page position data corrected the
+initial diagnosis: `hashmap-resize-load-factor` is actually at position ~12.7 (not 30–60 as first
+estimated from the summary alone), and the export surfaced a second, larger cluster of ~16 JVM/
+concurrency/AWS pages (from the CE3 batch) ranking at positions 4–27 with real impressions that had
+never received `seoTitle`/`seoDescription` treatment — a bigger opportunity than the 4 pages the owner
+originally flagged. The Search Appearance tab also showed "Q&A rich results" at position 8.4 with 171
+impressions and 0 clicks, consistent with `QAPage.acceptedAnswer.text` (built by `plainAnswer()` in
+`app/q/[slug]/page.tsx`) exposing the full numeric answer in the SERP card — addressed by retitling
+toward the deeper payoff rather than stripping structured data (which would risk losing the rich result
+entirely).
+
+- **Retuned** (already had `seoTitle`/`seoDescription`, still 0 clicks): `/q/hashmap-resize-load-factor`,
+  `/q/rest-idempotency`, `/q/dynamodb-partition-key`, `/q/dynamodb-single-table`, `/q/what-is-json`
+  (all shortened toward ≤~60 chars, `(2026)` filler and repeated keywords removed, generic `| Full
+  Stack Interview Guru` suffix swapped for `| FIG` to fit SERP pixel width); `/candidate/json`'s shared
+  category `blurb` (`lib/categories.ts`) also rewritten with a specific hook instead of the generic
+  template copy.
+- **Newly added** `seoTitle`/`seoDescription`/`heading` (had none) on 16 pages ranking position ≤27
+  with 0 clicks: `java-optional`, `what-is-jwt` (`lib/questions.ts`); `concurrenthashmap-internals`,
+  `hashmap-concurrency-corruption`, `collection-memory-overhead` (`lib/questions-extra/
+  java-collections.ts`); `heap-generations-gc`, `stop-the-world-gc-tuning`, `g1-gc-internals`,
+  `off-heap-direct-memory` (`lib/questions-extra/jvm.ts`); `read-phenomena`,
+  `optimistic-vs-pessimistic-locking` (`lib/questions-extra/sql.ts`); `deadlock-prevention`,
+  `thread-dump-diagnosis` (`lib/questions-extra/multithreading.ts`); `aws-secrets-kms`,
+  `rds-multiaz-read-replicas` (`lib/questions-extra/aws.ts`); `rate-limiter-design`
+  (`lib/questions-extra/system-design.ts`).
+- All touched questions also got `updated: "2026-08-24"`. No URLs, question content, or existing
+  structured data changed — metadata-only.
+- **Verified:** `npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS
+  unchanged at 102 kB).
+- **Deferred, needs owner review before implementing:** content-depth additions (e.g. explicit "Is
+  PATCH idempotent?" section, DynamoDB worked before/after examples), new internal links from the
+  homepage `POPULAR` list, and 5–7 new long-tail pages — proposed but not built.
+
 ### Fixed (Floating ebook CTA reappearing after client-side navigation, DECISIONS #043) — 2026-08-21
 **Released to production 2026-08-21** (commit `5c98780`, pushed to `main`; Vercel deploy succeeded —
 GitHub commit status "Vercel: Deployment has completed"; post-deploy smoke test on
@@ -57,6 +93,17 @@ https://fullstackinterviewguru.com/store passed — title, breadcrumb, and hero 
 Store" branding live). This single commit ships all three of DECISIONS #041/#042/#043 together — the
 floating CTA, the Guru's Picks → Ebook Store rebrand, and this navigation bug fix were reviewed and
 approved as one unit before commit.
+
+### Added (Ebook floating CTA one-time confetti burst, DECISIONS #044) — 2026-08-23
+**Released to production 2026-08-23** (commit `a7ea709`, pushed to `main`; Vercel deploy succeeded;
+post-deploy verification against https://fullstackinterviewguru.com confirmed the effect running live
+— owner-confirmed working). Small, subtle gold/teal/white confetti burst (~0.7–0.9s, pure CSS, no new
+dependency) plays once when `EbookFloatingCta` first appears at its existing 10s delay, localized near
+the card's corner and clear of its text; skipped entirely under `prefers-reduced-motion`. Found and
+fixed during verification: the CTA's pre-existing impression timer re-arms on every client-side
+pathname change, which would have replayed the confetti too — guarded with a dedicated one-time ref so
+it plays exactly once regardless. Layout, copy, positioning, timing, session behavior, and all three
+GA4 events (`ebook_cta_impression`/`_click`/`_dismiss`) are unchanged.
 
 Found during a fresh validation pass: `EbookFloatingCta` is mounted once in the root layout, so its
 `visible` state persisted across Next.js client-side route changes. Clicking the CTA wrote
@@ -1076,7 +1123,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-21 (Fixed floating CTA reappearing after client-side navigation — DECISIONS #043)
+- **Last Updated:** 2026-08-23 (Added one-time confetti burst to the floating ebook CTA — DECISIONS #044)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

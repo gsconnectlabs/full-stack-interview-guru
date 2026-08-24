@@ -355,12 +355,12 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "How does the DynamoDB partition key affect performance, and what is a hot partition?",
-    seoTitle: "DynamoDB Partition Key: Hot Partitions Explained | Full Stack Interview Guru",
+    seoTitle: "DynamoDB Partition Key & Hot Partitions Explained | FIG",
     seoDescription:
-      "What is a DynamoDB partition key, and how does it affect performance? Hot partitions, high-cardinality key design, and partition key vs sort key explained.",
+      "What is a DynamoDB partition key and what causes a hot partition? High-cardinality key design, throttling, and partition key vs sort key — with examples.",
     heading: "DynamoDB Partition Key — Hot Partitions & Key Design",
     tags: ["dynamodb", "partition key", "sort key", "hot partition", "throughput", "scaling"],
-    updated: "2026-08-15",
+    updated: "2026-08-24",
     shortAnswer:
       "DynamoDB distributes data across partitions by the partition key's hash. If many requests target one key (or a low-cardinality key), that partition gets 'hot' — throttling even when total capacity is fine. Choose a high-cardinality, evenly-accessed key; add a suffix/sharding for hot keys.",
     mindMap: [
@@ -612,6 +612,11 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "IAM",
     question: "Secrets Manager vs Parameter Store vs KMS — how do you handle secrets and encryption?",
+    seoTitle: "Secrets Manager vs Parameter Store vs KMS | FIG",
+    seoDescription:
+      "How to handle secrets and encryption on AWS: KMS for key management, Secrets Manager for built-in rotation, and Parameter Store for cheap config — which to use.",
+    heading: "Secrets Manager vs Parameter Store vs KMS",
+    updated: "2026-08-24",
     tags: ["secrets manager", "parameter store", "kms", "encryption", "rotation"],
     shortAnswer:
       "KMS manages encryption keys (envelope encryption for S3/RDS/EBS etc.). Secrets Manager stores secrets with built-in rotation (DB credentials, API keys) — paid per secret. SSM Parameter Store holds config + secrets (SecureString via KMS) cheaply, without native rotation. Never store secrets in code/env files committed to git.",
@@ -707,6 +712,11 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "Multi-AZ vs read replicas in RDS — what does each solve?",
+    seoTitle: "RDS Multi-AZ vs Read Replicas: What Each Solves | FIG",
+    seoDescription:
+      "Multi-AZ RDS is for failover — a standby that serves no traffic. Read replicas are for read scaling. What each solves, and when to combine them.",
+    heading: "RDS Multi-AZ vs Read Replicas",
+    updated: "2026-08-24",
     tags: ["rds", "multi-az", "read replica", "high availability", "scaling"],
     shortAnswer:
       "Multi-AZ is for HA/failover: a synchronous standby in another AZ that auto-promotes on failure (not for read scaling — the standby serves no traffic). Read replicas are for read scaling: asynchronous copies you route read queries to (eventually consistent, can be cross-Region). They solve different problems and are often combined.",
@@ -801,12 +811,12 @@ export const awsExtra: Question[] = [
     categoryId: "aws",
     topic: "DynamoDB",
     question: "What is DynamoDB single-table design, and why do experts use it?",
-    seoTitle: "DynamoDB Single Table Design Explained | Full Stack Interview Guru",
+    seoTitle: "DynamoDB Single-Table Design: When & How to Use It | FIG",
     seoDescription:
-      "What is DynamoDB single-table design, and when should you use it? Partition/sort key patterns, access-pattern modeling, trade-offs, and common mistakes explained.",
+      "DynamoDB single-table design explained: composite PK/SK patterns, GSIs, access-pattern modeling, and the trade-offs vs one-table-per-entity — with examples.",
     heading: "DynamoDB Single Table Design — Interview Guide",
     tags: ["dynamodb", "single-table design", "access patterns", "partition key", "sort key", "gsi", "nosql modeling"],
-    updated: "2026-08-15",
+    updated: "2026-08-24",
     shortAnswer:
       "Single-table design stores multiple entity types in ONE table, using composite keys (PK/SK) and GSIs crafted so each known access pattern is served by a single efficient query — no joins, no multiple round-trips. It trades modeling complexity and rigidity for low latency and cost at scale.",
     mindMap: [

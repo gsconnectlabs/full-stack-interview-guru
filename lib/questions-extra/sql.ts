@@ -408,6 +408,11 @@ CREATE INDEX idx ON orders (customer_id) INCLUDE (status, total);
     categoryId: "sql",
     topic: "Transactions",
     question: "Dirty read, non-repeatable read and phantom read — what are they and how do you prevent each?",
+    seoTitle: "Dirty, Non-Repeatable & Phantom Reads Explained | FIG",
+    seoDescription:
+      "Dirty read, non-repeatable read, and phantom read — what each isolation anomaly means and which isolation level, from READ COMMITTED to SERIALIZABLE, prevents it.",
+    heading: "Dirty Read, Non-Repeatable Read & Phantom Read",
+    updated: "2026-08-24",
     tags: ["dirty read", "non-repeatable read", "phantom read", "isolation", "anomalies"],
     shortAnswer:
       "Dirty read = seeing another txn's uncommitted data (prevented by READ COMMITTED). Non-repeatable read = same row returns different values within a txn (prevented by REPEATABLE READ). Phantom read = new rows appear for a re-run range query (prevented by SERIALIZABLE).",
@@ -654,6 +659,11 @@ SELECT * FROM orders WHERE id > 100000 ORDER BY id LIMIT 20;`,
     categoryId: "sql",
     topic: "Transactions",
     question: "Optimistic vs pessimistic locking — which do you use for concurrent updates?",
+    seoTitle: "Optimistic vs Pessimistic Locking: Which to Use | FIG",
+    seoDescription:
+      "Optimistic locking (version check + retry) vs pessimistic locking (SELECT FOR UPDATE) for concurrent updates — the trade-offs and when to pick each.",
+    heading: "Optimistic vs Pessimistic Locking",
+    updated: "2026-08-24",
     tags: ["optimistic locking", "pessimistic locking", "version", "select for update", "concurrency"],
     shortAnswer:
       "Optimistic: no lock; a version/timestamp column is checked on UPDATE and the txn retries if it changed (great for low-contention, high-read). Pessimistic: SELECT ... FOR UPDATE locks the row up front (best for high-contention hotspots), at the cost of blocking and deadlock risk.",

@@ -392,6 +392,11 @@ export const systemDesignExtra: Question[] = [
     categoryId: "system-design",
     topic: "Scaling",
     question: "How would you design a distributed rate limiter?",
+    seoTitle: "How to Design a Distributed Rate Limiter | FIG",
+    seoDescription:
+      "Designing a distributed rate limiter: token bucket vs sliding window, keeping counters in Redis for global enforcement, and fail-open vs fail-closed.",
+    heading: "How to Design a Distributed Rate Limiter",
+    updated: "2026-08-24",
     tags: ["rate limiter", "token bucket", "sliding window", "redis", "distributed"],
     shortAnswer:
       "Use a token-bucket or sliding-window-log/counter algorithm, keyed per client, with counters in a shared low-latency store (Redis) so the limit is enforced globally across all app instances. Update atomically (Lua/INCR+EXPIRE), and decide fail-open vs fail-closed if the store is down.",

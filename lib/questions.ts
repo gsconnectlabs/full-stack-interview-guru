@@ -185,6 +185,11 @@ System.out.println(sum);`,
     categoryId: "java-8",
     topic: "Optional",
     question: "What problem does Optional solve?",
+    seoTitle: "What Problem Does Java's Optional Solve? | FIG",
+    seoDescription:
+      "Why Java added Optional instead of returning null — safe handling of 'maybe absent' values, common misuse to avoid, and how to use it idiomatically.",
+    heading: "What Problem Does Java's Optional Solve?",
+    updated: "2026-08-24",
     mindMap: [
       { type: "text", content: "Optional is a **gift box** 🎁. It might have a present inside, it might be empty — but either way you're handed a box, never a `null`. You open it safely instead of grabbing at thin air." },
       {
@@ -292,14 +297,14 @@ print(greet("john"))`,
     categoryId: "rest-apis",
     topic: "Idempotency",
     question: "Which HTTP methods are idempotent and why does it matter?",
-    seoTitle: "Idempotent HTTP Methods in REST: Which Methods Are Idempotent? (2026) | Full Stack Interview Guru",
+    seoTitle: "Idempotent HTTP Methods: GET, PUT, POST, DELETE Explained | FIG",
     seoDescription:
-      "Which HTTP methods are idempotent in REST? GET, PUT, DELETE and POST explained with real examples, Safe vs Idempotent, and how Idempotency-Key makes POST requests safely retryable.",
+      "Which HTTP methods are idempotent? GET, PUT and DELETE are — POST usually isn't. Safe vs idempotent explained, plus how Idempotency-Key makes POST retryable.",
     heading: "Idempotent HTTP Methods in REST – Complete Interview Guide",
     tags: ["idempotent", "idempotency", "http methods", "safe methods", "put", "delete", "post", "patch", "idempotency-key", "rest"],
     shortAnswer:
       "An operation is idempotent when making the same request multiple times has the same intended effect on server state as making it once. GET, PUT, and DELETE are idempotent. POST is not inherently idempotent. PATCH isn't necessarily idempotent — it depends on what the patch operation does.",
-    updated: "2026-08-15",
+    updated: "2026-08-24",
     mindMap: [
       {
         type: "text",
@@ -498,6 +503,11 @@ Idempotency-Key: 3f1c-...-9a
     categoryId: "rest-apis",
     topic: "Auth",
     question: "What is a JWT and how does it work?",
+    seoTitle: "What Is a JWT and How Does It Work? | FIG",
+    seoDescription:
+      "JWT explained for interviews: the header.payload.signature structure, why it's signed not encrypted, and how stateless auth scales across microservices.",
+    heading: "What Is a JWT and How Does It Work?",
+    updated: "2026-08-24",
     mindMap: [
       { type: "text", content: "A JWT is a **movie ticket** 🎬. The cinema doesn't keep a list of who bought tickets — your stub already proves you paid, and the watermark (signature) proves it's not forged. The server stays stateless." },
       {

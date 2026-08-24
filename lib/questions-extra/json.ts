@@ -28,10 +28,11 @@ export const jsonExtra: Question[] = [
     categoryId: "json",
     topic: "Basics",
     question: "What is JSON?",
-    seoTitle: "What is JSON? Interview Questions & Answers (2026) | Full Stack Interview Guru",
+    seoTitle: "What Is JSON? Syntax, Data Types & Examples | FIG",
     seoDescription:
-      "What is JSON explained for interviews: JavaScript Object Notation, a lightweight text-based data-interchange format for APIs. Syntax, data types, and real-world use with examples.",
+      "JSON explained for interviews: syntax, data types, and how it's used as the default REST API payload format — with side-by-side code examples.",
     heading: "What is JSON? Interview Questions",
+    updated: "2026-08-24",
     tags: ["json", "javascript object notation", "data format", "basics", "data interchange"],
     shortAnswer:
       "JSON (JavaScript Object Notation) is a lightweight, text-based, language-independent format for storing and exchanging data as key/value pairs and ordered lists. It grew out of JavaScript object syntax but is now used by nearly every language and is the default payload format for REST APIs.",

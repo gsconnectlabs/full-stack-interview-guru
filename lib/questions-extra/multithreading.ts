@@ -466,6 +466,11 @@ public void loop() { while (running) { /* ... */ } }`,
     categoryId: "multithreading",
     topic: "Deadlocks",
     question: "What causes a deadlock, and how do you prevent it in a real codebase?",
+    seoTitle: "What Causes a Deadlock — and How to Prevent It | FIG",
+    seoDescription:
+      "The four conditions for a deadlock, and the real fix used in production: a global lock-ordering convention, tryLock with timeouts, and smaller lock scope.",
+    heading: "What Causes a Deadlock and How to Prevent It",
+    updated: "2026-08-24",
     tags: ["deadlock", "lock ordering", "trylock", "concurrency", "production"],
     shortAnswer:
       "Deadlock needs four conditions (mutual exclusion, hold-and-wait, no preemption, circular wait). The practical fix is to break circular wait with a global lock-ordering convention; tryLock-with-timeout and reducing lock scope also help.",
@@ -960,6 +965,11 @@ static Singleton get() {
     categoryId: "multithreading",
     topic: "Deadlocks",
     question: "How do you diagnose high latency or a hang from a production thread dump?",
+    seoTitle: "Diagnosing a Hang from a Production Thread Dump | FIG",
+    seoDescription:
+      "How to diagnose high latency or a hang from a Java thread dump — spotting deadlocks, BLOCKED thread clusters, and stuck threads across multiple jstack captures.",
+    heading: "Diagnosing a Hang from a Production Thread Dump",
+    updated: "2026-08-24",
     tags: ["thread dump", "jstack", "contention", "diagnosis", "production"],
     shortAnswer:
       "Capture 2–3 dumps a few seconds apart (jstack/jcmd). Look for: a deadlock section, clusters of BLOCKED threads (find the lock owner), many threads stuck in the same stack frame (slow dependency), and threads that don't move between dumps (hung). Correlate with CPU to separate busy from blocked.",

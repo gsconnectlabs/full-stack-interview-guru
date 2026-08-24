@@ -86,7 +86,7 @@ export const categories: Category[] = [
     id: "json",
     name: "JSON",
     icon: "{ }",
-    blurb: "Syntax, data types, parsing & serialization, schema validation, JSON vs XML.",
+    blurb: "50 curated JSON interview questions — syntax, parsing, schema validation, and JSON vs XML, with worked answers for every experience level.",
     count: 50,
     topics: ["Syntax", "Parsing", "Serialization", "Schema", "JSON vs XML"],
     accent: "from-brand-600/20 to-ink-700/10",

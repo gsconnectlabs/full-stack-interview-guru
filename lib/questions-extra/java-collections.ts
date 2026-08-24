@@ -258,12 +258,12 @@ orders.removeIf(Order::isCancelled);`,
     categoryId: "java-collections",
     topic: "Performance",
     question: "How do load factor and resizing affect HashMap performance, and how do you tune it?",
-    seoTitle: "HashMap Resize & Load Factor Explained (Java) | Full Stack Interview Guru",
+    seoTitle: "HashMap Resize: The Hidden O(n) Performance Spike | FIG",
     seoDescription:
-      "How HashMap resize and load factor work in Java: the 0.75 default, exactly when resizing/rehashing triggers, and how to pre-size a HashMap to avoid latency spikes.",
+      "The numbers (16, 0.75, 12, doubles) are just the start — see why a resize is O(n), the pre-sizing formula that avoids it, and a full capacity/threshold table.",
     heading: "HashMap Resize and Load Factor — Java Interview Guide",
     tags: ["hashmap", "load factor", "resize", "rehash", "capacity", "java collections", "performance tuning"],
-    updated: "2026-08-15",
+    updated: "2026-08-24",
     shortAnswer:
       "When size exceeds capacity × load factor (default 0.75), the table doubles and every entry rehashes — an O(n) spike. For known sizes, pre-size with initialCapacity = expected / 0.75 to avoid repeated resizes.",
     mindMap: [
@@ -736,6 +736,11 @@ System.out.println(m.get(p)); // null — wrong bucket`,
     categoryId: "java-collections",
     topic: "ConcurrentHashMap",
     question: "How does ConcurrentHashMap stay thread-safe without locking the whole map (Java 8)?",
+    seoTitle: "How ConcurrentHashMap Stays Thread-Safe (Java 8) | FIG",
+    seoDescription:
+      "ConcurrentHashMap internals since Java 8: lock-free reads, CAS-based bin insertion, and per-bin synchronization instead of segment locking — how it scales.",
+    heading: "How ConcurrentHashMap Stays Thread-Safe Since Java 8",
+    updated: "2026-08-24",
     tags: ["concurrenthashmap", "cas", "bin locking", "concurrency", "internals"],
     shortAnswer:
       "Java 8 dropped segment locking. Reads are lock-free (volatile + happens-before). Writes use CAS to install the first node in an empty bin, and synchronize only on that single bin's head node for collisions — so concurrency scales with the number of buckets, not a fixed segment count.",
@@ -783,6 +788,11 @@ System.out.println(m.get(p)); // null — wrong bucket`,
     categoryId: "java-collections",
     topic: "ConcurrentHashMap",
     question: "Why can a plain HashMap corrupt data — or even spin the CPU — under concurrent access?",
+    seoTitle: "Why a Plain HashMap Corrupts Data Under Concurrency | FIG",
+    seoDescription:
+      "How concurrent puts corrupt a plain Java HashMap — lost entries, and Java 7's infamous infinite-loop resize bug that spins the CPU. Why ConcurrentHashMap fixes it.",
+    heading: "Why a Plain HashMap Corrupts Data Under Concurrent Access",
+    updated: "2026-08-24",
     tags: ["hashmap", "race condition", "infinite loop", "thread-safety", "production"],
     shortAnswer:
       "HashMap isn't thread-safe. Concurrent puts during a resize can lose entries or, in Java 7's linked-list transfer, create a cycle that makes get() spin forever (100% CPU). Java 8 fixed the infinite loop but concurrent use still corrupts data. Use ConcurrentHashMap.",
@@ -927,6 +937,11 @@ hits.computeIfAbsent(endpoint, k -> new LongAdder()).increment();
     categoryId: "java-collections",
     topic: "Performance",
     question: "How do you reduce the memory overhead of very large Java collections?",
+    seoTitle: "Reducing Java Collection Memory Overhead | FIG",
+    seoDescription:
+      "Java collections box primitives and add per-entry overhead. How to cut memory for large HashMaps and Lists — primitive collections, pre-sizing, and arrays.",
+    heading: "Reducing Memory Overhead in Large Java Collections",
+    updated: "2026-08-24",
     tags: ["memory", "autoboxing", "primitive collections", "overhead", "gc"],
     shortAnswer:
       "Standard collections box primitives (an Integer is ~16 bytes vs 4) and add per-entry node/Entry overhead. For millions of primitives use primitive collections (fastutil, Eclipse Collections, Trove), pre-size to avoid waste, and prefer arrays where possible.",
