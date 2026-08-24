@@ -295,6 +295,11 @@ orders.removeIf(Order::isCancelled);`,
         content:
           "Resizing isn't a cheap copy — every entry's bucket index depends on `hash(key) & (capacity - 1)`, so a bigger capacity means most entries land in a **different** bucket. HashMap has to walk every existing entry and re-insert it into the new table, which is why a resize is O(n) even though `put()` is normally amortized O(1).",
       },
+      {
+        type: "text",
+        content:
+          "A resize can also change the order entries come out in during iteration. HashMap never guaranteed iteration order, but because bucket index depends on `capacity`, the exact same entries can walk out in a different order before and after a resize. Code that happens to \"work\" because of an incidental order will break the moment the map crosses a resize threshold — if order matters, use `LinkedHashMap` (insertion order) or a `TreeMap` (sorted), don't rely on `HashMap`'s.",
+      },
     ],
     handsOn: {
       lang: "java",
@@ -333,7 +338,7 @@ records.forEach(r -> m.put(r.id(), r));`,
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Google", "Wipro"],
-    related: ["hashmap-internals-java8", "collection-memory-overhead", "two-sum"],
+    related: ["hashmap-internals-java8", "collection-memory-overhead", "hashmap-vs-hashtable", "two-sum"],
   },
   {
     slug: "concurrent-modification-exception",

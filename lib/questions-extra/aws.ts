@@ -387,6 +387,21 @@ export const awsExtra: Question[] = [
           ["Uniqueness", "Must be unique alone, unless paired with a sort key", "PK + SK together must be unique"],
         ],
       },
+      {
+        type: "text",
+        content:
+          "A concrete before/after: a table partitioned by **`status`** (3 values — pending/shipped/delivered) versus the same table repartitioned by **`userId`** (millions of distinct values).",
+      },
+      {
+        type: "table",
+        headers: ["", "Bad key: status (3 values)", "Good key: userId (millions of values)"],
+        tableRows: [
+          ["Distinct key values", "3", "~1 per user — millions"],
+          ["Where traffic lands", "Every request collapses onto one of 3 partitions", "Requests spread across hundreds of partitions"],
+          ["Per-partition ceiling", "Hit almost immediately, no matter total provisioned capacity", "Each partition stays well under AWS's per-partition throughput ceiling"],
+          ["Result at scale", "Throttled (ProvisionedThroughputExceededException) even with capacity to spare table-wide", "Throughput scales close to linearly with provisioned capacity"],
+        ],
+      },
     ],
     whatIf: {
       q: "A table partitioned by 'status' (only 3 values) throttles under load — why and fix?",

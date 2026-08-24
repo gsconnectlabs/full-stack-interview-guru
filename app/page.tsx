@@ -13,7 +13,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/" },
 };
 
-const POPULAR = ["what-is-hashmap", "java-stream-api", "what-is-jwt", "two-sum", "rest-idempotency", "aws-lambda"];
+const POPULAR = ["what-is-hashmap", "java-stream-api", "what-is-jwt", "two-sum", "rest-idempotency", "aws-lambda", "dynamodb-partition-key"];
 
 const REVISION = [
   {

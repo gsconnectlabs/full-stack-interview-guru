@@ -37,7 +37,7 @@ System.out.println(map.get("A"));`,
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Amazon", "Infosys", "TCS", "Accenture"],
-    related: ["hashmap-vs-hashtable", "java-equals-hashcode", "what-is-arraylist"],
+    related: ["hashmap-vs-hashtable", "java-equals-hashcode", "what-is-arraylist", "hashmap-resize-load-factor"],
   },
   {
     slug: "hashmap-vs-hashtable",
@@ -348,6 +348,33 @@ Content-Type: application/json
 
 # Call this 5 times in a row -> 5 new user resources are created.
 # POST is not inherently idempotent - each call has an additional effect.`,
+      },
+      {
+        type: "text",
+        content:
+          "**Is PATCH idempotent?** It depends entirely on what the patch operation does — PATCH has no inherent guarantee either way. A **replace-style** PATCH that sets a field to an absolute value is idempotent. An **increment-style** PATCH that applies a delta is not.",
+      },
+      {
+        type: "code",
+        lang: "http",
+        content: `PATCH /orders/55
+Content-Type: application/json
+
+{ "status": "shipped" }
+
+# Idempotent: call this 5 times -> order 55's status is "shipped" either way.
+# It sets an absolute value, not a delta.`,
+      },
+      {
+        type: "code",
+        lang: "http",
+        content: `PATCH /accounts/9
+Content-Type: application/json
+
+{ "balance": { "$inc": 500 } }
+
+# NOT idempotent: call this 5 times -> balance goes up by 2500, not 500.
+# It applies a delta, so repetition compounds the effect.`,
       },
       {
         type: "text",
