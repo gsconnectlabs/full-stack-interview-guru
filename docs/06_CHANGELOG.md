@@ -50,6 +50,17 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (`ads.txt`) — 2026-08-30
+AdSense's Sites dashboard flagged `Ads.txt status: Not found` for the domain — a separate blocker from
+"Low value content." The project has no `public/` directory (everything is generated), so added
+**`app/ads.txt/route.ts`**, a plain Route Handler serving `text/plain` (App Router has a built-in
+metadata-file convention for `robots.txt`/`sitemap.xml`/`manifest.json` but not `ads.txt`, so a route
+handler is the correct mechanism here). Content — `google.com, pub-8326504635108554, DIRECT,
+f08c47fec0942fa0` — derives the publisher id from the existing `adsenseClientId` in `lib/site.ts`
+(stripping its `ca-` prefix) rather than hardcoding a second copy of the id. Verified: `npx tsc
+--noEmit` clean; `npm run build` green (360 pages, up from 359); local preview confirmed `/ads.txt`
+returns `200` with the exact expected line.
+
 ### Added (Real named authorship — Person alongside the FIG Organization, DECISIONS #045) — 2026-08-30
 Addresses AdSense's "Low value content" re-flag and the site's missing E-E-A-T signal: every author
 was previously the Organization, and `/about` had no named person. Owner chose to use his real name
@@ -1145,7 +1156,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-30 (Added real named `Person` authorship alongside the FIG Organization — DECISIONS #045)
+- **Last Updated:** 2026-08-30 (Added `app/ads.txt/route.ts` — AdSense "Ads.txt: Not found" fix)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
