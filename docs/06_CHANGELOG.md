@@ -50,6 +50,28 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (Real named authorship — Person alongside the FIG Organization, DECISIONS #045) — 2026-08-30
+Addresses AdSense's "Low value content" re-flag and the site's missing E-E-A-T signal: every author
+was previously the Organization, and `/about` had no named person. Owner chose to use his real name
+consistently — "visible enough to establish real authorship, minimal enough to preserve privacy." No
+experience, employers, interview counts, certifications, or degrees were invented.
+
+- **`lib/site.ts`** — new `founderName`/`founderTitle`/`figLinkedInUrl`/`authorPerson` (a single,
+  reusable schema.org `Person` object) as the one source of truth for the author identity.
+- **`app/about/page.tsx`** — the existing "Who writes this" card now shows the real name/title and a
+  concise, factual bio; `credentials` stays an empty array and photo/personal-social fields stay empty
+  with `TODO(owner)` markers rather than inventing anything.
+- **`app/layout.tsx`** — root `Organization` JSON-LD gains `sameAs` (FIG's existing LinkedIn Page) and
+  `founder` (the `Person`); the `<meta name="author">` tag now names the `Person` instead of the
+  Organization.
+- **`app/q/[slug]/page.tsx`** — `QAPage`'s `Question`/`Answer` now each carry `author: Person` +
+  `publisher: Organization` (previously Organization-only); a subtle "Reviewed by Gurusankar M.
+  [· Updated `<date>`]" byline renders under the `<h1>`, reusing the pre-existing `Question.updated`
+  field (populated on 27/316 questions — the rest show no date rather than a fabricated one).
+- No visual redesign; Mission/Vision/Philosophy/Standards/CTA and all 316 questions' five content
+  sections are untouched. `npx tsc --noEmit` clean; `npm run build` green (359 pages, 102 kB shared JS).
+  Committed to `main` and pushed.
+
 ### Improved (SEO title/meta tuning, 21 pages, GSC-driven) — 2026-08-24
 **Not yet released — local working-tree changes only, not committed.** Owner supplied a live 3-month
 Search Console export (Queries/Pages/Countries/Devices breakdown). Per-page position data corrected the
@@ -1123,7 +1145,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-23 (Added one-time confetti burst to the floating ebook CTA — DECISIONS #044)
+- **Last Updated:** 2026-08-30 (Added real named `Person` authorship alongside the FIG Organization — DECISIONS #045)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

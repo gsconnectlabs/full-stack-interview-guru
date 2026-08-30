@@ -1537,6 +1537,140 @@ this SPA-navigation-specific state bug.
 
 ---
 
+# Decision #044
+
+## Title
+
+Ebook Floating CTA — One-Time Confetti Burst on First Appearance
+
+### Status
+
+✅ Approved and shipped (Owner-directed 2026-08-23)
+
+### Reason
+
+`EbookFloatingCta` ([[DECISIONS #041]]/[[DECISIONS #042]]/[[DECISIONS #043]]) already draws the eye
+once via the `cta-settle` thumbnail animation. The owner asked for a very subtle, additional one-time
+confetti moment on first appearance to make the 10s reveal feel a little more rewarding — explicitly
+scoped to *only* the visual effect, with the CTA's layout, copy, positioning, timing, session
+behavior, and analytics all called out as off-limits.
+
+### Implementation
+
+- **`components/EbookFloatingCta.tsx`:** inside the existing `SHOW_DELAY_MS` `setTimeout` callback
+  (unchanged trigger point), after `setVisible(true)` and the existing `ebook_cta_impression` event,
+  a `window.matchMedia("(prefers-reduced-motion: reduce)")` check gates a new `buildConfetti()` call —
+  10 small particles (`ConfettiPiece[]`, gold/teal/white FIG tones) rendered as absolutely-positioned
+  `<span>`s bursting from the card's top-right corner (near the dismiss ✕, away from the "Get our FREE
+  Ebook" headline) and drifting upward/outward before fading. Particle state is cleared
+  (`setConfetti([])`) ~900ms later, removing the temporary DOM nodes entirely — no lingering elements.
+- **`tailwind.config.ts`:** new one-shot `confetti-burst` keyframe/animation (0.7s,
+  `cubic-bezier(0.25,0.8,0.35,1)`, `forwards`, no iteration/loop), applied via `motion-safe:` only,
+  matching the existing `cta-settle` pattern.
+- **Reduced motion:** gated by an explicit `matchMedia` check *before* any confetti state is set — not
+  just a CSS-suppressed animation — so under `prefers-reduced-motion: reduce` no confetti elements are
+  created at all. The CTA's own entrance is unaffected (already `motion-safe:`-gated from #041/#042).
+- **One-time guard, independent of the pre-existing impression timer:** `EbookFloatingCta` is mounted
+  once in the root layout and its impression `useEffect` re-arms its 10s timer on every client-side
+  pathname change (unchanged, intentional behavior from #041/#043). Left alone, that re-arm would have
+  replayed confetti on a second page if the visitor hadn't yet interacted with the CTA — found and
+  fixed during this session's verification. A dedicated `confettiPlayedRef` (`useRef(false)`, set once
+  and never reset) guards `buildConfetti()` so the burst plays exactly once for the component's
+  lifetime, independent of the impression timer re-arming — no change to that timer, to
+  `sessionStorage`/`fig-ebook-cta-status`, or to the `ebook_cta_impression`/`_click`/`_dismiss` events.
+- **No new dependency, no canvas** — pure CSS transform/opacity animation via Tailwind, per the CSS-
+  over-asset preference already established in DECISIONS #042.
+- Everything else — layout, copy, positioning (`fixed bottom-4/6 right-4/6`), the 10s delay itself,
+  session cap, mobile/desktop variants, dismiss/click handlers, and all three GA4 events — is
+  byte-for-byte unchanged.
+
+### Verified
+
+`npx tsc --noEmit` clean; `npm run build` green (355 pages, shared First Load JS unchanged at 102 kB).
+Live DOM/`MutationObserver` verification (screenshots unavailable in this session's Browser pane, same
+limitation noted in the #043 handover) against both the local dev preview and production
+(`https://fullstackinterviewguru.com`, post-deploy): confetti burst fires exactly once in sync with
+the CTA's appearance (10 particles, cleared ~915ms later — within the 0.6–1s spec), does **not**
+replay after a client-side navigation even though the impression timer re-arms, and dismiss/click
+still write `sessionStorage` and hide the CTA correctly. No console errors. Released to production
+2026-08-23, commit `a7ea709` on `main`, pushed and owner-confirmed working live.
+
+---
+
+# Decision #045
+
+## Title
+
+Real Named Authorship (Person) Alongside the FIG Organization — E-E-A-T / AdSense Remediation
+
+### Status
+
+✅ Approved and shipped (Owner-directed 2026-08-30)
+
+### Reason
+
+Google AdSense re-flagged the site under "Low value content" despite the category-thinning fix in
+DECISIONS #034 (which addressed catalog-count vs. live-count honesty, not this). An audit of the actual
+content found it is **not thin** (316 real questions, ~355 pages, genuine explanations) — the gap is
+trust/E-E-A-T signal: every schema.org `author` was hardcoded to the `Organization`, and `/about` was
+generic mission-statement copy with no named person, credentials, or photo anywhere on the site. To a
+quality rater or an automated classifier, a faceless site with a templated per-question structure reads
+indistinguishably from a content farm. The owner decided to use his **real name** (not a pen name) —
+**Gurusankar M.** — consistently, with an explicit brief: *"Visible enough to establish real authorship,
+minimal enough to preserve privacy."* No years of experience, employers, interview counts, certifications,
+or degrees were invented — only what is actually true is stated.
+
+### Implementation
+
+- **`lib/site.ts`** — new single source of truth: `founderName` ("Gurusankar M."), `founderTitle`
+  ("Founder & Maintainer, Full Stack Interview Guru"), `figLinkedInUrl` (FIG's existing LinkedIn Page,
+  already live in the footer — reused, not invented), and `authorPerson` (the one reusable schema.org
+  `Person` object: `{ "@type": "Person", name: founderName, url: siteUrl + "/about" }`). Every place that
+  needs the author name imports this — the name is never duplicated by hand.
+- **`app/about/page.tsx`** — the existing "Who writes this" section (added earlier this session, kept
+  as-is visually) now shows the real name/title, sourced from `lib/site.ts`, and a concise, factual bio:
+  *"Full Stack Interview Guru is independently built and maintained by Gurusankar M., with a focus on
+  practical, production-oriented software engineering interview preparation."* `credentials` is
+  intentionally an empty array (nothing invented to fill it); `photoUrl`/personal `linkedinUrl`/
+  `githubUrl` are left empty with `TODO(owner)` markers — the initials avatar ("GM") renders until a
+  real photo is supplied, and personal social buttons stay hidden until real URLs are configured. The
+  author section is a small card below the hero, not the page's dominant visual element.
+- **`app/layout.tsx`** — root `Organization` JSON-LD gains `sameAs: [figLinkedInUrl]` (connecting the
+  already-existing FIG LinkedIn Page to the Organization identity) and `founder: authorPerson` (a
+  standard schema.org `Organization` property, cleanly expressing Person↔Organization without adding a
+  new schema type). The Next.js metadata `authors` field now points to the named `Person`
+  (`{ name, url }`) instead of the Organization — this drives the page's `<meta name="author">` tag.
+- **`app/q/[slug]/page.tsx`** — the `QAPage` JSON-LD's `Question` and `acceptedAnswer` (`Answer`) each
+  now carry both `author: authorPerson` (Person) **and** `publisher` (a `{ "@type": "Organization",
+  name: siteName, url: siteUrl }` built once per render) — so authorship and brand ownership are
+  represented separately and consistently, and the Organization identity is never removed. A new,
+  subtle visible byline — *"Reviewed by Gurusankar M. [· Updated `<date>`]"* — renders directly under
+  the `<h1>` as plain muted text (not a card), linking the name to `/about`. The date suffix reuses the
+  **already-existing** `Question.updated` field (`lib/types.ts`, previously only driving the "Updated"
+  freshness chip) — it is **not** a new field, and it is populated on only 27 of 316 questions today.
+  The other 289 correctly show "Reviewed by Gurusankar M." with **no date**, rather than a fabricated
+  one; the remaining `updated` values should be filled in question-by-question as content is genuinely
+  reviewed, not backfilled in bulk.
+- No visual redesign; Mission/Vision/Philosophy, Standards, CTA, and all 316 questions' five content
+  sections (Coffee Chat / Mind Map / Hands-on / What If / Real World) are untouched.
+
+### Verified
+
+`npx tsc --noEmit` clean. `npm run build` green — **359 static pages**, shared First Load JS unchanged
+at **102 kB**. No ESLint config exists in this project (confirmed via `package.json` and this doc set;
+`tsc` + `build` remain the standing gates). Live-checked in the local preview: `/about` renders the real
+name/title/bio with no console errors and no fabricated credentials/links; `/q/what-is-hashmap` (no
+`updated` value) shows the byline with no date; `/q/java-optional` (`updated: "2026-08-24"`) shows the
+byline with the date, matching the pre-existing "Updated" chip. Read the live JSON-LD via
+`document.querySelectorAll('script[type="application/ld+json"]')` on `/q/java-optional`: `Person` author
++ `Organization` publisher present and consistent on both `Question` and `Answer`, root `Organization`
+has `sameAs`/`founder`, `WebSite`/`BreadcrumbList`/canonical URLs unchanged. Verified `<meta
+name="author" content="Gurusankar M.">` renders. Checked mobile viewport (375×812) — byline wraps
+cleanly, no layout regression. Code committed to `main` as `cf27874`; this documentation update and
+the push to `origin/main` were completed in the same release.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1548,7 +1682,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-21 (Decision #043 — fixed floating CTA reappearing after client-side navigation)
+- **Last Updated:** 2026-08-30 (Decision #045 — real named authorship (Person) alongside the FIG Organization)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

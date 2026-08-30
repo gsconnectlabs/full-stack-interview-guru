@@ -41,7 +41,8 @@ app/                         Routes (App Router)
   real-world/                "Real World vs Interview World"
   donate/                    Donate (UPI QR generated at build time)
   feedback/                  Feedback form (dynamic — reads ?context=)
-  about/                     About Us (static) — mission/vision/standards; Breadcrumb JSON-LD
+  about/                     About Us (static) — mission/vision/standards + a "Who writes this"
+    author card (real name/title/bio from lib/site.ts, DECISIONS #045); Breadcrumb JSON-LD
   contact/                   Contact Us (static) — ContactForm island; Breadcrumb JSON-LD
   privacy/, terms/, disclaimer/  Legal pages (static) — via LegalPage; Breadcrumb JSON-LD (AdSense readiness)
   store/                     FIG Store — optional deeper resources (DECISIONS #035); data-driven catalog
@@ -67,8 +68,10 @@ components/                  Reusable UI (25 components)
   StoreProductCard (server; renders a StoreProduct — cover, benefits, "What's inside", CTA),
   GumroadCtaButton (client island; opens the product's Gumroad URL, fires `gumroad_cta_click`),
   EbookFloatingCta (client island; mounted in app/layout.tsx — 10s-delayed, session-capped floating
-    CTA to /store (Ebook Store), shows the real ebook cover + a one-shot settle animation, fires
-    ebook_cta_impression/_click/_dismiss; DECISIONS #041/#042)
+    CTA to /store (Ebook Store), shows the real ebook cover + a one-shot settle animation plus a
+    one-shot gold/teal confetti burst on first appearance (motion-safe + prefers-reduced-motion-gated,
+    guarded to never repeat on client-side navigation), fires ebook_cta_impression/_click/_dismiss;
+    DECISIONS #041/#042/#043/#044)
 
 hooks/                       Client hooks
   useTemporaryFlag            transient on→auto-reset(1500ms) flag; shared by CopyButton/ShareButton
@@ -157,9 +160,14 @@ Canonical URLs, Open Graph, and the sitemap all resolve from `NEXT_PUBLIC_SITE_U
   the derived description and `heading` overrides the visible `<h1>`. All optional; the `QAPage` schema
   and ☕ Coffee Chat block keep using the conversational `question`. Applied to three pages so far.
 - Open Graph + Twitter card metadata (root defaults; per-page title/description).
-- **Structured data:** `WebSite` + `Organization` (root layout), `QAPage` per question,
-  and `BreadcrumbList` on question + category pages **and the company/legal pages** (via reusable
-  `Breadcrumb` + `JsonLd`).
+- **Structured data:** `WebSite` + `Organization` (root layout — `Organization` carries `sameAs`
+  linking FIG's LinkedIn Page and `founder` naming the `Person` author, DECISIONS #045), `QAPage` per
+  question (`Question`/`Answer` each carry `author: Person` + `publisher: Organization`, DECISIONS
+  #045 — replacing the earlier Organization-only author), and `BreadcrumbList` on question + category
+  pages **and the company/legal pages** (via reusable `Breadcrumb` + `JsonLd`). The canonical `Person`
+  author entity (`authorPerson`) and its name/title live once in `lib/site.ts`, reused wherever
+  authorship is expressed — including the visible "Reviewed by …" byline on question pages and the
+  root `<meta name="author">` tag.
 - `sitemap.ts` (all static + company/legal + category + question routes) and `robots.ts`.
 - **Analytics:** **GA4 via the official `@next/third-parties/google` integration** —
   `components/Analytics.tsx` renders `<GoogleAnalytics gaId={gaId} />` once (site-wide, through the root
@@ -248,7 +256,8 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-21 (Decision #042 — "Guru's Picks" → "Ebook Store" repositioning, `/store` hero + `EbookFloatingCta` refresh)
+- **Last Updated:** 2026-08-30 (Decision #045 — real named `Person` authorship added alongside the
+  FIG `Organization` in structured data, `/about`, and question-page bylines)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
