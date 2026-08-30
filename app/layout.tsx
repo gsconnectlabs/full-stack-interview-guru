@@ -4,7 +4,7 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import Analytics from "@/components/Analytics";
 import EbookFloatingCta from "@/components/EbookFloatingCta";
-import { siteUrl, siteName, adsenseClientId } from "@/lib/site";
+import { siteUrl, siteName, adsenseClientId, authorPerson, figLinkedInUrl } from "@/lib/site";
 
 // AdSense site-verification meta (google-adsense-account). Uses the shared publisher id
 // (env NEXT_PUBLIC_ADSENSE_ID, defaulting to the prod account). Complements the async
@@ -30,7 +30,7 @@ export const metadata: Metadata = {
     "sql interview",
     "coding interview prep",
   ],
-  authors: [{ name: siteName }],
+  authors: [{ name: authorPerson.name, url: authorPerson.url }],
   openGraph: {
     type: "website",
     url: siteUrl,
@@ -67,6 +67,8 @@ const structuredData = [
     name: siteName,
     url: siteUrl,
     slogan: "Interview Tomorrow? Start Here.",
+    sameAs: [figLinkedInUrl],
+    founder: authorPerson,
   },
 ];
 

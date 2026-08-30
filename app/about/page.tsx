@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
+import { founderName, founderTitle } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/about" },
@@ -14,6 +15,23 @@ export const metadata: Metadata = {
     url: "/about",
     type: "website",
   },
+};
+
+/**
+ * Real author identity (name/title come from lib/site.ts — the single source of truth
+ * reused in schema.org authorship on question pages, so it's never duplicated by hand).
+ * Bio is intentionally factual and minimal: no invented years of experience, employers,
+ * interview counts, certifications, or degrees. Add real ones here only when true and
+ * verifiable — do not embellish for effect.
+ */
+const FOUNDER = {
+  name: founderName,
+  title: founderTitle,
+  photoUrl: "", // TODO(owner): set to a real photo path (e.g. "/images/founder.jpg") when available — shows an initials avatar until then
+  bio: "Full Stack Interview Guru is independently built and maintained by Gurusankar M., with a focus on practical, production-oriented software engineering interview preparation.",
+  credentials: [] as string[], // Intentionally empty — add only real, verifiable facts (no fabricated claims)
+  linkedinUrl: "", // TODO(owner): personal LinkedIn URL, if you want one linked here (FIG's own LinkedIn Page is already linked in the footer + Organization schema)
+  githubUrl: "", // TODO(owner): personal GitHub URL, if desired
 };
 
 const VALUES = [
@@ -57,6 +75,77 @@ export default function AboutPage() {
           AWS, REST APIs, SQL, Docker, Kubernetes, System Design and more.
         </p>
       </div>
+
+      {/* Who's behind FIG — real author identity (trust/E-E-A-T signal) */}
+      <section className="card mt-12 p-6 sm:p-8">
+        <div className="flex flex-col items-center gap-6 sm:flex-row sm:items-start">
+          {FOUNDER.photoUrl ? (
+            <img
+              src={FOUNDER.photoUrl}
+              alt={FOUNDER.name}
+              className="h-24 w-24 shrink-0 rounded-full object-cover"
+            />
+          ) : (
+            <div
+              className="flex h-24 w-24 shrink-0 items-center justify-center rounded-full bg-brand-300/20 text-2xl font-black text-brand-300"
+              aria-hidden="true"
+            >
+              {FOUNDER.name
+                .replace(/[[\]]/g, "")
+                .split(" ")
+                .map((w) => w[0])
+                .join("")
+                .slice(0, 2)
+                .toUpperCase()}
+            </div>
+          )}
+
+          <div className="text-center sm:text-left">
+            <span className="chip">✍️ Who writes this</span>
+            <h2 className="mt-2 text-xl font-bold text-white">{FOUNDER.name}</h2>
+            {FOUNDER.title && <p className="text-sm text-brand-300">{FOUNDER.title}</p>}
+            <p className="mt-3 text-sm leading-relaxed text-slate-400">{FOUNDER.bio}</p>
+
+            {FOUNDER.credentials.length > 0 && (
+              <ul className="mt-4 space-y-1.5 text-left text-sm text-slate-300">
+                {FOUNDER.credentials.map((c) => (
+                  <li key={c} className="flex items-start gap-2">
+                    <span className="mt-0.5 text-brand-300" aria-hidden="true">
+                      ✓
+                    </span>
+                    <span>{c}</span>
+                  </li>
+                ))}
+              </ul>
+            )}
+
+            {(FOUNDER.linkedinUrl || FOUNDER.githubUrl) && (
+              <div className="mt-4 flex justify-center gap-3 sm:justify-start">
+                {FOUNDER.linkedinUrl && (
+                  <a
+                    href={FOUNDER.linkedinUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary text-sm"
+                  >
+                    LinkedIn
+                  </a>
+                )}
+                {FOUNDER.githubUrl && (
+                  <a
+                    href={FOUNDER.githubUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="btn-secondary text-sm"
+                  >
+                    GitHub
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
 
       {/* Mission / Vision / Philosophy */}
       <div className="mt-12 grid gap-4 sm:grid-cols-3">

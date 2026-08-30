@@ -14,7 +14,7 @@ import AdSlot from "@/components/AdSlot";
 import HelpfulVote from "@/components/HelpfulVote";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
-import { absoluteUrl, siteName, siteUrl } from "@/lib/site";
+import { absoluteUrl, siteName, siteUrl, authorPerson, founderName } from "@/lib/site";
 import Breadcrumb from "@/components/Breadcrumb";
 import AISection from "@/components/AISection";
 import { buildAiPrompts } from "@/lib/ai-prompts";
@@ -202,7 +202,10 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
   // offset, not a bare `YYYY-MM-DD` — append midnight UTC once the date has been validated.
   const dateModifiedIso = q.updated && updatedLabel ? `${q.updated}T00:00:00.000Z` : null;
   const datePublishedIso = q.published && formatUpdated(q.published) ? `${q.published}T00:00:00.000Z` : null;
-  const author = { "@type": "Organization" as const, name: siteName, url: siteUrl };
+  // Person authors the content; the FIG Organization is the publisher/brand — kept
+  // distinct so the site never loses its Organization identity (DECISIONS: E-E-A-T fix).
+  const author = authorPerson;
+  const publisher = { "@type": "Organization" as const, name: siteName, url: siteUrl };
   const pageUrl = absoluteUrl(`/q/${q.slug}`);
 
   const jsonLd = {
@@ -215,6 +218,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
       text: q.question,
       url: pageUrl,
       author,
+      publisher,
       ...(dateModifiedIso ? { dateModified: dateModifiedIso } : {}),
       ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
       answerCount: 1,
@@ -223,6 +227,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
         text: plainAnswer(q),
         url: pageUrl,
         author,
+        publisher,
         ...(datePublishedIso ? { datePublished: datePublishedIso } : {}),
       },
     },
@@ -265,6 +270,16 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
           </div>
 
           <h1 className="mt-4 font-serif text-2xl font-black leading-tight text-white sm:text-3xl">{q.heading ?? q.question}</h1>
+
+          {/* Byline — subtle authorship signal, not a card. Date only shown when the
+              question actually has an `updated` value; never fabricated. */}
+          <p className="mt-2 text-xs text-slate-500">
+            Reviewed by{" "}
+            <Link href="/about" className="text-slate-400 hover:text-brand-300 hover:underline">
+              {founderName}
+            </Link>
+            {updatedLabel && <> · Updated {updatedLabel}</>}
+          </p>
 
           {/* Asked In */}
           <div className="mt-4 flex flex-wrap items-center gap-2">

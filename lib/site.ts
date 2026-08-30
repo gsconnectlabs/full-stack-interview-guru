@@ -18,6 +18,28 @@ export function absoluteUrl(path = "/"): string {
 
 export const siteName = "Full Stack Interview Guru";
 
+/**
+ * Single source of truth for the site's named author/founder identity (E-E-A-T signal).
+ * Real name, used consistently in visible bylines (About page, question pages) and in
+ * schema.org `Person` authorship — do not duplicate this string elsewhere.
+ */
+export const founderName = "Gurusankar M.";
+export const founderTitle = "Founder & Maintainer, Full Stack Interview Guru";
+
+/** FIG's own LinkedIn Page (Organization identity, not the founder's personal profile). */
+export const figLinkedInUrl = "https://www.linkedin.com/company/full-stack-interview-guru/";
+
+/**
+ * Canonical schema.org `Person` for content authorship. `/about` is the canonical author
+ * URL for now (no separate author-profile route exists yet). Keep this the only place a
+ * Person author object is constructed — pages should import and reuse it, not inline a copy.
+ */
+export const authorPerson = {
+  "@type": "Person" as const,
+  name: founderName,
+  url: `${siteUrl}/about`,
+};
+
 export const contactEmail = process.env.NEXT_PUBLIC_CONTACT_EMAIL || "";
 export const feedbackEndpoint = process.env.NEXT_PUBLIC_FEEDBACK_ENDPOINT || "";
 export const upiId = process.env.NEXT_PUBLIC_UPI_ID || "mgurusankar21@pingpay";
