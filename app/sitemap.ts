@@ -19,6 +19,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/privacy",
     "/terms",
     "/disclaimer",
+    "/upi-qr-generator/privacy-policy",
   ].map((path) => ({
     url: `${BASE}${path}`,
     lastModified: new Date(),
