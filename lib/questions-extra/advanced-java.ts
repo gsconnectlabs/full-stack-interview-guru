@@ -749,6 +749,16 @@ System.out.println(user);`,
       },
       { type: "text", content: "Spring wraps your bean in a proxy: calling `save()` actually hits the proxy, which opens a transaction, calls the real `save()`, then commits or rolls back — all without a line of transaction code in your method." },
       { type: "text", content: "**Key takeaway:** proxies add behaviour around method calls at runtime. JDK = interfaces via InvocationHandler; CGLIB = subclassing — and self-invocation inside a bean bypasses the proxy." },
+      {
+        type: "text",
+        content:
+          "**Why CGLIB can't proxy a `final` class or method:** CGLIB's whole mechanism is generating a runtime **subclass** of your target class that overrides each method to route through the interceptor. A `final` class can't be subclassed at all — there's nothing to generate. A `final` method on a non-final class can't be overridden either, so even a successfully generated subclass leaves that one method un-intercepted; a call to it goes straight to the real implementation and skips the proxy's advice entirely, silently.",
+      },
+      {
+        type: "text",
+        content:
+          "**If `InvocationHandler.invoke()` throws**, the exception propagates to the caller exactly as if the real method had thrown it directly — the proxy transparently rethrows whatever `invoke()` throws (typically after `Method.invoke()` unwraps an `InvocationTargetException` back to its cause). The one sharp edge: if `invoke()` throws a **checked** exception that isn't declared in the proxied interface method's `throws` clause, the JVM wraps it in an unchecked `UndeclaredThrowableException` instead of letting it through as-is — a reminder that the proxy is bound by the interface's declared exception contract, not the real implementation's.",
+      },
     ],
     handsOn: {
       lang: "java",
@@ -794,6 +804,7 @@ proxy.save("order-1");`,
       "Use AspectJ weaving when proxy limits get in the way",
     ],
     relatedTech: ["Spring AOP", "CGLIB", "ByteBuddy", "Mockito"],
+    references: [{ label: "java.lang.reflect.Proxy — Java Platform docs", url: "https://docs.oracle.com/en/java/javase/21/docs/api/java.base/java/lang/reflect/Proxy.html" }],
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Oracle", "Google"],

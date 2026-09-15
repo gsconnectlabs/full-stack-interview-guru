@@ -535,6 +535,8 @@ Idempotency-Key: 3f1c-...-9a
       "JWT explained for interviews: the header.payload.signature structure, why it's signed not encrypted, and how stateless auth scales across microservices.",
     heading: "What Is a JWT and How Does It Work?",
     updated: "2026-08-24",
+    shortAnswer:
+      "A JWT (JSON Web Token) is a compact, self-contained token — header.payload.signature, each Base64url-encoded and joined by dots. The payload carries claims (user id, roles, expiry) that any service can read and verify locally via the signature, with no round trip to a central session store. It's signed, not encrypted, so it proves integrity (not tampered with) but never guarantees confidentiality.",
     mindMap: [
       { type: "text", content: "A JWT is a **movie ticket** 🎬. The cinema doesn't keep a list of who bought tickets — your stub already proves you paid, and the watermark (signature) proves it's not forged. The server stays stateless." },
       {
@@ -546,6 +548,16 @@ Idempotency-Key: 3f1c-...-9a
         ],
       },
       { type: "text", content: "Format: header.payload.signature — three Base64 parts joined by dots." },
+      {
+        type: "text",
+        content:
+          "**HS256 vs RS256** is the algorithm choice interviewers probe next. **HS256** is symmetric — one shared secret both signs and verifies, so every service that needs to verify a token also needs that same secret, which means every service that has it could also *forge* tokens. **RS256** is asymmetric — a private key signs (held only by the auth service), and a public key verifies (safely distributed to every other service). Microservice architectures default to RS256 for exactly this reason: services that only need to verify tokens never need access to anything that could mint new ones.",
+      },
+      {
+        type: "text",
+        content:
+          "**Expiry and revocation are the trade-off that actually bites in production.** A JWT's statelessness is also its weakness: once issued, a service can't \"unissue\" it — there's no server-side session to delete. If a user's access needs to be revoked immediately (they're fired, their account is compromised), a short-lived access token (minutes) paired with a separate, server-tracked refresh token is the standard fix — the refresh token can be revoked in a database lookup, and the access token's short expiry bounds how long a compromised token stays valid even if revocation is delayed.",
+      },
     ],
     handsOn: {
       lang: "text",
@@ -558,6 +570,25 @@ Idempotency-Key: 3f1c-...-9a
     },
     realWorld: "After login your API returns a JWT; the frontend stores it and sends it in the Authorization header on every request. Each microservice verifies the signature locally — no shared session store, which is exactly why JWTs scale so well across services.",
     interviewerExpectation: ["stateless auth", "header.payload.signature", "signed not encrypted", "expiry (exp)", "never store secrets in payload"],
+    followUps: [
+      "Why is a JWT signed instead of encrypted, and when would you need both?",
+      "HS256 vs RS256 — why do microservices usually prefer RS256?",
+      "How do you revoke a JWT before it expires?",
+      "Where should the frontend store a JWT — localStorage, a cookie, or memory?",
+    ],
+    commonMistakes: [
+      "Putting secrets (passwords, PII) in the payload, forgetting it's signed, not encrypted",
+      "Using one long-lived token instead of a short-lived access token + revocable refresh token",
+      "Storing JWTs in localStorage, exposing them to XSS, instead of an httpOnly cookie",
+      "Trusting the client-decoded payload without verifying the signature server-side",
+    ],
+    bestPractices: [
+      "Keep access tokens short-lived; use a revocable refresh token for anything longer",
+      "Prefer RS256 (asymmetric) over HS256 when multiple services need to verify tokens",
+      "Store tokens in an httpOnly, Secure cookie rather than localStorage where practical",
+      "Always verify the signature server-side — never trust a client-decoded payload",
+    ],
+    references: [{ label: "RFC 7519 — JSON Web Token (JWT)", url: "https://www.rfc-editor.org/rfc/rfc7519" }],
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Deloitte"],
@@ -659,6 +690,9 @@ aws s3 ls s3://my-bucket/reports/`,
     categoryId: "aws",
     topic: "Lambda",
     question: "What is AWS Lambda and when would you use it?",
+    tags: ["aws lambda", "serverless", "cold start", "event-driven", "faas"],
+    shortAnswer:
+      "AWS Lambda is a serverless, event-driven compute service — you upload a function, AWS runs it in response to a trigger (API Gateway, S3, SQS, EventBridge, a schedule), and you pay only for actual invocation time, not idle capacity. Best fit: spiky or infrequent event-driven work under Lambda's 15-minute max runtime; a poor fit for steady, high-throughput, latency-critical, or long-running workloads where a warm always-on server is cheaper and faster.",
     mindMap: [
       { type: "text", content: "Lambda is a **taxi driver** 🚕. You don't own the car or keep it idling in a garage — one shows up when you need a ride (an event), drives, and you pay only for the trip. No passengers, no cost." },
       {
@@ -668,6 +702,16 @@ aws s3 ls s3://my-bucket/reports/`,
           { k: "Bills", v: "Per request + duration" },
           { k: "Best for", v: "Spiky, event-driven, short tasks" },
         ],
+      },
+      {
+        type: "text",
+        content:
+          "**Cold start, mechanically:** on the first invocation (or after enough idle time that AWS reclaims the environment), Lambda has to provision a fresh execution environment — download the deployment package, start the runtime, run any code outside the handler (imports, SDK client construction, connection pool setup) — before the handler itself runs. That init cost is the cold start; a **warm** invocation reuses an already-initialized environment and skips straight to the handler. **Provisioned concurrency** pre-initializes a set number of environments ahead of traffic so requests hit warm environments on demand, at the cost of paying for that reserved capacity whether it's used or not.",
+      },
+      {
+        type: "text",
+        content:
+          "**Two hard limits shape when Lambda fits:** a single invocation can run at most **15 minutes**, so anything longer needs Step Functions, Fargate, or a traditional server. And Lambda's memory setting isn't just RAM — **CPU and network bandwidth scale proportionally with the memory you allocate**, so a CPU-bound function that's slow isn't necessarily under-provisioned on logic, it may just be under-provisioned on memory (raising memory can make a compute-heavy function finish faster and, counterintuitively, cost about the same or less, since you pay for memory × duration and a faster function needs less duration).",
       },
     ],
     handsOn: {
@@ -682,6 +726,25 @@ aws s3 ls s3://my-bucket/reports/`,
     },
     realWorld: "Teams use Lambda for the 'glue' work: resize an image the moment it lands in S3, process a queue message, run a nightly cron, back a lightweight API. It shines for spiky, event-driven jobs where keeping a server running 24/7 would be wasteful.",
     interviewerExpectation: ["serverless", "event-driven", "pay-per-use", "cold start", "stateless", "15-min max runtime"],
+    followUps: [
+      "What actually happens during a cold start, step by step?",
+      "How does provisioned concurrency eliminate cold starts, and what does it cost?",
+      "Why does raising a Lambda's memory setting also increase its CPU allocation?",
+      "When would a container on Fargate/ECS be a better fit than Lambda?",
+    ],
+    commonMistakes: [
+      "Initializing SDK clients / DB connections inside the handler instead of outside it, paying init cost on every warm invocation",
+      "Sizing memory only for RAM needs and ignoring that it also scales CPU",
+      "Using Lambda for a steady, high-throughput workload where an always-on server would be cheaper",
+      "Not setting a reserved/provisioned concurrency floor for latency-sensitive endpoints that can't tolerate cold starts",
+    ],
+    bestPractices: [
+      "Initialize SDK clients and connections once outside the handler, so warm invocations reuse them",
+      "Use provisioned concurrency for latency-sensitive, user-facing endpoints",
+      "Keep deployment packages small and dependencies minimal to shrink cold-start init time",
+      "Treat the function as stateless — persist anything that must survive between invocations externally (DynamoDB, S3, ElastiCache)",
+    ],
+    references: [{ label: "AWS Lambda — Developer Guide", url: "https://docs.aws.amazon.com/lambda/latest/dg/welcome.html" }],
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Deloitte"],
@@ -914,6 +977,8 @@ ls -l deploy.sh
     heading: "Two Sum Interview Question",
     tags: ["two sum", "hashmap", "leetcode", "array", "python", "time complexity", "space complexity"],
     updated: "2026-08-15",
+    shortAnswer:
+      "Scan the array once, keeping a HashMap of value → index for numbers already seen. For each number, check whether target - number is already in the map before inserting the current number — if it is, you've found your pair in O(n) time and O(n) space, versus the O(n²) brute-force nested-loop check.",
     mindMap: [
       { type: "text", content: "Brute force is O(n²) with nested loops. The trick: as you scan, remember what you have seen in a HashMap so you can look up the complement in O(1)." },
       {
@@ -928,6 +993,27 @@ ls -l deploy.sh
         type: "text",
         content:
           "**Why indices, not values?** The same value can appear twice in the array, so returning the values themselves would be ambiguous — the index is what unambiguously identifies *which* element was used. It's also why the lookup happens **before** inserting the current number: checking `target - n in seen` first stops an element from pairing with itself.",
+      },
+      {
+        type: "text",
+        content:
+          "**Duplicates and \"no pair found\" are the two edge cases interviewers actually probe.** If the same value appears twice and their indices sum to the target, the HashMap approach handles it correctly for free — the *first* occurrence is stored by the time the *second* is scanned, so the lookup succeeds without any special-casing. If no pair sums to the target, the loop finishes with nothing to return; most implementations either return an empty list / `None` or raise an explicit error — LeetCode's version guarantees exactly one solution exists, but a production version of this pattern (e.g. matching two transactions that net to zero) should decide and document which behavior it wants, since \"guaranteed to exist\" is rarely true outside a coding-interview problem statement.",
+      },
+      {
+        type: "code",
+        lang: "python",
+        content: `# Two-pointer variant — only valid once the array is SORTED
+def two_sum_sorted(nums, target):
+    lo, hi = 0, len(nums) - 1
+    while lo < hi:
+        s = nums[lo] + nums[hi]
+        if s == target:
+            return [lo, hi]
+        elif s < target:
+            lo += 1          # sum too small, need a bigger left value
+        else:
+            hi -= 1           # sum too big, need a smaller right value
+    return None               # no pair sums to target`,
       },
     ],
     handsOn: {
@@ -969,6 +1055,7 @@ print(two_sum([2, 7, 11, 15], 9))`,
       "Ask clarifying questions: duplicates allowed? Exactly one solution guaranteed?",
     ],
     relatedTech: ["HashMap", "two-pointer technique", "LeetCode"],
+    references: [{ label: "LeetCode — Two Sum (problem statement)", url: "https://leetcode.com/problems/two-sum/" }],
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Amazon", "Accenture", "Deloitte"],

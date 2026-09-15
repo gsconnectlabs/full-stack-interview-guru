@@ -777,6 +777,16 @@ catch (PaymentException e) {
           { k: "Usual suspect", v: "unbounded cache / static map / ThreadLocal" },
         ],
       },
+      {
+        type: "text",
+        content:
+          "**Leak vs. under-sized heap — the GC-log test:** watch old-generation occupancy across several Full GCs, not just one. A genuinely under-sized heap still shows old-gen dropping back to roughly the same baseline after each Full GC — the app's real working set fits, there's just less headroom than you'd like. A **leak** shows old-gen occupancy creeping upward Full GC after Full GC, never returning to its previous floor, because something is retaining objects that should have died. If you can't watch it happen live, the same signal is in a heap-dump histogram taken at two points in time: a growing instance count for the same class between the two dumps is the leak's fingerprint.",
+      },
+      {
+        type: "text",
+        content:
+          "**Shallow vs. retained size in MAT** — the distinction that makes the dominator tree useful instead of misleading. **Shallow size** is just the memory the object itself occupies (its fields, not what they point to) — a `HashMap` instance's shallow size is tiny regardless of how many entries it holds. **Retained size** is the shallow size plus every object that would become unreachable (and thus collectible) if this object were removed — for that same `HashMap`, retained size includes every key, every value, and everything *they* reference, which is usually where the real memory is. Sorting MAT's dominator tree by retained size is how you find the one object actually responsible for gigabytes of heap, when its own shallow footprint might be under a kilobyte.",
+      },
     ],
     handsOn: {
       lang: "bash",

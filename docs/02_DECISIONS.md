@@ -1671,6 +1671,81 @@ the push to `origin/main` were completed in the same release.
 
 ---
 
+# Decision #046
+
+## Title
+
+Content Depth on 15 Thin, GSC-Trafficked Pages — AdSense "Low Value Content" Remediation (Round 2)
+
+### Status
+
+✅ Approved and shipped (Owner-directed 2026-09-15)
+
+### Reason
+
+AdSense's "Low value content" flag was still active after DECISIONS #045 shipped — confirming that
+session's own prediction that E-E-A-T alone wouldn't clear it, and that the templated five-block
+structure repeated across all 316 questions was the next lever. Owner supplied a fresh 28-day Search
+Console export. An audit of the actual content model (316 typed `Question` objects — not the 1,970 the
+owner initially estimated; each object renders exactly one `/q/` page) found: `QAPage` JSON-LD (not
+`FAQPage`) is already correct and already firing rich results (GSC's own "Q&A rich results" Search
+Appearance row, 214 impressions), so the missing piece was never schema — it was short explanatory
+prose (median ~240 words) across most pages. Cross-referencing the thin-page list against GSC
+impressions surfaced 15 pages that are both under 800 words and carrying real ranking traffic (9-305
+impressions over 28 days) — the best-ROI set to fix first, since it ties the AdSense remediation
+directly to pages Google is already choosing to show.
+
+Owner made three scoping calls before implementation: (1) skip "Real Talk from Guru" personal-take
+paragraphs entirely rather than have the assistant fabricate specific banking/enterprise-Java anecdotes
+attributed to the owner as fact; (2) start with the 15-page GSC-cross-referenced list rather than the
+raw thinnest-316 list; (3) skip the previously-proposed `hashmap-resize-load-factor` title/meta rewrite
+— already at position ~11 with a title/description that already followed CTR best practice (specific
+numbers, a hook, under 60 chars), so 0 clicks on 305 impressions is a positioning problem a title
+change can't fix, not a snippet problem.
+
+### Implementation
+
+- Added genuinely new, non-duplicative technical content to 15 pages across `lib/questions.ts` and 7
+  `lib/questions-extra/*.ts` files — each addition specifically answers a `followUps` question the page
+  already listed but never answered in prose (verified against the prior content-depth session,
+  `9aad1fc`, so nothing already covered was repeated): `hashmap-resize-load-factor`,
+  `dynamodb-partition-key`, `dynamodb-single-table`, `thread-interruption-cooperative-cancellation`,
+  `daemon-threads-jvm-exit`, `what-is-json`, `shutdown-hooks-graceful-drain`, `dynamic-proxy`,
+  `two-sum`, `stop-the-world-gc-tuning`, `java-memory-leak-diagnosis`, `what-is-jwt`, `aws-lambda`,
+  `producer-consumer-wait-notify`, `g1-gc-internals`. Full per-page breakdown in
+  [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased".
+- 5 pages gained a new `handsOn`/`mindMap` code example where none existed (`dynamodb-partition-key`,
+  `dynamodb-single-table`, `stop-the-world-gc-tuning`, `g1-gc-internals`, plus a second example on
+  `two-sum`); 10 pages gained a `references` entry.
+- Prose word count across the 15 pages: **5,762 → 8,908 words (+55%)**, measured consistently
+  before/after (excludes code, so the figure can't be inflated by snippets).
+- **Deliberately not padded to a uniform 800+ words per page** — per CLAUDE.md's anti-padding stance
+  and the owner's explicit instruction, additions stopped once a page ran out of genuinely new,
+  non-duplicative substance. Several questions (JSON basics, single-table GSIs, JWT structure) sit in
+  the 460–650 word range with real depth added but not "800 words" of depth, because there wasn't
+  another 200+ words of distinct material to add without restating what the page already said.
+- No URLs changed, no existing `seoTitle`/`seoDescription`/`heading` overrides touched, no page outside
+  `/q/` touched, no new `Question` schema fields introduced (all additions use existing optional fields:
+  `mindMap`, `handsOn`, `followUps`, `commonMistakes`, `bestPractices`, `references`, `shortAnswer`).
+
+### Verified
+
+`npx tsc --noEmit` clean. `npm run build` green — all 316 `/q/` pages present, shared First Load JS
+unchanged at 102 kB. No ESLint config exists in this project; `tsc` + `build` remain the standing gates.
+
+### Deferred (owner's call, not code-blocking)
+
+1. `java-memory-leak-diagnosis` and `aws-lambda` still lack `seoTitle`/`seoDescription` overrides.
+2. Pushing the remaining 9 (of 15) pages further toward a literal 800+ words, if the owner wants strict
+   numeric compliance over genuinely-exhausted per-page depth.
+3. The other ~300 pages not in this batch — this round targeted the highest-ROI, GSC-trafficked thin
+   pages only; a full-bank pass was explicitly out of scope for this session.
+4. Confirm whether AdSense's "Low value content" flag clears on next review; if not, the next lever is
+   likely the remaining ~300 pages' depth, or a broader review of what an automated content classifier
+   weighs beyond word count.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1682,7 +1757,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-30 (Decision #045 — real named authorship (Person) alongside the FIG Organization)
+- **Last Updated:** 2026-09-15 (Decision #046 — content depth on 15 thin, GSC-trafficked pages, AdSense remediation round 2)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

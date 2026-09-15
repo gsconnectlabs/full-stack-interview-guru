@@ -47,6 +47,21 @@ export const jsonExtra: Question[] = [
           { k: "Language", v: "Independent (not just JavaScript)" },
         ],
       },
+      {
+        type: "text",
+        content:
+          "JSON *looks* like a JavaScript object literal because that's where it came from, but the grammar is stricter — and code that's valid as a JS literal is often invalid JSON. A JavaScript object is a **live, in-memory value** with any key type and any value, including functions and `Date`s; JSON is a **text format** with only six value types (string, number, boolean, null, object, array), no comments, no trailing commas, and keys that must be double-quoted strings.",
+      },
+      {
+        type: "code",
+        lang: "json",
+        content: `// Valid as a JS object literal — INVALID as JSON:
+{ name: 'Guru', role: "Engineer", /* comment */ tags: ['java', 'aws',], }
+// ^ unquoted key   ^ single quotes   ^ comment    ^ trailing comma — all illegal in JSON
+
+// The strict JSON equivalent:
+{ "name": "Guru", "role": "Engineer", "tags": ["java", "aws"] }`,
+      },
     ],
     handsOn: {
       lang: "json",
@@ -63,7 +78,7 @@ export const jsonExtra: Question[] = [
       a: "No. JSON is a text FORMAT inspired by JavaScript object literals, but it's stricter — keys must be double-quoted strings, no comments, no trailing commas, no functions or dates. A JavaScript object lives in memory; JSON is a string you parse into (or serialize from) such objects.",
     },
     realWorld:
-      "Almost every API response you've ever seen is JSON — the frontend fetches it, parses it, and renders the UI. It's also everywhere in config files (package.json, tsconfig.json), log lines, and message queues.",
+      "Almost every API response you've ever seen is JSON — the frontend fetches it, parses it, and renders the UI. It's also everywhere in config files (package.json, tsconfig.json), log lines, and message queues. One practical gotcha that trips people up in production: JSON.stringify() silently drops object properties whose value is undefined or a function, and converts a Date into an ISO-8601 string — so round-tripping through JSON.parse(JSON.stringify(obj)) doesn't always give you back the exact object you started with.",
     interviewerExpectation: ["text-based data format", "key/value + arrays", "language-independent", "default for REST APIs", "human-readable"],
     followUps: [
       "How is JSON different from a JavaScript object?",
@@ -81,6 +96,7 @@ export const jsonExtra: Question[] = [
       "Validate JSON at trust boundaries",
     ],
     relatedTech: ["REST", "JavaScript", "YAML", "XML"],
+    references: [{ label: "JSON — ECMA-404 / json.org specification", url: "https://www.json.org/json-en.html" }],
     difficulty: "Easy",
     experience: ["0-2 years", "3-5 years"],
     askedIn: ["Infosys", "TCS", "Accenture", "Cognizant"],

@@ -402,13 +402,47 @@ export const awsExtra: Question[] = [
           ["Result at scale", "Throttled (ProvisionedThroughputExceededException) even with capacity to spare table-wide", "Throughput scales close to linearly with provisioned capacity"],
         ],
       },
+      {
+        type: "text",
+        content:
+          "This doesn't mean low-cardinality attributes like `status` are unusable — they just can't be the **partition** key. Keep the high-cardinality id (e.g. `orderId`) as the partition key, and put `status` in a **sort key** or a **Global Secondary Index** instead. You still get an efficient \"all orders with status = shipped\" query via the GSI, but writes spread across partitions by `orderId` instead of collapsing onto one of three.",
+      },
     ],
+    handsOn: {
+      lang: "java",
+      code: `// Write sharding: spread a hot partition key across N logical shards
+// so no single physical partition absorbs all the write traffic.
+int shardCount = 10;
+String hotKey = "sensor-42";                       // naturally low-cardinality / bursty
+int shard = ThreadLocalRandom.current().nextInt(shardCount);
+String shardedPk = hotKey + "#" + shard;             // e.g. "sensor-42#7"
+
+PutItemRequest put = PutItemRequest.builder()
+    .tableName("Readings")
+    .item(Map.of(
+        "pk", AttributeValue.fromS(shardedPk),       // spread across 10 partitions
+        "sk", AttributeValue.fromS(Instant.now().toString()),
+        "value", AttributeValue.fromN(String.valueOf(reading))))
+    .build();
+ddb.putItem(put);
+
+// Reads must now fan out across all shards and merge results client-side —
+// that's the cost of sharding: writes get cheap, reads get more complex.
+List<QueryRequest> shardQueries = IntStream.range(0, shardCount)
+    .mapToObj(i -> QueryRequest.builder()
+        .tableName("Readings")
+        .keyConditionExpression("pk = :pk")
+        .expressionAttributeValues(Map.of(":pk", AttributeValue.fromS(hotKey + "#" + i)))
+        .build())
+    .toList();`,
+      output: "10 physical partitions absorb the write load instead of 1; queries fan out and merge.",
+    },
     whatIf: {
       q: "A table partitioned by 'status' (only 3 values) throttles under load — why and fix?",
       a: "Only 3 partition-key values means traffic concentrates on 3 partitions → hot partitions and throttling regardless of provisioned capacity. Use a high-cardinality key (e.g. entity id) and put status in a GSI/sort key, or shard the hot key with a suffix.",
     },
     realWorld:
-      "Hot-partition throttling from low-cardinality or skewed keys is the #1 DynamoDB performance pitfall; key design (and write sharding for hotspots) is the fix, not raising capacity.",
+      "Hot-partition throttling from low-cardinality or skewed keys is the #1 DynamoDB performance pitfall; key design (and write sharding for hotspots) is the fix, not raising capacity. The write-sharding pattern above is the standard escape hatch when an attribute is inherently hot (a trending item, a single IoT sensor, a viral post) and can't simply be swapped for a different key.",
     interviewerExpectation: ["hash-based distribution", "hot partition from skew/low cardinality", "high-cardinality key", "write sharding", "adaptive capacity limits"],
     followUps: [
       "What is a DynamoDB partition key?",
@@ -429,6 +463,9 @@ export const awsExtra: Question[] = [
       "Design keys around access patterns",
     ],
     relatedTech: ["DynamoDB", "GSI", "write sharding", "adaptive capacity"],
+    references: [
+      { label: "AWS — Choosing the right DynamoDB partition key", url: "https://docs.aws.amazon.com/wellarchitected/latest/serverless-applications-lens/dynamodb-partition-design.html" },
+    ],
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Google", "Microsoft"],
@@ -859,13 +896,45 @@ export const awsExtra: Question[] = [
         content:
           "One table, two access patterns, no join: `Query PK = CUSTOMER#123` returns the customer's profile **and** every one of their orders in a single request (they share the same partition). `Query PK = ORDER#001` fetches that order's own details directly. The keys are modeled around the *known* access patterns — not around normalized entities the way a relational schema would be.",
       },
+      {
+        type: "text",
+        content:
+          "**Overloaded GSIs** are what make one table serve many entity types cleanly. Instead of a dedicated index per entity, a single `GSI1PK`/`GSI1SK` pair holds *different, purpose-built values per item type* — for a `CUSTOMER` item, `GSI1PK` might be `EMAIL#<email>` (to look customers up by email); for an `ORDER` item, the same attribute name might hold `STATUS#<status>` (to list orders by status). The GSI attribute name is reused (\"overloaded\"), but each entity type puts a differently-shaped value in it — so one physical index quietly serves several unrelated access patterns instead of one GSI per query.",
+      },
     ],
+    handsOn: {
+      lang: "java",
+      code: `// Overloaded GSI: GSI1PK holds different value shapes per entity type,
+// so one index serves two unrelated access patterns.
+// Item shapes written earlier:
+//   CUSTOMER#123 -> GSI1PK = "EMAIL#alice@example.com", GSI1SK = "CUSTOMER#123"
+//   ORDER#001    -> GSI1PK = "STATUS#SHIPPED",           GSI1SK = "ORDER#001"
+
+// Pattern A: look up a customer by email — no scan, no separate email-index table
+QueryRequest byEmail = QueryRequest.builder()
+    .tableName("AppTable")
+    .indexName("GSI1")
+    .keyConditionExpression("GSI1PK = :pk")
+    .expressionAttributeValues(Map.of(
+        ":pk", AttributeValue.fromS("EMAIL#alice@example.com")))
+    .build();
+
+// Pattern B: list every order currently SHIPPED — same index, different key shape
+QueryRequest byStatus = QueryRequest.builder()
+    .tableName("AppTable")
+    .indexName("GSI1")
+    .keyConditionExpression("GSI1PK = :pk")
+    .expressionAttributeValues(Map.of(
+        ":pk", AttributeValue.fromS("STATUS#SHIPPED")))
+    .build();`,
+      output: "Two unrelated access patterns (email lookup, status listing) served by one GSI.",
+    },
     whatIf: {
       q: "Why is single-table design controversial / risky?",
       a: "You must know ALL access patterns up front — the key/GSI design is baked around them. New, unforeseen query needs can require painful migrations or extra GSIs, and the schema is hard for newcomers to read. It maximizes performance/cost but sacrifices flexibility, so it's not always the right call.",
     },
     realWorld:
-      "AWS/Alex DeBrie advocate single-table design for high-scale DynamoDB apps to hit single-digit-ms latency and minimize cost; teams with evolving requirements often prefer simpler multi-table or a relational DB.",
+      "AWS/Alex DeBrie advocate single-table design for high-scale DynamoDB apps to hit single-digit-ms latency and minimize cost; teams with evolving requirements often prefer simpler multi-table or a relational DB. Overloaded GSIs are usually the detail that trips up engineers new to the pattern — the index looks like it holds one kind of data until you notice the key values are deliberately shaped differently per entity type.",
     interviewerExpectation: ["multiple entities in one table", "composite PK/SK + GSIs", "one query per access pattern", "must know patterns upfront", "flexibility trade-off"],
     followUps: [
       "How do overloaded GSIs work?",
@@ -883,6 +952,9 @@ export const awsExtra: Question[] = [
       "Prefer simpler designs when flexibility matters",
     ],
     relatedTech: ["DynamoDB", "GSI/LSI", "composite keys"],
+    references: [
+      { label: "Alex DeBrie — The DynamoDB Book (single-table design)", url: "https://www.dynamodbbook.com/" },
+    ],
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Google", "Microsoft"],

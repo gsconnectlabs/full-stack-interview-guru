@@ -50,6 +50,59 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Improved (Content depth on 15 thin, GSC-trafficked pages — AdSense "Low value content" remediation, DECISIONS #046) — 2026-09-15
+AdSense's "Low value content" flag was still active after DECISIONS #045 (real named authorship),
+matching that session's own prediction that the next lever would be per-question content depth. Owner
+supplied a fresh 28-day GSC export (`Pages` sheet); a full audit of all 316 `/q/` questions (not the
+1,970 the owner initially estimated — the content bank is 316 typed `Question` objects, each rendering
+one page) found a median of ~240 prose words per page and confirmed the site already emits `QAPage`
+JSON-LD (not `FAQPage` — correct for single-question pages per Google's own guidance, and GSC's own
+"Q&A rich results" Search Appearance row, 214 impressions, confirms it's firing) — so the audit's real
+finding was short explanatory prose, not missing schema. Cross-referencing the thin-page list against
+GSC impressions produced a priority list of 15 pages that are both under 800 words and actually ranking
+with real traffic; owner approved starting there, explicitly excluding "Real Talk from Guru" additions
+and the previously-proposed `hashmap-resize-load-factor` title/meta rewrite (already strong at position
+~11, so a title change wouldn't move a positioning-driven problem).
+
+- **New, non-duplicative technical depth** added across `lib/questions.ts` and 7
+  `lib/questions-extra/*.ts` files — each addition answers a follow-up question the page already listed
+  but never actually answered in prose, verified against prior sessions' work (`9aad1fc`) so nothing
+  already covered was repeated:
+  `hashmap-resize-load-factor` (treeification, ConcurrentHashMap resize contrast),
+  `dynamodb-partition-key` (write-sharding — new Java code example),
+  `dynamodb-single-table` (overloaded GSIs — new Java code example),
+  `thread-interruption-cooperative-cancellation` (`isInterrupted()` vs `Thread.interrupted()`),
+  `daemon-threads-jvm-exit` (GC threads as daemon; `ExecutorService` workers as non-daemon by default),
+  `what-is-json` (strict-JSON-vs-JS-object-literal code comparison; stringify/parse round-trip gotchas),
+  `shutdown-hooks-graceful-drain` (uncaught exception inside a shutdown hook),
+  `dynamic-proxy` (why CGLIB can't proxy `final`; `InvocationHandler` exception propagation),
+  `two-sum` (`shortAnswer`; duplicates/no-solution handling; new two-pointer sorted-array code variant),
+  `stop-the-world-gc-tuning` (safepoints/time-to-safepoint; why concurrent collectors still pause;
+  allocation-rate vs. pause-frequency — new GC-logging command example),
+  `java-memory-leak-diagnosis` (leak vs. under-sized-heap GC-log test; shallow vs. retained size in MAT),
+  `what-is-jwt` (`shortAnswer`; HS256 vs RS256; expiry/revocation strategy; new followUps/commonMistakes/
+  bestPractices),
+  `aws-lambda` (`shortAnswer`; cold-start mechanics; memory↔CPU coupling; new followUps/commonMistakes/
+  bestPractices),
+  `producer-consumer-wait-notify` (why `wait()` requires the lock; spurious wakeups),
+  `g1-gc-internals` (`MaxGCPauseMillis` mechanics; why humongous objects are costly; `G1HeapRegionSize`
+  tuning — new GC command example).
+- 10 pages gained a `references` entry (official docs/spec links); 5 gained a new `handsOn`/`mindMap`
+  code example where none existed before.
+- Total prose word count across the 15 pages: **5,762 → 8,908 (+3,146, +55%)**, measured the same way
+  before and after (prose only — headings, short answer, mind-map text/kv/table, what-if, real-world,
+  interviewer-expectation keywords, follow-ups, common mistakes, best practices, related-tech; excludes
+  code so the number can't be inflated by snippets). Deliberately **not** padded to a uniform 800+ per
+  page — several questions (JSON basics, single-table GSIs, JWT structure) had no further
+  non-duplicative substance to add without restating existing content; owner's explicit instruction was
+  depth over a word-count target.
+- No URLs, question content structure, or existing `seoTitle`/`seoDescription`/`heading` overrides
+  changed; no page outside `/q/` touched. `npx tsc --noEmit` clean; `npm run build` green — all 316
+  `/q/` pages present, shared First Load JS unchanged at **102 kB**.
+- **Deferred, owner's call:** `java-memory-leak-diagnosis` and `aws-lambda` still lack `seoTitle`/
+  `seoDescription` overrides; pushing the remaining 9 pages further toward literal 800+ words if the
+  owner wants stricter compliance over genuinely-exhausted per-page depth.
+
 ### Added (`ads.txt`) — 2026-08-30
 AdSense's Sites dashboard flagged `Ads.txt status: Not found` for the domain — a separate blocker from
 "Low value content." The project has no `public/` directory (everything is generated), so added
@@ -1156,7 +1209,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-30 (Added `app/ads.txt/route.ts` — AdSense "Ads.txt: Not found" fix)
+- **Last Updated:** 2026-09-15 (Content depth on 15 thin, GSC-trafficked pages — AdSense remediation round 2, DECISIONS #046)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -458,7 +458,31 @@ export const jvmExtra: Question[] = [
           { k: "Eliminate", v: "ZGC/Shenandoah concurrent collectors" },
         ],
       },
+      {
+        type: "text",
+        content:
+          "A **safepoint** is a point in a thread's execution where its internal state (register contents, stack layout, object references) is fully known and safe to inspect — the JVM can only pause a thread for GC (or run other VM operations, like deoptimization or a thread dump) once every running thread has reached one. **Time-to-safepoint** is how long the JVM waits for the slowest thread to get there; a thread stuck in a tight loop with no safepoint poll (rare, but possible in JIT-compiled code with no back-edges) or blocked in a long native call can stall the *entire* STW pause, not just its own work — so a GC pause you measure isn't just \"the GC's actual work,\" it also includes however long the slowest thread took to reach a safepoint.",
+      },
+      {
+        type: "text",
+        content:
+          "**Even a \"concurrent\" collector (G1, ZGC, Shenandoah) isn't fully concurrent** — each still has short mandatory STW phases. G1's young/mixed collections are themselves STW (it's concurrent only for the old-gen *marking* phase); ZGC and Shenandoah do almost everything concurrently but still briefly pause to mark GC roots (thread stacks, static fields) at the very start of a cycle, because roots can change while a thread runs and the set has to be captured atomically. The difference from a fully-STW collector like Parallel GC isn't \"zero pauses\" — it's that the unavoidable pause is O(number of roots), not O(live heap size), so it stays in the single-digit milliseconds even as the heap grows into hundreds of gigabytes.",
+      },
+      {
+        type: "text",
+        content:
+          "**Allocation rate drives pause frequency directly**, not pause *length*: the young generation is a fixed-size buffer, and every allocation eats into it. A higher allocation rate (more objects created per second) fills that buffer faster, so minor GCs — each one a short STW pause — fire more often. Cutting allocation (reusing buffers, avoiding unnecessary boxing/autoboxing, streaming instead of materializing full collections) doesn't make an individual pause shorter, it makes pauses **less frequent**, which is usually what actually improves p99 latency, since most requests just need to avoid *landing* on a pause rather than needing the pause itself to be faster.",
+      },
     ],
+    handsOn: {
+      lang: "bash",
+      code: `# Enable unified GC logging (JDK 9+) to see every STW pause and its cause
+java -Xlog:gc*,safepoint:file=gc.log:time,uptime,level,tags -jar app.jar
+
+# Example line from the log — this is what you correlate against a p99 spike:
+# [12.481s][info][gc] GC(42) Pause Young (Normal) (G1 Evacuation Pause) 512M->128M(1024M) 14.221ms`,
+      output: "One line per GC event: cause, heap before/after, and pause duration.",
+    },
     whatIf: {
       q: "p99 latency spikes correlate exactly with full GCs — what's the fix path?",
       a: "Full GCs cause long STW pauses. First reduce them: cut allocation/retention, enlarge the heap/young gen to avoid promotion pressure, and ensure you're on G1 with a pause target. If pauses must be sub-ms regardless of heap, move to ZGC.",
@@ -482,6 +506,7 @@ export const jvmExtra: Question[] = [
       "Use concurrent collectors for strict pause SLAs",
     ],
     relatedTech: ["GC logs", "safepoints", "ZGC", "JFR/async-profiler"],
+    references: [{ label: "Oracle — JEP 158: Unified JVM Logging", url: "https://openjdk.org/jeps/158" }],
     difficulty: "Medium",
     experience: ["3-5 years", "8-15 years"],
     askedIn: ["Amazon", "Microsoft", "Google"],
@@ -706,6 +731,21 @@ export const jvmExtra: Question[] = [
           { k: "Humongous", v: "> 50% region → spans regions" },
         ],
       },
+      {
+        type: "text",
+        content:
+          "**`MaxGCPauseMillis` is a soft target, not a hard guarantee.** G1 tracks how much garbage each region yields per unit of collection time, and before every collection it picks however many regions it estimates it can collect *within* the pause target — it literally sizes the work to fit the time budget, region by region, rather than committing to a fixed collection set up front. Set the target too low and G1 shrinks the collection set to compensate, which means it reclaims less garbage per pause and has to run pauses more often — 'lower pause target' can paradoxically mean *more total time spent pausing*, not less.",
+      },
+      {
+        type: "text",
+        content:
+          "**Humongous objects are costly for two compounding reasons.** First, any object bigger than half a region size is allocated directly into a run of contiguous free regions (skipping the normal young-gen allocation path entirely), which can force an otherwise-unnecessary GC just to free up that much contiguous space. Second, those humongous regions live in old gen from birth and are only reclaimed during a full region-emptying collection — they can't be *partially* collected the way normal old regions can during a mixed GC, so a large array that becomes garbage still sits there, uncollected, until G1 does a collection that happens to fully empty its region.",
+      },
+      {
+        type: "text",
+        content:
+          "**Tuning `G1HeapRegionSize`:** because the humongous threshold is defined as *half a region*, the practical fix for frequent humongous allocations is usually raising the region size itself (`-XX:G1HeapRegionSize=32m`, for example) so the objects triggering it no longer cross that 50% line — not shrinking the objects. Region size must be a power of two between 1MB and 32MB; G1 auto-selects a default based on heap size, but a workload with consistently large allocations (image buffers, large batch payloads) benefits from setting it explicitly rather than relying on the auto-picked default.",
+      },
     ],
     whatIf: {
       q: "Frequent 'humongous allocation' and to-space exhaustion appear in G1 logs — what's happening?",
@@ -713,6 +753,16 @@ export const jvmExtra: Question[] = [
     },
     realWorld:
       "G1 is the default and usually fine, but big byte[]/buffers triggering humongous allocations is a known tuning gotcha; bumping region size or avoiding giant arrays resolves the GC pressure.",
+    handsOn: {
+      lang: "bash",
+      code: `# Set a pause target and a larger region size for a large-allocation workload
+java -XX:+UseG1GC -XX:MaxGCPauseMillis=150 -XX:G1HeapRegionSize=32m \\
+     -Xlog:gc*:file=gc.log:time,uptime -jar app.jar
+
+# Grep the log for humongous allocations — the tell-tale sign region size is too small:
+grep -i humongous gc.log`,
+      output: "Fewer/no 'humongous' lines once region size comfortably exceeds 2x the large objects' size.",
+    },
     interviewerExpectation: ["region-based heap", "garbage-first selection", "pause target driven", "mixed collections", "humongous objects + region size"],
     followUps: [
       "How does MaxGCPauseMillis influence what G1 collects?",
@@ -730,6 +780,7 @@ export const jvmExtra: Question[] = [
       "Watch for humongous allocations in GC logs",
     ],
     relatedTech: ["G1HeapRegionSize", "MaxGCPauseMillis", "GC logs"],
+    references: [{ label: "Oracle — Garbage-First (G1) Garbage Collector guide", url: "https://docs.oracle.com/en/java/javase/21/gctuning/garbage-first-g1-garbage-collector1.html" }],
     difficulty: "Hard",
     experience: ["8-15 years"],
     askedIn: ["Amazon", "Google", "Microsoft"],
@@ -1394,6 +1445,11 @@ jcmd <pid> JFR.dump filename=recording.jfr
         type: "text",
         content:
           "**Key takeaway:** the hook's job is sequencing, not magic — stop the front door first so the in-flight count can only shrink, then wait for it to hit zero (bounded), then release resources. Skip the 'stop accepting new work' step and the hook can chase a moving target until the grace period runs out.",
+      },
+      {
+        type: "text",
+        content:
+          "An uncaught exception inside a shutdown hook doesn't abort the shutdown sequence — the JVM runs every registered hook as its own thread, so one hook throwing just triggers its default `UncaughtExceptionHandler` (typically a stack trace on stderr) while the **other** registered hooks still run independently. That's easy to misread as \"the hook must have failed silently and everything's fine\" — in practice it means the specific cleanup step that threw never completed (a connection pool that didn't close, a flush that didn't happen), so a shutdown hook's own body should be wrapped in try/catch with explicit logging rather than left to rely on the default handler.",
       },
     ],
     whatIf: {

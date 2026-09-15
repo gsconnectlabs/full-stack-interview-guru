@@ -1606,6 +1606,11 @@ try {
         content:
           "**Key takeaway:** restoring the flag with `Thread.currentThread().interrupt()` — rather than just returning — matters because the blocking method already cleared it. If this code is called from something further up the stack that also checks `isInterrupted()` (a thread-pool worker loop, for example), that caller still needs to see the interrupt request. Restoring the flag hands the signal upward instead of losing it.",
       },
+      {
+        type: "text",
+        content:
+          "Two similarly-named methods read the flag very differently — mixing them up is a common source of bugs. **`thread.isInterrupted()`** (instance method) just reads the flag and leaves it alone; call it twice and you get the same answer both times. **`Thread.interrupted()`** (static method, always acts on the *currently running* thread) reads the flag and **clears it** as a side effect — call it twice in a row and the second call returns `false` even if nothing else changed. The static form exists so a loop can check-and-reset in one step; using it on the assumption it behaves like the instance method is a classic way to silently lose an interrupt request.",
+      },
     ],
     handsOn: {
       lang: "java",
@@ -1614,7 +1619,11 @@ try {
         doUnitOfWork();      // CPU-bound, no blocking call to catch the interrupt
     }
     // loop exits cleanly once interrupted
-}`,
+}
+
+// isInterrupted() (instance) vs Thread.interrupted() (static) — not the same call
+Thread.currentThread().isInterrupted(); // reads the flag, leaves it untouched
+Thread.interrupted();                   // reads the flag AND clears it (current thread only)`,
     },
     whatIf: {
       q: "ExecutorService.shutdownNow() doesn't seem to stop a running task — why?",
@@ -1695,6 +1704,11 @@ housekeeper.start();
         type: "text",
         content:
           "**Key takeaway:** the classic bug is making a thread daemon so it 'doesn't block shutdown,' then quietly relying on it to finish something that matters — flushing a write buffer, releasing an external lock, closing a file handle. Because daemon threads offer zero cleanup guarantee, that work may simply never happen. If completion matters, either use a user thread and shut it down explicitly (signal it, then join with a timeout), or accept that the work is genuinely disposable.",
+      },
+      {
+        type: "text",
+        content:
+          "The **garbage collector's own threads are daemon threads**, and that's the cleanest example of the rule: GC exists to serve the running application, so it should never be the reason the JVM refuses to exit. The moment the last real (user) thread finishes, the GC thread is torn down along with everything else — nobody wants a process that can't shut down because garbage collection is 'still busy.' Contrast that with **`ExecutorService` worker threads**, which default to **non-daemon** unless you supply a custom `ThreadFactory` — that's exactly why a forgotten `executor.shutdown()` is one of the most common reasons a Java process hangs on exit instead of terminating: those threads are user threads by default, so the JVM waits for them.",
       },
     ],
     whatIf: {
@@ -1791,6 +1805,16 @@ housekeeper.start();
         type: "text",
         content:
           "`notifyAll()` (not `notify()`) matters here specifically because producers and consumers share the **same** monitor. `notify()` wakes one arbitrary waiting thread, which might be another producer that still can't proceed instead of the consumer that just became unblocked. `notifyAll()` wakes everyone; each re-checks its own `while` condition, and only the ones that can actually proceed continue — the rest go straight back to waiting.",
+      },
+      {
+        type: "text",
+        content:
+          "**Why `wait()` requires the lock, mechanically:** `wait()` is defined to atomically release the monitor and suspend the thread — it has to hold the lock in order to give it up as part of that atomic step, otherwise there'd be a race between \"about to wait\" and \"actually waiting\" where a `notify()` from another thread could slip through and be missed entirely. That's also why `notify()`/`notifyAll()` require the lock too, and why calling any of the three outside a `synchronized` block on that same monitor throws `IllegalMonitorStateException` — the JVM refuses to run code whose correctness depends on a lock it never proves you're holding.",
+      },
+      {
+        type: "text",
+        content:
+          "**Spurious wakeups** are the JVM/OS being explicitly allowed to wake a waiting thread with *no* corresponding `notify()` at all — permitted by the Java spec (and inherited from the underlying OS thread APIs) as an implementation looseness, not a bug to work around defensively \"just in case.\" It's a real, documented possibility, which is exactly why the guard has to be a `while` loop re-checking the actual condition, rather than an `if` that trusts a wakeup to mean the condition is now true. An `if` would let a spuriously-woken producer or consumer barrel ahead on a buffer that's still full or still empty.",
       },
     ],
     handsOn: {

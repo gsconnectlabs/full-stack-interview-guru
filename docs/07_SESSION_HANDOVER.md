@@ -2,103 +2,104 @@
 
 # Session Summary
 
-- **Session Name:** Real named authorship (Person) alongside the FIG Organization — E-E-A-T /
-  AdSense "Low value content" remediation (DECISIONS #045)
-- **Date:** 2026-08-30
-- **Overall Progress:** AdSense re-flagged `fullstackinterviewguru.com` under "Low value content."
-  Audit found the actual content is not thin (316 real questions, ~355 pages) — the gap is E-E-A-T:
-  every `author` in structured data was the Organization, and `/about` had no named human, credentials,
-  or photo anywhere on the site. Owner decided to use his real name (not a pen name), with an explicit
-  brief: "visible enough to establish real authorship, minimal enough to preserve privacy" — no
-  invented experience, employers, interview counts, certifications, or degrees.
-- **Release Status:** ✅ **Shipped.** Owner reviewed and asked to commit, update docs per the release
-  process, then push. Code committed as `cf27874`
-  (`feat(seo): establish real named authorship (Person) alongside FIG Organization`), this docs update
-  committed separately, and both pushed to `main`.
+- **Session Name:** Content depth on 15 thin, GSC-trafficked pages — AdSense "Low value content"
+  remediation, round 2 (DECISIONS #046)
+- **Date:** 2026-09-15
+- **Overall Progress:** AdSense's "Low value content" flag was still active after DECISIONS #045
+  (real named authorship) shipped — confirming that session's own prediction that the next lever would
+  be per-question content depth, not E-E-A-T. Owner supplied a fresh 28-day Search Console export. Full
+  audit of the content model found it is **316 typed `Question` objects** (not the ~1,970 the owner
+  initially estimated — each object renders exactly one `/q/` page), already emitting correct `QAPage`
+  JSON-LD (not `FAQPage` — confirmed firing via GSC's "Q&A rich results" Search Appearance row), with a
+  median of **~240 prose words per page**. Cross-referencing the thin-page list against GSC impressions
+  produced a 15-page priority list — thin pages that are also actually ranking with real traffic — and
+  the owner approved starting there.
+- **Release Status:** ✅ **Shipped.** Owner reviewed the audit + priority list, made three scoping calls
+  (skip "Real Talk from Guru" fabricated anecdotes; use the 15-page GSC-cross-referenced list; skip the
+  `hashmap-resize-load-factor` title/meta rewrite since it was already strong), then asked to commit as
+  one commit and update the release docs. Code + docs committed together to `main` in a single commit;
+  **not yet pushed** — owner has not asked for a push this session.
 
 ---
 
 # Implementation Summary
 
-- **`lib/site.ts`** — new exports: `founderName` ("Gurusankar M."), `founderTitle` ("Founder &
-  Maintainer, Full Stack Interview Guru"), `figLinkedInUrl` (FIG's existing LinkedIn Page, already live
-  in the footer — reused, not invented), and `authorPerson` (the one reusable schema.org `Person`
-  object, `{ "@type": "Person", name: founderName, url: siteUrl + "/about" }`). Single source of truth
-  — every other file imports these rather than inlining the name.
-- **`app/about/page.tsx`** — the "Who writes this" card added earlier this session (kept visually
-  unchanged) now shows the real name/title (sourced from `lib/site.ts`) and a concise, factual bio:
-  "Full Stack Interview Guru is independently built and maintained by Gurusankar M., with a focus on
-  practical, production-oriented software engineering interview preparation." `credentials: []`
-  (nothing invented); `photoUrl`/personal `linkedinUrl`/`githubUrl` left empty with `TODO(owner)`
-  markers — initials avatar ("GM") renders until a real photo is supplied, social buttons stay hidden
-  until real URLs exist.
-- **`app/layout.tsx`** — root `Organization` JSON-LD gains `sameAs: [figLinkedInUrl]` and
-  `founder: authorPerson` (standard schema.org `Organization` properties — no new schema type added).
-  Next.js metadata `authors` now names the `Person` (drives `<meta name="author">`) instead of the
-  Organization.
-- **`app/q/[slug]/page.tsx`** — `QAPage`'s `Question` and `acceptedAnswer` (`Answer`) each now carry
-  both `author: authorPerson` (Person) and a newly-added `publisher` (`{ "@type": "Organization", name:
-  siteName, url: siteUrl }`) — authorship and brand ownership represented separately, Organization
-  identity preserved. New subtle byline — "Reviewed by Gurusankar M. [· Updated `<date>`]" — renders as
-  plain muted text under the `<h1>`, name linked to `/about`. Reuses the **pre-existing**
-  `Question.updated` field (already driving the "Updated" freshness chip) rather than adding a new one;
-  populated on 27/316 questions today — the other 289 correctly omit the date instead of fabricating one.
-- No visual redesign. Mission/Vision/Philosophy, Standards, CTA, navigation, typography, and all 316
-  questions' five content sections (Coffee Chat / Mind Map / Hands-on / What If / Real World) untouched.
+- **`lib/questions.ts`** — `what-is-jwt` (HS256 vs RS256, expiry/revocation, `shortAnswer`, new
+  followUps/commonMistakes/bestPractices, 1 reference), `aws-lambda` (cold-start mechanics, memory↔CPU
+  coupling, `shortAnswer`, new followUps/commonMistakes/bestPractices, 1 reference), `two-sum`
+  (`shortAnswer`, duplicates/no-solution edge cases, new two-pointer code variant, 1 reference).
+- **`lib/questions-extra/java-collections.ts`** — `hashmap-resize-load-factor` (treeification,
+  ConcurrentHashMap resize contrast, 1 reference).
+- **`lib/questions-extra/aws.ts`** — `dynamodb-partition-key` (write-sharding — new Java code example,
+  1 reference), `dynamodb-single-table` (overloaded GSIs — new Java code example, 1 reference).
+- **`lib/questions-extra/multithreading.ts`** — `thread-interruption-cooperative-cancellation`
+  (`isInterrupted()` vs `Thread.interrupted()`), `daemon-threads-jvm-exit` (GC threads as daemon,
+  `ExecutorService` workers as non-daemon by default), `producer-consumer-wait-notify` (why `wait()`
+  requires the lock, spurious wakeups).
+- **`lib/questions-extra/jvm.ts`** — `stop-the-world-gc-tuning` (safepoints/time-to-safepoint, why
+  concurrent collectors still pause, allocation-rate vs. pause-frequency, new GC-logging command
+  example, 1 reference), `shutdown-hooks-graceful-drain` (uncaught exception inside a shutdown hook),
+  `g1-gc-internals` (`MaxGCPauseMillis` mechanics, humongous-object cost, `G1HeapRegionSize` tuning, new
+  GC command example, 1 reference).
+- **`lib/questions-extra/json.ts`** — `what-is-json` (strict-JSON-vs-JS-object-literal code comparison,
+  stringify/parse round-trip gotchas, 1 reference).
+- **`lib/questions-extra/core-java.ts`** — `java-memory-leak-diagnosis` (leak vs. under-sized-heap
+  GC-log test, shallow vs. retained size in MAT).
+- **`lib/questions-extra/advanced-java.ts`** — `dynamic-proxy` (why CGLIB can't proxy `final`,
+  `InvocationHandler` exception propagation, 1 reference).
+- Every addition specifically answers a `followUps` entry the page already listed but never answered in
+  prose — checked against the prior content-depth session (`9aad1fc`) so nothing already covered
+  (`dynamodb-partition-key`'s before/after table, `hashmap-resize-load-factor`'s iteration-order note)
+  was duplicated.
+- No new `Question` schema fields — all additions use existing optional fields (`mindMap`, `handsOn`,
+  `followUps`, `commonMistakes`, `bestPractices`, `references`, `shortAnswer`). No URLs changed, no
+  existing `seoTitle`/`seoDescription`/`heading` overrides touched, no page outside `/q/` touched.
 
 ---
 
 # Verification Summary
 
-- ✅ **TypeScript:** clean (`npx tsc --noEmit`).
-- ✅ **Production build:** green — **359 static pages**, shared First Load JS unchanged at **102 kB**.
-- ✅ **ESLint:** not configured in this project (confirmed via `package.json` scripts) — `tsc` + `build`
-  remain the standing gates, per `CLAUDE.md`.
-- ✅ **`/about` (local preview):** real name/title/bio render; no credentials list (empty array); no
-  photo/social buttons (unset); initials avatar "GM" shown; no console errors.
-- ✅ **`/q/what-is-hashmap`** (no `updated` value): byline shows "Reviewed by Gurusankar M." with no
-  date — confirms no fabrication for the 289 undated questions.
-- ✅ **`/q/java-optional`** (`updated: "2026-08-24"`): byline shows "Reviewed by Gurusankar M. · Updated
-  Aug 24, 2026", matching the existing "Updated" chip's date.
-- ✅ **JSON-LD validity** — read live via
-  `document.querySelectorAll('script[type="application/ld+json"]')` on `/q/java-optional`: `Person`
-  author + `Organization` publisher present and consistent on both `Question` and `Answer`; root
-  `Organization` carries `sameAs`/`founder`; `WebSite`/`BreadcrumbList` schema and canonical URLs
-  unchanged; no duplicate/conflicting author definitions.
-- ✅ **`<meta name="author" content="Gurusankar M.">`** confirmed present in rendered HTML.
-- ✅ **Mobile viewport (375×812):** byline wraps cleanly under the title, no layout regression.
-- ✅ **No console errors** on either page in either viewport.
+- ✅ **TypeScript:** clean (`npx tsc --noEmit`), checked after every page edited.
+- ✅ **Production build:** green — all **316** `/q/` pages present, shared First Load JS unchanged at
+  **102 kB**.
+- ✅ **ESLint:** not configured in this project — `tsc` + `build` remain the standing gates.
+- ✅ **Word count:** measured consistently before/after with the same script (prose only — excludes
+  code so the figure can't be inflated by snippets): **5,762 → 8,908 words across the 15 pages (+55%)**.
+- ⚠️ **Not uniformly 800+ words per page, by design.** 6 of 15 cross 800 words once code examples are
+  counted too; the rest (460–650 words) had genuinely no further non-duplicative substance to add.
+  Flagged explicitly to the owner rather than padding to hit the number.
+- **Not verified this session:** no browser/dev-server check (this is a data-model content change with
+  no new UI, template logic, or schema shape — the existing `/q/[slug]/page.tsx` renders these fields
+  unconditionally already, exercised continuously by the 90%+ of pages that already populate them).
 
 ---
 
 # Current Architecture Status
 
 - **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG.
-- **This session touched:** `lib/site.ts`, `app/about/page.tsx`, `app/layout.tsx`,
-  `app/q/[slug]/page.tsx`, plus this doc set (`02_DECISIONS.md`, `04_ARCHITECTURE.md`,
-  `06_CHANGELOG.md`, this file). No new routes, no backend, no new dependency.
-- **Also closed out this session:** `docs/02_DECISIONS.md`, `docs/04_ARCHITECTURE.md`, and this file
-  had uncommitted paperwork left over from the prior confetti-burst session (DECISIONS #044 — the code
-  itself was already shipped as `a7ea709` on 2026-08-23, and `06_CHANGELOG.md`'s #044 entry was already
-  committed then too; only the decisions/architecture/handover write-ups had never been committed).
-  Those write-ups were committed together with this session's `#045` docs in one docs commit — the code
-  history (`a7ea709` vs `cf27874`) still correctly attributes each session's actual changes.
+- **This session touched:** `lib/questions.ts` + 7 files under `lib/questions-extra/` (content only, no
+  schema/type changes), plus this doc set (`02_DECISIONS.md`, `06_CHANGELOG.md`, this file). No new
+  routes, no new component, no new dependency, no `lib/types.ts` change.
+- **Content model reality check (worth keeping in `01_PROJECT_CONTEXT.md`/marketing copy accurate):**
+  the site has **316** `/q/` questions, not "1,970+" — that figure was the owner's estimate going into
+  this session and doesn't match the actual `lib/questions.ts` + `lib/questions-extra/*.ts` content bank.
 
 ---
 
 # Current Roadmap Status
 
-- **This session — ✅ shipped.** Code committed as `cf27874`; this doc set (plus the leftover #044
-  write-ups) committed together in one docs commit; both pushed to `main`. See
-  [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" →
-  "Added (Real named authorship — Person alongside the FIG Organization, DECISIONS #045)" and
-  [02_DECISIONS.md](./02_DECISIONS.md) Decision #045 for full detail.
+- **This session — ✅ shipped.** Code + docs committed together to `main` in a single commit; **not
+  pushed** (owner did not ask for a push). See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" →
+  "Improved (Content depth on 15 thin, GSC-trafficked pages...)" and
+  [02_DECISIONS.md](./02_DECISIONS.md) Decision #046 for full detail.
 - **Follow-up (owner's call, not code-blocking):**
-  1. Supply a real photo (`app/about/page.tsx` → `FOUNDER.photoUrl`) when available.
-  2. Supply personal LinkedIn/GitHub URLs if desired (`FOUNDER.linkedinUrl`/`githubUrl`).
-  3. Add real, verifiable credential lines to `FOUNDER.credentials` (left empty deliberately).
-  4. Populate `Question.updated` on more of the 289 currently-undated questions as they are genuinely
-     reviewed — do not bulk-backfill fake dates.
-  5. Once AdSense is re-reviewed, confirm whether the "Low value content" flag clears; if not, the next
-     lever is likely the templated five-block structure repeated across all 316 questions reading as
-     "scaled content" to automated classifiers — a larger, separate discussion, not started here.
+  1. Push to `origin/main` when the owner is ready.
+  2. Add `seoTitle`/`seoDescription` to `java-memory-leak-diagnosis` and `aws-lambda` (currently
+     without overrides) if desired.
+  3. Push the remaining 9 (of 15) pages further toward a literal 800+ words, if strict numeric
+     compliance matters more than genuinely-exhausted per-page depth.
+  4. The other ~300 questions not in this batch were explicitly out of scope this session — a
+     full-bank pass, if AdSense re-review still flags the site, is the likely next step.
+  5. Re-check the AdSense dashboard after the next crawl/review cycle to see whether "Low value
+     content" clears; if not, the next lever is probably the remaining ~300 pages' depth, or
+     investigating what else an automated content classifier weighs beyond prose length.
