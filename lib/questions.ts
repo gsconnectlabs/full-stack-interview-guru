@@ -551,7 +551,7 @@ Idempotency-Key: 3f1c-...-9a
       {
         type: "text",
         content:
-          "**HS256 vs RS256** is the algorithm choice interviewers probe next. **HS256** is symmetric — one shared secret both signs and verifies, so every service that needs to verify a token also needs that same secret, which means every service that has it could also *forge* tokens. **RS256** is asymmetric — a private key signs (held only by the auth service), and a public key verifies (safely distributed to every other service). Microservice architectures default to RS256 for exactly this reason: services that only need to verify tokens never need access to anything that could mint new ones.",
+          "**HS256 vs RS256** is the algorithm choice interviewers probe next. **HS256** is symmetric — one shared secret both signs and verifies, so every service that needs to verify a token also needs that same secret, which means every service that has it could also **forge** tokens. **RS256** is asymmetric — a private key signs (held only by the auth service), and a public key verifies (safely distributed to every other service). Microservice architectures default to RS256 for exactly this reason: services that only need to verify tokens never need access to anything that could mint new ones.",
       },
       {
         type: "text",
@@ -997,7 +997,7 @@ ls -l deploy.sh
       {
         type: "text",
         content:
-          "**Duplicates and \"no pair found\" are the two edge cases interviewers actually probe.** If the same value appears twice and their indices sum to the target, the HashMap approach handles it correctly for free — the *first* occurrence is stored by the time the *second* is scanned, so the lookup succeeds without any special-casing. If no pair sums to the target, the loop finishes with nothing to return; most implementations either return an empty list / `None` or raise an explicit error — LeetCode's version guarantees exactly one solution exists, but a production version of this pattern (e.g. matching two transactions that net to zero) should decide and document which behavior it wants, since \"guaranteed to exist\" is rarely true outside a coding-interview problem statement.",
+          "**Duplicates and \"no pair found\" are the two edge cases interviewers actually probe.** If the same value appears twice and their indices sum to the target, the HashMap approach handles it correctly for free — the **first** occurrence is stored by the time the **second** is scanned, so the lookup succeeds without any special-casing. If no pair sums to the target, the loop finishes with nothing to return; most implementations either return an empty list / `None` or raise an explicit error — LeetCode's version guarantees exactly one solution exists, but a production version of this pattern (e.g. matching two transactions that net to zero) should decide and document which behavior it wants, since \"guaranteed to exist\" is rarely true outside a coding-interview problem statement.",
       },
       {
         type: "code",

@@ -1609,7 +1609,7 @@ try {
       {
         type: "text",
         content:
-          "Two similarly-named methods read the flag very differently — mixing them up is a common source of bugs. **`thread.isInterrupted()`** (instance method) just reads the flag and leaves it alone; call it twice and you get the same answer both times. **`Thread.interrupted()`** (static method, always acts on the *currently running* thread) reads the flag and **clears it** as a side effect — call it twice in a row and the second call returns `false` even if nothing else changed. The static form exists so a loop can check-and-reset in one step; using it on the assumption it behaves like the instance method is a classic way to silently lose an interrupt request.",
+          "Two similarly-named methods read the flag very differently — mixing them up is a common source of bugs. **`thread.isInterrupted()`** (instance method) just reads the flag and leaves it alone; call it twice and you get the same answer both times. **`Thread.interrupted()`** (static method, always acts on the **currently running** thread) reads the flag and **clears it** as a side effect — call it twice in a row and the second call returns `false` even if nothing else changed. The static form exists so a loop can check-and-reset in one step; using it on the assumption it behaves like the instance method is a classic way to silently lose an interrupt request.",
       },
     ],
     handsOn: {
@@ -1814,7 +1814,7 @@ housekeeper.start();
       {
         type: "text",
         content:
-          "**Spurious wakeups** are the JVM/OS being explicitly allowed to wake a waiting thread with *no* corresponding `notify()` at all — permitted by the Java spec (and inherited from the underlying OS thread APIs) as an implementation looseness, not a bug to work around defensively \"just in case.\" It's a real, documented possibility, which is exactly why the guard has to be a `while` loop re-checking the actual condition, rather than an `if` that trusts a wakeup to mean the condition is now true. An `if` would let a spuriously-woken producer or consumer barrel ahead on a buffer that's still full or still empty.",
+          "**Spurious wakeups** are the JVM/OS being explicitly allowed to wake a waiting thread with **no** corresponding `notify()` at all — permitted by the Java spec (and inherited from the underlying OS thread APIs) as an implementation looseness, not a bug to work around defensively \"just in case.\" It's a real, documented possibility, which is exactly why the guard has to be a `while` loop re-checking the actual condition, rather than an `if` that trusts a wakeup to mean the condition is now true. An `if` would let a spuriously-woken producer or consumer barrel ahead on a buffer that's still full or still empty.",
       },
     ],
     handsOn: {

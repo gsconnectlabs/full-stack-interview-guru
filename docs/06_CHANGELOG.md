@@ -102,6 +102,13 @@ and the previously-proposed `hashmap-resize-load-factor` title/meta rewrite (alr
 - **Deferred, owner's call:** `java-memory-leak-diagnosis` and `aws-lambda` still lack `seoTitle`/
   `seoDescription` overrides; pushing the remaining 9 pages further toward literal 800+ words if the
   owner wants stricter compliance over genuinely-exhausted per-page depth.
+- **Fixed same day, post-deploy:** live spot-check of 4 of the 15 pages found single-asterisk
+  `*emphasis*` markdown in 15 spots across the new prose (e.g. "could also *forge* tokens") rendering
+  as literal asterisks — `inlineCode()` in `app/q/[slug]/page.tsx` only converts `` `code` `` and
+  `**bold**`, not single-asterisk italics. Converted every instance to `**bold**` for consistency with
+  the rest of the content's emphasis style; verified with a git-diff-scoped scan (a naive whole-file
+  search also matches text inside legitimate `**bold**` pairs) that no instances remain. `npx tsc
+  --noEmit` clean; `npm run build` green, 316 `/q/` pages, 102 kB shared JS unchanged.
 
 ### Added (`ads.txt`) — 2026-08-30
 AdSense's Sites dashboard flagged `Ads.txt status: Not found` for the domain — a separate blocker from

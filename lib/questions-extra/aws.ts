@@ -899,7 +899,7 @@ List<QueryRequest> shardQueries = IntStream.range(0, shardCount)
       {
         type: "text",
         content:
-          "**Overloaded GSIs** are what make one table serve many entity types cleanly. Instead of a dedicated index per entity, a single `GSI1PK`/`GSI1SK` pair holds *different, purpose-built values per item type* — for a `CUSTOMER` item, `GSI1PK` might be `EMAIL#<email>` (to look customers up by email); for an `ORDER` item, the same attribute name might hold `STATUS#<status>` (to list orders by status). The GSI attribute name is reused (\"overloaded\"), but each entity type puts a differently-shaped value in it — so one physical index quietly serves several unrelated access patterns instead of one GSI per query.",
+          "**Overloaded GSIs** are what make one table serve many entity types cleanly. Instead of a dedicated index per entity, a single `GSI1PK`/`GSI1SK` pair holds **different, purpose-built values per item type** — for a `CUSTOMER` item, `GSI1PK` might be `EMAIL#<email>` (to look customers up by email); for an `ORDER` item, the same attribute name might hold `STATUS#<status>` (to list orders by status). The GSI attribute name is reused (\"overloaded\"), but each entity type puts a differently-shaped value in it — so one physical index quietly serves several unrelated access patterns instead of one GSI per query.",
       },
     ],
     handsOn: {

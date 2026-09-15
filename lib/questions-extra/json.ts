@@ -50,7 +50,7 @@ export const jsonExtra: Question[] = [
       {
         type: "text",
         content:
-          "JSON *looks* like a JavaScript object literal because that's where it came from, but the grammar is stricter — and code that's valid as a JS literal is often invalid JSON. A JavaScript object is a **live, in-memory value** with any key type and any value, including functions and `Date`s; JSON is a **text format** with only six value types (string, number, boolean, null, object, array), no comments, no trailing commas, and keys that must be double-quoted strings.",
+          "JSON **looks** like a JavaScript object literal because that's where it came from, but the grammar is stricter — and code that's valid as a JS literal is often invalid JSON. A JavaScript object is a **live, in-memory value** with any key type and any value, including functions and `Date`s; JSON is a **text format** with only six value types (string, number, boolean, null, object, array), no comments, no trailing commas, and keys that must be double-quoted strings.",
       },
       {
         type: "code",

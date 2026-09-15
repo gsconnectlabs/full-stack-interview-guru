@@ -785,7 +785,7 @@ catch (PaymentException e) {
       {
         type: "text",
         content:
-          "**Shallow vs. retained size in MAT** — the distinction that makes the dominator tree useful instead of misleading. **Shallow size** is just the memory the object itself occupies (its fields, not what they point to) — a `HashMap` instance's shallow size is tiny regardless of how many entries it holds. **Retained size** is the shallow size plus every object that would become unreachable (and thus collectible) if this object were removed — for that same `HashMap`, retained size includes every key, every value, and everything *they* reference, which is usually where the real memory is. Sorting MAT's dominator tree by retained size is how you find the one object actually responsible for gigabytes of heap, when its own shallow footprint might be under a kilobyte.",
+          "**Shallow vs. retained size in MAT** — the distinction that makes the dominator tree useful instead of misleading. **Shallow size** is just the memory the object itself occupies (its fields, not what they point to) — a `HashMap` instance's shallow size is tiny regardless of how many entries it holds. **Retained size** is the shallow size plus every object that would become unreachable (and thus collectible) if this object were removed — for that same `HashMap`, retained size includes every key, every value, and everything **they** reference, which is usually where the real memory is. Sorting MAT's dominator tree by retained size is how you find the one object actually responsible for gigabytes of heap, when its own shallow footprint might be under a kilobyte.",
       },
     ],
     handsOn: {

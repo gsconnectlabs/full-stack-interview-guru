@@ -303,12 +303,12 @@ orders.removeIf(Order::isCancelled);`,
       {
         type: "text",
         content:
-          "Load factor interacts with a second Java 8+ mechanism: **treeification**. If a single bucket collects **8 or more** colliding entries *and* the table capacity is at least 64, that bucket's linked list converts to a red-black tree, turning worst-case lookup in that bucket from O(n) to O(log n). A resize can also **untreeify** a bucket back to a list once it drops to 6 entries after keys redistribute. This only kicks in under pathological hashing (poor `hashCode()` or an adversarial key set) — with a well-distributed hash, buckets rarely get anywhere near 8 entries, so most HashMaps never treeify at all.",
+          "Load factor interacts with a second Java 8+ mechanism: **treeification**. If a single bucket collects **8 or more** colliding entries **and** the table capacity is at least 64, that bucket's linked list converts to a red-black tree, turning worst-case lookup in that bucket from O(n) to O(log n). A resize can also **untreeify** a bucket back to a list once it drops to 6 entries after keys redistribute. This only kicks in under pathological hashing (poor `hashCode()` or an adversarial key set) — with a well-distributed hash, buckets rarely get anywhere near 8 entries, so most HashMaps never treeify at all.",
       },
       {
         type: "text",
         content:
-          "**ConcurrentHashMap resizes differently.** A plain `HashMap` resize is a single-threaded stop-the-world rehash of every entry. `ConcurrentHashMap` instead marks the table as *transferring* and lets any thread that calls `put()`/`get()` during the resize help migrate a chunk of buckets (`transferIndex`, `ForwardingNode`) — readers never block, and multiple writer threads share the rehash cost instead of one thread paying for all of it. The trade-off is more bookkeeping per resize, which is why `ConcurrentHashMap` benefits from pre-sizing even more than `HashMap` does in write-heavy concurrent code.",
+          "**ConcurrentHashMap resizes differently.** A plain `HashMap` resize is a single-threaded stop-the-world rehash of every entry. `ConcurrentHashMap` instead marks the table as **transferring** and lets any thread that calls `put()`/`get()` during the resize help migrate a chunk of buckets (`transferIndex`, `ForwardingNode`) — readers never block, and multiple writer threads share the rehash cost instead of one thread paying for all of it. The trade-off is more bookkeeping per resize, which is why `ConcurrentHashMap` benefits from pre-sizing even more than `HashMap` does in write-heavy concurrent code.",
       },
     ],
     handsOn: {
