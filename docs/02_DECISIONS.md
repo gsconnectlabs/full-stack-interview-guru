@@ -1746,6 +1746,70 @@ unchanged at 102 kB. No ESLint config exists in this project; `tsc` + `build` re
 
 ---
 
+# Decision #047
+
+## Title
+
+Feedback Form `feedback_submit` GA4 Event + Mark Ebook CTA / Feedback Key Events
+
+### Status
+
+✅ Approved and shipped (Owner-directed 2026-09-15, prompted by a GA4 analysis session)
+
+### Reason
+
+A GA4 analysis this session found "Key events" showing **no data** — the property has zero configured
+conversions, so questions like "did the ebook CTA or feedback form actually get used" couldn't be
+answered from GA4 at all, independent of the ongoing AdSense/SEO work. Investigating found the ebook
+CTA's three events (`ebook_cta_impression`/`_click`/`_dismiss`, DECISIONS #041) were already firing in
+production but had never been marked as GA4 key events (a dashboard-only toggle, unrelated to whether
+an event fires) — so the conversion signal existed but wasn't visible as one. The feedback form had no
+event tracking at all — `docs/14_ANALYTICS.md`'s "Future GA4 Events" table explicitly listed "Feedback
+Submission" as planned-but-not-implemented, pending separate owner approval, which this request is.
+
+### Implementation
+
+- **`components/FeedbackForm.tsx`** — new `sendGAEvent("event", "feedback_submit", { type, context,
+  method })` call (same `@next/third-parties/google` pattern as the ebook CTA / Gumroad events, per the
+  doc's own implementation guidance — no new typed helper). Fires exactly where the component already
+  treats a submission as complete: inside `mailtoFallback()` (covers the no-endpoint-configured path and
+  the error state's "Email it instead" recovery) and right after a configured `feedbackEndpoint`
+  responds `ok`. `method` (`"endpoint"` | `"mailto"`) distinguishes which path fired it. No event on a
+  failed or pending submission. The separate 👍/👎 "Was this helpful?" widget (`HelpfulVote.tsx`) was
+  explicitly out of scope — owner said "feedback form," and that widget remains `localStorage`-only,
+  unchanged; the doc's Future-events table now lists it on its own (`Helpful Vote`) rather than bundled
+  with feedback submission as it was before.
+- **GA4 dashboard (Admin → Events)** — **attempted, blocked.** `ebook_cta_click` and `feedback_submit`
+  were meant to be starred as key events, but the only Google account this session could drive
+  (`jayamhub@gmail.com`) has **Viewer**, not Editor/Administrator, access to the
+  `FullStackInterviewGuru` GA4 property — the star toggle returns "No edit permission on this
+  property." Not done; see `docs/14_ANALYTICS.md`'s new section for exactly what still needs doing and
+  by whom.
+- **`docs/14_ANALYTICS.md`** — `feedback_submit` added to "Implemented Custom Events"; "Feedback
+  Submission" removed from "Future GA4 Events" and replaced with the narrower still-outstanding
+  "Helpful Vote"; new section documenting the key-events intent and the permission blocker, so a future
+  session doesn't have to rediscover it.
+
+### Verified
+
+`npx tsc --noEmit` clean. `npm run build` green — 316 `/q/` pages present, shared First Load JS
+unchanged at 102 kB (the event call adds negligible weight to the `/feedback` route's own client
+bundle, not the shared chunk). No ESLint config exists in this project; `tsc` + `build` remain the
+standing gates. **Not yet verified live:** `feedback_submit` hasn't fired in production yet — it will
+on the first real submission after this deploys; `ebook_cta_click` has been firing since DECISIONS #041.
+
+### Deferred (owner's call, not code-blocking)
+
+1. **Mark `ebook_cta_click` and `feedback_submit` as GA4 key events** — needs an account with
+   Editor/Administrator access to the `FullStackInterviewGuru` property (`jayamhub@gmail.com` is
+   Viewer-only); see the blocker note above.
+2. `Helpful Vote` (👍/👎 widget) still has no GA4 event — `localStorage`-only as before.
+3. The rest of the Future GA4 Events table (Interview Question View, Search, Category Selection,
+   Donation Click, External Link Click, Amazon Affiliate Click, Outbound Link, Scroll Depth, Session
+   Engagement) remains unimplemented, each still requiring separate owner approval.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1757,7 +1821,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-09-15 (Decision #046 — content depth on 15 thin, GSC-trafficked pages, AdSense remediation round 2)
+- **Last Updated:** 2026-09-15 (Decision #047 — feedback_submit GA4 event + ebook CTA/feedback key events)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

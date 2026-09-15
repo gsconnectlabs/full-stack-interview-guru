@@ -50,6 +50,26 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Added (`feedback_submit` GA4 event + key events, DECISIONS #047) — 2026-09-15
+A GA4 traffic analysis this session found zero configured "key events" (conversions) — the ebook CTA's
+three events (`ebook_cta_impression`/`_click`/`_dismiss`) were already firing in production but never
+marked as key events in the GA4 dashboard, and the feedback form had no event tracking at all (listed
+as planned-only in `docs/14_ANALYTICS.md`). Owner approved implementing it.
+
+- **`components/FeedbackForm.tsx`** — new `sendGAEvent("event", "feedback_submit", { type, context,
+  method })`, same `@next/third-parties/google` pattern as the existing ebook/Gumroad events. Fires on
+  a completed submission only (configured-endpoint success, or the `mailto:` fallback path); no event
+  on failure. The separate 👍/👎 "Was this helpful?" widget was out of scope (owner said "feedback
+  form") and remains untouched/`localStorage`-only.
+- **GA4 Admin → Events — attempted, blocked.** `jayamhub@gmail.com` (the only account this session
+  could drive) has Viewer-only access to the `FullStackInterviewGuru` property, so `ebook_cta_click`
+  and `feedback_submit` could **not** be starred as key events — "No edit permission on this property."
+  Needs an Editor/Administrator account; see DECISIONS #047 for exactly what's left to do.
+- `docs/14_ANALYTICS.md` updated: `feedback_submit` moved to "Implemented Custom Events"; "Feedback
+  Submission" removed from "Future GA4 Events" (replaced by the narrower still-outstanding "Helpful
+  Vote"); new section documenting the key-events intent and the permission blocker.
+- `npx tsc --noEmit` clean; `npm run build` green — 316 `/q/` pages, 102 kB shared JS unchanged.
+
 ### Improved (Content depth on 15 thin, GSC-trafficked pages — AdSense "Low value content" remediation, DECISIONS #046) — 2026-09-15
 AdSense's "Low value content" flag was still active after DECISIONS #045 (real named authorship),
 matching that session's own prediction that the next lever would be per-question content depth. Owner
@@ -1238,7 +1258,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-09-15 (Content depth on 15 thin, GSC-trafficked pages — AdSense remediation round 2, DECISIONS #046)
+- **Last Updated:** 2026-09-15 (feedback_submit GA4 event + key events, DECISIONS #047)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

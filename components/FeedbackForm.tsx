@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { sendGAEvent } from "@next/third-parties/google";
 import { contactEmail, feedbackEndpoint } from "@/lib/site";
 
 const TYPES = [
@@ -28,6 +29,7 @@ export default function FeedbackForm({ context }: { context?: string }) {
     );
     // If no contact email is configured, still surface the content so it isn't lost.
     window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
+    sendGAEvent("event", "feedback_submit", { type, context: context || "", method: "mailto" });
   }
 
   async function onSubmit(e: React.FormEvent) {
@@ -49,6 +51,7 @@ export default function FeedbackForm({ context }: { context?: string }) {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
+      if (res.ok) sendGAEvent("event", "feedback_submit", { type, context: context || "", method: "endpoint" });
       setStatus(res.ok ? "sent" : "error");
     } catch {
       setStatus("error");

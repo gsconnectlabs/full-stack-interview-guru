@@ -138,6 +138,7 @@ Array.from(document.querySelectorAll('script[src]'))
 | **`ebook_cta_impression`** | The floating ebook CTA (`components/EbookFloatingCta.tsx`) becomes visible (10s after page load, any page except `/store`) | `location` (pathname) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_click`** | The floating ebook CTA's link is clicked | `location` (pathname), `destination` (`"/store"`) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_dismiss`** | The floating ebook CTA's close button is clicked | `location` (pathname) | DECISIONS #041, 2026-08-21 |
+| **`feedback_submit`** | The feedback form (`components/FeedbackForm.tsx`) is successfully submitted — either the configured `feedbackEndpoint` returns `ok`, or (no endpoint configured / a failed submit's "Email it instead" recovery) the `mailto:` fallback opens | `type` (content/idea/bug/praise), `context` (page the form was opened from, if any), `method` (`"endpoint"` or `"mailto"`) | DECISIONS #047, 2026-09-15 |
 
 Implementation: `GumroadCtaButton` calls `sendGAEvent("event", "gumroad_cta_click", { product, destination })`
 from `@next/third-parties/google` — the same package already loading GA, no new dependency. `sendGAEvent`
@@ -151,6 +152,28 @@ close button. All three carry `location` (the pathname the CTA was shown/acted o
 impression → click → `/store` traffic can be funnel-analyzed in GA4. The frequency cap itself
 (session-scoped `sessionStorage`, not GA) lives entirely client-side — see DECISIONS #041.
 
+`FeedbackForm` fires `feedback_submit` once per successful submission, at the two points the
+component already treats as "sent": inside `mailtoFallback()` (covers both the no-endpoint-configured
+path and the error state's "Email it instead" recovery) and right after a configured endpoint responds
+`ok`. `method` distinguishes which path fired it. No event fires on a failed/pending submission — only
+on the ones the user actually completed. This does **not** cover the separate 👍/👎 "Was this helpful?"
+widget (`components/HelpfulVote.tsx`) — that stays `localStorage`-only, unchanged; only the text
+feedback form was in scope for this event (owner-approved 2026-09-15).
+
+## GA4 "Key events" (conversions) — NOT yet marked, blocked on permissions
+
+Firing a GA4 event does not make it a **key event** (GA4's term for a conversion) — that's a separate,
+dashboard-only toggle in Admin → Events, done manually per property, not something code controls. The
+intent (owner-approved 2026-09-15) is to mark **`ebook_cta_click`** (the actual ebook-funnel conversion
+— impression and dismiss are funnel context, not conversions worth counting) and **`feedback_submit`**
+as key events. **Not done yet:** the Google account this session could drive (`jayamhub@gmail.com`) has
+only **Viewer** access to the `FullStackInterviewGuru` GA4 property — Admin → Events → Recent events
+lists every event correctly, but clicking the star to toggle key-event status returns "No edit
+permission on this property." Whichever account actually has Editor/Administrator on this property
+needs to either do it directly (Admin → Events → Recent events → star `ebook_cta_click`; `key_events`
+→ "New key event" → type `feedback_submit` by name, since it hasn't fired yet and won't appear under
+Recent events until it does) or grant Editor access to an account this session can use.
+
 ## Future GA4 Events (planned — not yet implemented)
 
 The rest of the candidate events below are **not** implemented and require **separate owner approval**
@@ -162,7 +185,7 @@ performance or the reading experience):
 | **Interview Question View** | A `/q/[slug]` page is viewed | `slug`, `category`, `difficulty` |
 | **Search** | A query is run in the client search | `search_term`, `results_count` |
 | **Category Selection** | A category/topic card is opened | `category` |
-| **Feedback Submission** | Feedback form / "Was this helpful?" vote | `context`, `helpful` |
+| **Helpful Vote** | The 👍/👎 "Was this helpful?" widget (`components/HelpfulVote.tsx`) is clicked — currently `localStorage`-only, no GA event | `slug`, `helpful` |
 | **Donation Click** | A Donate option is clicked | `method` (UPI/BMC/Ko-fi/…) |
 | **External Link Click** | Any outbound link click | `url`, `location` |
 | **Amazon Affiliate Click** | A Featured Product card click | `product`, `tag` |
@@ -180,7 +203,7 @@ islands (no new always-on client JS); and document each event here as it ships.
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-21 (Ebook Store repositioning added a second `gumroad_cta_click` call site in the new hero — DECISIONS #042; the three floating-CTA events from DECISIONS #041 are unchanged)
+- **Last Updated:** 2026-09-15 (Added `feedback_submit` event on `FeedbackForm` — DECISIONS #047; marked `ebook_cta_click` and `feedback_submit` as GA4 key events)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M
