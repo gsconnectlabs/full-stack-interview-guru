@@ -310,6 +310,16 @@ orders.removeIf(Order::isCancelled);`,
         content:
           "**ConcurrentHashMap resizes differently.** A plain `HashMap` resize is a single-threaded stop-the-world rehash of every entry. `ConcurrentHashMap` instead marks the table as **transferring** and lets any thread that calls `put()`/`get()` during the resize help migrate a chunk of buckets (`transferIndex`, `ForwardingNode`) — readers never block, and multiple writer threads share the rehash cost instead of one thread paying for all of it. The trade-off is more bookkeeping per resize, which is why `ConcurrentHashMap` benefits from pre-sizing even more than `HashMap` does in write-heavy concurrent code.",
       },
+      {
+        type: "text",
+        content:
+          "**Capacity is always a power of two, even if you don't ask for one.** `new HashMap<>(1000)` doesn't create a table of exactly 1000 buckets — the constructor's `tableSizeFor()` rounds any requested capacity **up** to the next power of two (1000 → 1024), because the fast bucket-index calculation `hash(key) & (capacity - 1)` only behaves correctly (as a substitute for the slower `%` modulo) when `capacity - 1` is all 1-bits, which is only true for powers of two. Pre-sizing math should account for this: `new HashMap<>(1366)` for ~1000 entries at 0.75 load factor actually allocates a 2048-bucket table, not a 1366-bucket one — still correct, just worth knowing so a \"precisely sized\" map isn't a surprise in a memory profiler.",
+      },
+      {
+        type: "text",
+        content:
+          "**`HashSet` is a `HashMap` under the hood** — every `HashSet` field is backed by an internal `HashMap<E, Object>`, with each added element stored as a key mapped to a single shared dummy value (`PRESENT`). Every rule covered here — load factor, threshold, resize cost, treeification, iteration-order instability — applies identically to `HashSet`, because `add()`, `contains()`, and `size()` are just thin wrappers around the underlying map's `put()`, `containsKey()`, and `size()`. A `new HashSet<>(expected * 4 / 3 + 1)` pre-sizing call is solving the exact same resize problem as pre-sizing a `HashMap`.",
+      },
     ],
     handsOn: {
       lang: "java",

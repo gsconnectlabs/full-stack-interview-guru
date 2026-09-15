@@ -759,6 +759,16 @@ System.out.println(user);`,
         content:
           "**If `InvocationHandler.invoke()` throws**, the exception propagates to the caller exactly as if the real method had thrown it directly — the proxy transparently rethrows whatever `invoke()` throws (typically after `Method.invoke()` unwraps an `InvocationTargetException` back to its cause). The one sharp edge: if `invoke()` throws a **checked** exception that isn't declared in the proxied interface method's `throws` clause, the JVM wraps it in an unchecked `UndeclaredThrowableException` instead of letting it through as-is — a reminder that the proxy is bound by the interface's declared exception contract, not the real implementation's.",
       },
+      {
+        type: "text",
+        content:
+          "**Multiple advices on one method compose as nested proxies, and order matters.** A bean with both `@Transactional` and `@Cacheable` isn't wrapped by one proxy doing two things — Spring builds a chain, one proxy per advice, each wrapping the next like layers of an onion; the outermost proxy's `invoke()` runs first, calls into the next proxy, and so on until the innermost call finally reaches the real object. If `@Cacheable` sits outside `@Transactional` in that chain, a cache hit skips the transaction (and the real method) entirely and returns the cached value straight away — completely different behavior than the reverse ordering, where the transaction always opens even on a cache hit. Spring resolves this default ordering by advice type, but `@Order` (or `Ordered`) on the underlying `Advisor` lets you make it explicit rather than relying on the framework's default and being surprised later.",
+      },
+      {
+        type: "text",
+        content:
+          "**Proxies aren't free, but the overhead is smaller than it sounds.** Every proxied call pays for one extra layer of indirection (dispatch through `invoke()`) plus, for JDK proxies specifically, a reflective `Method.invoke()` to reach the real implementation — reflection carries a real per-call cost relative to a direct method call, though the JIT compiler inlines and optimizes hot reflective call sites aggressively in long-running JVMs, so the gap narrows considerably after warm-up. In practice this overhead is negligible next to what the advice itself typically does (a database transaction, a cache lookup, a network call) — it becomes a real concern only in extremely hot, low-latency inner loops, which is exactly the kind of code most teams are careful not to route through Spring-managed beans in the first place.",
+      },
     ],
     handsOn: {
       lang: "java",

@@ -473,6 +473,16 @@ export const jvmExtra: Question[] = [
         content:
           "**Allocation rate drives pause frequency directly**, not pause **length**: the young generation is a fixed-size buffer, and every allocation eats into it. A higher allocation rate (more objects created per second) fills that buffer faster, so minor GCs — each one a short STW pause — fire more often. Cutting allocation (reusing buffers, avoiding unnecessary boxing/autoboxing, streaming instead of materializing full collections) doesn't make an individual pause shorter, it makes pauses **less frequent**, which is usually what actually improves p99 latency, since most requests just need to avoid **landing** on a pause rather than needing the pause itself to be faster.",
       },
+      {
+        type: "text",
+        content:
+          "**TLABs are why allocation itself doesn't need a lock, even under heavy multi-threaded load.** Each thread gets its own small slice of the young generation — a **Thread-Local Allocation Buffer** — and a plain-object `new` is just bumping a pointer within that private slice, no synchronization required, which is what keeps allocation fast enough to sustain a high rate in the first place. A TLAB refill (the thread's slice is full, ask the JVM for a new one) is cheap and doesn't stop other threads. It's minor GC — reclaiming the whole young generation, TLABs included — that requires the STW pause, because that's the point where live objects need to be identified and copied while nothing else is allowed to mutate references. Tools like GCEasy or GCViewer parse the `-Xlog:gc*` output from the command above into charts specifically to make allocation-rate-vs-pause-frequency correlations like this visible at a glance instead of hand-counting log lines.",
+      },
+      {
+        type: "text",
+        content:
+          "**GC ergonomics** is why most JVMs never need explicit tuning flags at all — on startup, the JVM inspects the machine's available memory and CPU count and auto-selects a default collector (G1 since JDK 9), initial/max heap size, and generation ratios meant to be reasonable for that hardware without any `-XX` flags. Tuning (a pause target, a region size, an allocation-reduction pass like the ones covered here) is what you reach for once ergonomics' generic defaults demonstrably don't fit a specific workload's latency or throughput requirements — not a starting assumption every production JVM needs from day one.",
+      },
     ],
     handsOn: {
       lang: "bash",
@@ -745,6 +755,16 @@ java -Xlog:gc*,safepoint:file=gc.log:time,uptime,level,tags -jar app.jar
         type: "text",
         content:
           "**Tuning `G1HeapRegionSize`:** because the humongous threshold is defined as **half a region**, the practical fix for frequent humongous allocations is usually raising the region size itself (`-XX:G1HeapRegionSize=32m`, for example) so the objects triggering it no longer cross that 50% line — not shrinking the objects. Region size must be a power of two between 1MB and 32MB; G1 auto-selects a default based on heap size, but a workload with consistently large allocations (image buffers, large batch payloads) benefits from setting it explicitly rather than relying on the auto-picked default.",
+      },
+      {
+        type: "text",
+        content:
+          "**Remembered sets are what let G1 collect a handful of young regions without scanning the entire heap for roots.** A young-only collection needs to know every old-gen object that references a young object (otherwise a live young object could be missed as garbage), but scanning all of old gen on every minor collection would defeat the purpose of region-based, incremental collection entirely. Instead, each region keeps a **remembered set (RSet)** — a running list of which **other** regions point into it — updated incrementally via **write barriers** every time a reference field is written, using a coarse **card table** (the heap divided into small fixed-size \"cards\"; a write marks its card dirty) to keep the bookkeeping cheap. A collection then only needs to scan the RSets of the regions actually being collected, not the whole heap — this is the mechanism that makes G1's pause time roughly proportional to the **collection set size**, not total heap size, which is exactly what makes a soft `MaxGCPauseMillis` target achievable on multi-hundred-gigabyte heaps in the first place.",
+      },
+      {
+        type: "text",
+        content:
+          "**\"To-space exhausted\" precisely means G1 ran out of empty regions to evacuate live objects into, mid-collection.** A G1 collection works by copying every live object out of the regions being reclaimed into fresh, empty regions (the \"to-space\") — it's a copying collector, not a mark-and-sweep-in-place one. If the heap's free regions run out **during** that copy (the live set turned out bigger than G1 predicted, often because of a burst of humongous allocations eating into the free-region pool), G1 can't safely stop partway through an evacuation, so it falls back to a **full, single-threaded, stop-the-world garbage collection** of the entire heap to recover — by far the most expensive pause type G1 can produce, and precisely why the `whatIf` case above (humongous allocations correlating with to-space exhaustion) is a real production failure mode, not just a log-noise curiosity.",
       },
     ],
     whatIf: {

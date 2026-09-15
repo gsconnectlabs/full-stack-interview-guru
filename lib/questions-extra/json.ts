@@ -62,6 +62,21 @@ export const jsonExtra: Question[] = [
 // The strict JSON equivalent:
 { "name": "Guru", "role": "Engineer", "tags": ["java", "aws"] }`,
       },
+      {
+        type: "text",
+        content:
+          "Two lesser-known gotchas that only show up once JSON meets real production data. **Duplicate keys are legal JSON** — the spec doesn't forbid `{ \"role\": \"admin\", \"role\": \"user\" }` — but it also doesn't say what a parser should do with it, so behavior is implementation-defined; JavaScript's `JSON.parse()` silently keeps the **last** value and drops the rest, other languages' parsers can differ, and no error is ever raised either way. **Large integers lose precision** when parsed: JSON numbers have no size limit, but `JSON.parse()` decodes every number as a JavaScript `double`, which can only represent integers exactly up to 2^53 — a 64-bit id like a Snowflake ID or a Twitter/Discord post id silently rounds to the nearest representable double once parsed. This is exactly why large-ID APIs return those ids as **strings**, not numbers, in their JSON responses — it isn't a style choice, it's a precision workaround.",
+      },
+      {
+        type: "text",
+        content:
+          "**The `Content-Type: application/json` header is a contract, not a formality.** It tells the receiving side how to interpret the bytes — a server that returns JSON with `text/plain` (or omits the header) invites clients to guess, which is exactly the kind of ambiguity structured content types exist to remove; most HTTP frameworks and `fetch`/`axios`-style clients key their automatic parsing off this exact header. The JSON spec (RFC 8259) additionally mandates **UTF-8** as the encoding for JSON exchanged over a network — UTF-16/UTF-32 are permitted for JSON as a general text format but not for interchange, which is why a JSON parser never needs a byte-order mark or an encoding declaration the way XML does.",
+      },
+      {
+        type: "text",
+        content:
+          "**JSONP is worth recognizing even though it's obsolete.** Before CORS existed (pre-2010s), browsers' same-origin policy blocked a page from fetching JSON from a different domain via `XMLHttpRequest` — but `<script src=\"...\">` tags were exempt from that restriction. JSONP exploited this: a server would wrap its JSON response in a function call (`callback({...})`) and the client would load it as a `<script>`, letting a pre-registered JavaScript function receive the data as a plain argument. It worked, but it meant trusting a third-party server to inject and **execute** arbitrary code in your page — a real security liability. CORS made this workaround unnecessary, and JSONP now mostly shows up in interviews as a \"why was this ever a good idea\" history question, not a technique anyone should reach for today. Modern APIs handle cross-origin access with explicit `Access-Control-Allow-Origin` response headers instead, giving the server (not an implicit script-tag loophole) control over exactly which origins may read its JSON.",
+      },
     ],
     handsOn: {
       lang: "json",

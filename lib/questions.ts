@@ -558,6 +558,16 @@ Idempotency-Key: 3f1c-...-9a
         content:
           "**Expiry and revocation are the trade-off that actually bites in production.** A JWT's statelessness is also its weakness: once issued, a service can't \"unissue\" it — there's no server-side session to delete. If a user's access needs to be revoked immediately (they're fired, their account is compromised), a short-lived access token (minutes) paired with a separate, server-tracked refresh token is the standard fix — the refresh token can be revoked in a database lookup, and the access token's short expiry bounds how long a compromised token stays valid even if revocation is delayed.",
       },
+      {
+        type: "text",
+        content:
+          "**With RS256, key rotation happens through a JWKS endpoint, not a config file.** The auth service publishes its current public key(s) at a well-known URL (`/.well-known/jwks.json`) as a **JSON Web Key Set** — each key tagged with a `kid` (key id). A verifying service fetches and caches that JWKS, and when it needs to verify a token, reads the `kid` from the token's header to pick the matching public key out of the set, rather than hardcoding one key. That's what makes rotation safe without downtime: the auth service publishes a **new** key into the JWKS (old key stays present too), starts signing new tokens with it, and only removes the old key from the JWKS once every token signed with it has naturally expired — verifiers never need a synchronized deploy.",
+      },
+      {
+        type: "text",
+        content:
+          "**A valid signature is necessary but not sufficient — the claims still have to be checked.** A properly signed token from a **different** application, or one that's simply expired, still passes signature verification if nothing else is validated. The checklist interviewers expect: `exp` (has it expired), `nbf` (not-before — is it valid yet), `iss` (issuer — was this actually minted by **your** auth service, not some other service using the same key infrastructure), and `aud` (audience — was this token meant for **this** API, not a different one that happens to trust the same issuer). Skipping `iss`/`aud` checks is a real, recurring vulnerability class: a token legitimately issued for one service ends up accepted by another service it was never intended for, simply because both trust the same signing key.",
+      },
     ],
     handsOn: {
       lang: "text",
@@ -712,6 +722,16 @@ aws s3 ls s3://my-bucket/reports/`,
         type: "text",
         content:
           "**Two hard limits shape when Lambda fits:** a single invocation can run at most **15 minutes**, so anything longer needs Step Functions, Fargate, or a traditional server. And Lambda's memory setting isn't just RAM — **CPU and network bandwidth scale proportionally with the memory you allocate**, so a CPU-bound function that's slow isn't necessarily under-provisioned on logic, it may just be under-provisioned on memory (raising memory can make a compute-heavy function finish faster and, counterintuitively, cost about the same or less, since you pay for memory × duration and a faster function needs less duration).",
+      },
+      {
+        type: "text",
+        content:
+          "**Concurrency, not requests-per-second, is the limit that actually throttles Lambda.** Every AWS account has a regional **concurrent executions** ceiling (1,000 by default, raisable by support request) shared across every function in the account unless carved up — one invocation in flight counts as one unit of concurrency for as long as it runs, so a function that takes 5 seconds under sustained load needs roughly 5× the concurrency of one that takes 1 second to sustain the same request rate. **Reserved concurrency** caps how much of that shared pool one function can consume (protecting other functions from being starved by one noisy neighbor, at the cost of that function throttling once its own reservation is exhausted); **provisioned concurrency** additionally pre-warms environments within that reservation. Exceeding available concurrency doesn't queue politely — synchronous invocations (API Gateway) return a `429 TooManyRequestsException` immediately, while asynchronous invocations (S3, EventBridge) retry automatically and eventually land in a configured dead-letter queue or destination if retries are exhausted.",
+      },
+      {
+        type: "text",
+        content:
+          "**Java specifically has a worse cold start than Python/Node, and `SnapStart` is AWS's fix for it.** JVM startup plus class loading plus framework initialization (Spring context, DI wiring) routinely pushes Java cold starts into the hundreds of milliseconds to low seconds, versus tens of milliseconds for an interpreted-language runtime with little to no framework overhead. **SnapStart** takes a different approach than shrinking the package or trimming dependencies: it initializes the function once, takes a Firecracker microVM snapshot of that fully-initialized execution environment (including the already-warmed JVM), and restores **from that snapshot** on every subsequent cold start instead of re-running initialization from scratch — turning a JVM-startup-sized cold start into essentially a restore-from-snapshot-sized one, at the cost of needing to handle any state that shouldn't be reused across invocations (like a fixed seed used at snapshot time) explicitly via a runtime hook.",
       },
     ],
     handsOn: {
@@ -992,12 +1012,22 @@ ls -l deploy.sh
       {
         type: "text",
         content:
-          "**Why indices, not values?** The same value can appear twice in the array, so returning the values themselves would be ambiguous — the index is what unambiguously identifies *which* element was used. It's also why the lookup happens **before** inserting the current number: checking `target - n in seen` first stops an element from pairing with itself.",
+          "**Why indices, not values?** The same value can appear twice in the array, so returning the values themselves would be ambiguous — the index is what unambiguously identifies **which** element was used. It's also why the lookup happens **before** inserting the current number: checking `target - n in seen` first stops an element from pairing with itself.",
       },
       {
         type: "text",
         content:
           "**Duplicates and \"no pair found\" are the two edge cases interviewers actually probe.** If the same value appears twice and their indices sum to the target, the HashMap approach handles it correctly for free — the **first** occurrence is stored by the time the **second** is scanned, so the lookup succeeds without any special-casing. If no pair sums to the target, the loop finishes with nothing to return; most implementations either return an empty list / `None` or raise an explicit error — LeetCode's version guarantees exactly one solution exists, but a production version of this pattern (e.g. matching two transactions that net to zero) should decide and document which behavior it wants, since \"guaranteed to exist\" is rarely true outside a coding-interview problem statement.",
+      },
+      {
+        type: "text",
+        content:
+          "**Is the HashMap approach really O(n)?** Strictly, that's the **average-case** bound — it assumes hash collisions are rare, which is the normal case with Python's/Java's default string and integer hashing. A senior-level follow-up worth having an answer for: with a pathological hash function (or a hand-crafted adversarial input designed to collide), every lookup could degrade toward O(n), making the overall algorithm O(n²) in the worst case — theoretically identical to brute force, just with extra hashing overhead on top. This is precisely why Java's `HashMap` treeifies long collision chains (O(n) → O(log n) worst case per bucket, covered on the HashMap resize page) rather than leaving them as plain linked lists — it caps exactly this worst case rather than eliminating the possibility of collisions entirely.",
+      },
+      {
+        type: "text",
+        content:
+          "**\"What if we needed three numbers instead of two?\"** is the near-universal next question, and the HashMap trick doesn't extend directly — a triple nested loop with a HashMap lookup on the innermost is still O(n²) (one fixed index, one HashMap-assisted Two Sum on the rest), not O(n). The standard Three Sum solution instead **sorts** the array first (O(n log n)), then fixes one element and runs the sorted **two-pointer** technique on the remainder for each fixed element — O(n²) overall, but with O(1) extra space instead of a HashMap, and sorting also makes duplicate-triplet skipping trivial (skip past repeated values at each pointer), which is normally the fiddliest part of a naive HashMap-based attempt at three (or more) numbers. Interviewers rarely expect the full Three Sum solution as a follow-up to Two Sum — naming this trade-off (sort + two-pointer over nested HashMap lookups, and why) is usually enough to demonstrate the pattern generalizes.",
       },
       {
         type: "code",

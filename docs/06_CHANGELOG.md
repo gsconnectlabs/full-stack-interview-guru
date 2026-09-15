@@ -109,6 +109,28 @@ and the previously-proposed `hashmap-resize-load-factor` title/meta rewrite (alr
   the rest of the content's emphasis style; verified with a git-diff-scoped scan (a naive whole-file
   search also matches text inside legitimate `**bold**` pairs) that no instances remain. `npx tsc
   --noEmit` clean; `npm run build` green, 316 `/q/` pages, 102 kB shared JS unchanged.
+- **Pushed further, same day (owner-directed round 2):** owner asked to push the 11 pages still under
+  800 words closer to that line. Added a further genuine, non-duplicative paragraph (or two) per page —
+  each answering a real, previously-unaddressed angle rather than restating existing content: HashMap's
+  power-of-two capacity rounding + `HashSet`-is-a-`HashMap` fact; DynamoDB adaptive capacity mechanics +
+  time-based-key hot-partition variant + how to add a new access pattern later + sparse GSIs; JSON
+  duplicate-key/large-integer-precision gotchas + `Content-Type`/UTF-8 requirement + JSONP history;
+  dynamic-proxy advice-ordering (`@Transactional` + `@Cacheable` chaining) + proxy call overhead;
+  two-sum's average-case-vs-worst-case complexity + the Three Sum extension; TLABs + GC ergonomics;
+  `WeakHashMap`/`SoftReference` as cache alternatives + why `jmap -dump:live` matters; JWT JWKS/key
+  rotation + `iss`/`aud`/`nbf` claim-validation checklist; Lambda concurrency/throttling model +
+  Java-specific `SnapStart`; G1 remembered sets/card tables + what "to-space exhausted" means
+  mechanically. Also fixed 10 more stray single-asterisk instances introduced in this round (found via
+  the same git-diff-scoped scan) plus one pre-existing one on `two-sum` noticed in passing.
+- **Result: 9 of the 15 pages now cross 800 words** (`hashmap-resize-load-factor` 853,
+  `dynamodb-partition-key` 818, `dynamodb-single-table` 824, `dynamic-proxy` 883,
+  `stop-the-world-gc-tuning` 835, `what-is-jwt` 810, `aws-lambda` 887, `producer-consumer-wait-notify`
+  800, `g1-gc-internals` 850); 3 more sit within single digits (`what-is-json` 798,
+  `java-memory-leak-diagnosis` 799, `two-sum` 792). The 3 pages not in the owner-approved round-2 scope
+  (`thread-interruption-cooperative-cancellation` 709, `daemon-threads-jvm-exit` 759,
+  `shutdown-hooks-graceful-drain` 705) were left untouched. Total prose word count across the 15 pages:
+  8,908 → **12,122** (from the original 5,762 baseline, +110% overall). `npx tsc --noEmit` clean;
+  `npm run build` green, 316 `/q/` pages, 102 kB shared JS unchanged.
 
 ### Added (`ads.txt`) — 2026-08-30
 AdSense's Sites dashboard flagged `Ads.txt status: Not found` for the domain — a separate blocker from

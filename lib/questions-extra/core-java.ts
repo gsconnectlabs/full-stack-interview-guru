@@ -787,14 +787,26 @@ catch (PaymentException e) {
         content:
           "**Shallow vs. retained size in MAT** — the distinction that makes the dominator tree useful instead of misleading. **Shallow size** is just the memory the object itself occupies (its fields, not what they point to) — a `HashMap` instance's shallow size is tiny regardless of how many entries it holds. **Retained size** is the shallow size plus every object that would become unreachable (and thus collectible) if this object were removed — for that same `HashMap`, retained size includes every key, every value, and everything **they** reference, which is usually where the real memory is. Sorting MAT's dominator tree by retained size is how you find the one object actually responsible for gigabytes of heap, when its own shallow footprint might be under a kilobyte.",
       },
+      {
+        type: "text",
+        content:
+          "**`WeakHashMap`/`SoftReference` are a self-bounding alternative to a hand-rolled TTL cache**, worth knowing as a fix option, not just \"add eviction.\" A `WeakHashMap` entry is automatically removed once its **key** has no strong references anywhere else — useful for caches keyed by objects whose lifecycle you don't otherwise control (e.g. a per-`Class` or per-listener metadata cache), though it's a narrow fit since most caches are keyed by ids/strings that stay strongly reachable elsewhere anyway. `SoftReference`-wrapped **values** are the more commonly useful pattern: the GC is permitted (not required) to clear soft references before throwing `OutOfMemoryError`, so a soft-reference cache tends to self-evict under real memory pressure rather than being the cause of it — the trade-off is that eviction timing is JVM-decided and non-deterministic, which is why an explicit bounded cache (Caffeine, with a real size/TTL policy) is still the recommended default and these are situational tools, not blanket replacements.",
+      },
+      {
+        type: "text",
+        content:
+          "**Why `jmap -dump:live` (not a plain `-dump`) matters for diagnosis, not just file size.** The `live` flag forces a full GC immediately before writing the dump, so only objects that survive that collection — the actual live/reachable set — end up in the `.hprof` file; garbage that just hasn't been collected yet is excluded. Skipping `live` on a multi-gigabyte heap can produce a dump dominated by soon-to-be-garbage noise that makes MAT's dominator tree far less useful for finding the real retention culprit, and a needlessly enormous file to boot. The one trade-off: forcing a full GC is itself a real, sometimes multi-second STW pause on a production system — capturing a `live` dump is a deliberate, disruptive diagnostic step, not something to run casually or on a schedule — schedule it for a maintenance window or a canary instance, not the primary traffic-serving node.",
+      },
     ],
     handsOn: {
       lang: "bash",
       code: `# auto-capture on OOM
 -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=/dumps
-# or on demand
+# on demand — jmap (older JDKs)
 jmap -dump:live,format=b,file=heap.hprof <pid>
-# then open heap.hprof in Eclipse MAT → 'Leak Suspects'`,
+# on demand — jcmd (preferred on modern JDKs; jmap is deprecated for removal)
+jcmd <pid> GC.heap_dump /dumps/heap.hprof
+# then open heap.hprof in Eclipse MAT -> 'Leak Suspects'`,
     },
     whatIf: {
       q: "GC runs constantly but frees little and CPU is pegged — what's happening?",

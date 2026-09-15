@@ -407,6 +407,16 @@ export const awsExtra: Question[] = [
         content:
           "This doesn't mean low-cardinality attributes like `status` are unusable — they just can't be the **partition** key. Keep the high-cardinality id (e.g. `orderId`) as the partition key, and put `status` in a **sort key** or a **Global Secondary Index** instead. You still get an efficient \"all orders with status = shipped\" query via the GSI, but writes spread across partitions by `orderId` instead of collapsing onto one of three.",
       },
+      {
+        type: "text",
+        content:
+          "**Adaptive capacity helps, but only up to a point.** DynamoDB continuously monitors traffic per partition and, when it detects a hot partition, transparently isolates that partition's keys and boosts throughput toward it — instantly for isolated hot keys since 2019, without any table resizing or manual intervention. What it **can't** do is rescue a pathologically low-cardinality key design: adaptive capacity can boost one hot partition's share of the table's **total** provisioned throughput, but it can't manufacture throughput the table doesn't have, and a 3-value partition key still means only 3 physical partitions exist to receive that boosted share, capping how far it can stretch. Adaptive capacity buys headroom for **uneven** access on an otherwise reasonable key; it's not a substitute for high-cardinality key design.",
+      },
+      {
+        type: "text",
+        content:
+          "**Time-based keys are the sneaky version of a low-cardinality key** — the partition key itself may have plenty of distinct values over the table's lifetime (`2026-09-01`, `2026-09-02`, ...), so it doesn't **look** low-cardinality at a glance. The problem is access pattern, not key design: almost all reads and writes target **today's** date, so at any given moment traffic still collapses onto whichever single partition represents \"now,\" while every other date's partition sits idle. The fix is the same write-sharding idea from above, applied proactively: suffix the date with a shard number (`2026-09-15#3`) so \"today\" is spread across multiple partitions even while it's the only date anyone's writing to, rather than discovering the hot-partition problem only once a single calendar day's traffic exceeds one partition's throughput ceiling.",
+      },
     ],
     handsOn: {
       lang: "java",
@@ -900,6 +910,16 @@ List<QueryRequest> shardQueries = IntStream.range(0, shardCount)
         type: "text",
         content:
           "**Overloaded GSIs** are what make one table serve many entity types cleanly. Instead of a dedicated index per entity, a single `GSI1PK`/`GSI1SK` pair holds **different, purpose-built values per item type** — for a `CUSTOMER` item, `GSI1PK` might be `EMAIL#<email>` (to look customers up by email); for an `ORDER` item, the same attribute name might hold `STATUS#<status>` (to list orders by status). The GSI attribute name is reused (\"overloaded\"), but each entity type puts a differently-shaped value in it — so one physical index quietly serves several unrelated access patterns instead of one GSI per query.",
+      },
+      {
+        type: "text",
+        content:
+          "**Adding a genuinely new access pattern later has three levels of cost, in order of preference.** Cheapest: if an existing GSI's key already happens to sort/filter the new way you need, you're done — no schema change at all. Next: add a **new GSI** (`GSI2PK`/`GSI2SK`) — DynamoDB backfills it automatically from existing items, no downtime, but every existing item needs the new attribute populated, which for old items means either the application computed it defensively when the item was first written (the standard single-table-design discipline: populate GSI attributes for patterns you **might** need, not just ones you use today) or a one-time backfill script that scans and updates every item. Most expensive: the new pattern needs a key shape the existing attributes can't produce at all — that usually means a genuinely new item type or a denormalized copy, which is the scenario the `whatIf` above calls a \"painful migration,\" and exactly why enumerating access patterns up front matters so much more here than in a relational schema.",
+      },
+      {
+        type: "text",
+        content:
+          "**Sparse GSIs turn \"only some items have this attribute\" into a free filtered index.** A GSI only indexes items that actually **have** a value for the GSI's key attribute — an item missing that attribute simply doesn't appear in the index at all, rather than appearing with a null key. That's a deliberate feature, not an edge case to work around: give the GSI key attribute a value only on `ORDER` items where `status = PENDING`, and the GSI now contains **only** pending orders — no filter expression needed, no scanning past shipped/delivered orders to find them, because they were never written into the index in the first place. It's the standard single-table-design technique for \"give me only the items matching some condition\" queries, and it's a favorite follow-up precisely because it looks like a quirky side effect until you see it used deliberately. Because populating the key is what includes an item, **removing** it from a sparse index is just as deliberate — clear the GSI key attribute (e.g. when an order ships) and the item vanishes from the index on the very next write, no separate cleanup step required.",
       },
     ],
     handsOn: {
