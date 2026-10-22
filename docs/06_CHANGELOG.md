@@ -51,7 +51,7 @@ Phase 2 work is logged here as it is approved and implemented, one feature at a 
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
 ### Changed (editorial redesign — home, candidate, topic, question pages, nav/footer; DECISIONS #050) — 2026-10-22
-**Uncommitted, branch `feat/editorial-redesign`.** No URL, title, description, canonical, robots or JSON-LD changes.
+**Committed on branch `feat/editorial-redesign` (9022767), not merged or pushed.** No URL, title, description, canonical, robots or JSON-LD changes.
 - **Home:** left-aligned hero (same H1), search, "Continue reading" (localStorage) + numbered Popular questions;
   "Learning paths" built from live data replaces the Revision Mode cards, metric tiles and Top-25 tiles; affiliate +
   ad placeholder moved to the end.

@@ -1970,7 +1970,7 @@ Editorial redesign of the home, candidate, topic and question pages (dark theme 
 
 ### Status
 
-✅ Owner-requested 2026-10-22 (detailed redesign brief) — implemented on branch `feat/editorial-redesign`, not committed
+✅ Owner-requested 2026-10-22 (detailed redesign brief) — committed on branch `feat/editorial-redesign` (9022767); not merged or pushed
 
 ### Reason
 
