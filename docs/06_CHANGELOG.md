@@ -50,6 +50,17 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (`ContactForm` no longer claims delivery on the mailto fallback, DECISIONS #048 follow-up) — 2026-10-22
+**Uncommitted.** `components/ContactForm.tsx` showed "Thanks for reaching out" with a ✅ after merely
+opening a `mailto:` draft. Now "Thanks" appears only after the configured endpoint returns OK; without
+one the button reads "Open email draft", an amber notice explains the site doesn't send from the
+website, and the draft panel says "nothing has been sent yet" (Send in your mail app, copy-message,
+address fallback, "Back to edit" keeps the text). Same in-flight/hand-off guards as `FeedbackForm`. No
+GA events added (the contact form never had any). `app/contact/page.tsx` also claimed "The form below
+sends to the same inbox" unconditionally — now only when an endpoint is configured; otherwise it says
+the form opens a draft. Production still has no `NEXT_PUBLIC_FEEDBACK_ENDPOINT`, so contact messages
+are not delivered by the site itself.
+
 ### Changed (`/feedback` crawl exposure, feedback events, content accuracy — DECISIONS #048) — 2026-10-22
 **Uncommitted working-tree changes.** Prompted by a GA4/GSC review: ~1.5k Singapore "direct" users with
 0s engagement concentrated on `/feedback`. Cause is **not confirmed** as bots; confirmed facts are the

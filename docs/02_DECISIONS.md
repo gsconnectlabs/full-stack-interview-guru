@@ -1862,10 +1862,15 @@ fallback — which only opens the visitor's mail app but shows "Thank you!". `fe
   per-partition limits (3,000 RCU / 1,000 WCU per second), plus a short, caveated note that the partition
   count isn't user-configurable. `hashmap-resize-load-factor` and all titles/metadata left unchanged.
 
+- **`ContactForm` (follow-up, same principle):** it had the same optimistic "Thanks for reaching out ✅"
+  after a mailto hand-off. Fixed identically to `FeedbackForm` (success only on endpoint OK; "nothing has
+  been sent yet" panel otherwise; guards), and `app/contact/page.tsx`'s unconditional "The form below
+  sends to the same inbox" is now conditional on an endpoint being configured. No analytics added.
+
 ### Manual actions (not doable from the repo)
 
 1. Set `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (e.g. Formspree) in Vercel and redeploy — until then no feedback
-   is stored and `feedback_submit` cannot fire.
+   or contact message is stored/delivered by the site and `feedback_submit` cannot fire.
 2. GA4 (needs Editor): mark `ebook_cta_click`/`feedback_submit` as key events; consider an Internal-traffic
    or data filter only after the traffic is validated by landing-page path, source/medium, engagement,
    event sequences and Vercel logs — never a blanket Singapore exclusion. Filters don't repair history.

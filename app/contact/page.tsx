@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import Breadcrumb from "@/components/Breadcrumb";
 import ContactForm from "@/components/ContactForm";
-import { contactEmail } from "@/lib/site";
+import { contactEmail, feedbackEndpoint } from "@/lib/site";
 
 export const metadata: Metadata = {
   alternates: { canonical: "/contact" },
@@ -42,7 +42,10 @@ export default function ContactPage() {
             >
               {contactEmail}
             </a>
-            . The form below sends to the same inbox.
+            .{" "}
+            {feedbackEndpoint
+              ? "The form below sends to the same inbox."
+              : "The form below opens a draft in your email app — press Send there to deliver it."}
           </p>
         ) : (
           <p>
