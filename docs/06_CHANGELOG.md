@@ -50,6 +50,15 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (editorial redesign pre-merge review, DECISIONS #050 follow-up) — 2026-10-22
+**Branch `feat/editorial-redesign`, not merged or pushed.**
+- Question-page sidebar (topic card + `AdSlot`) renders below 1024px again, stacked under the article as on `main`.
+- Header: menu button now shows below 1024px; from 768–1023px it lists Environment / Transition / Real World (the
+  links not shown inline), with a gold dot when the current page is one of them.
+- Prev/next and "Question N of M" follow the topic page's Easy → Medium → Hard order (`questionsInStudyOrder`).
+- Small labels (`.eyebrow`, bylines, row sublines, counts, affiliate category labels) raised to `slate-400`: 3.91:1 →
+  ≥6.58:1 measured.
+
 ### Changed (editorial redesign — home, candidate, topic, question pages, nav/footer; DECISIONS #050) — 2026-10-22
 **Committed on branch `feat/editorial-redesign` (9022767), not merged or pushed.** No URL, title, description, canonical, robots or JSON-LD changes.
 - **Home:** left-aligned hero (same H1), search, "Continue reading" (localStorage) + numbered Popular questions;

@@ -18,7 +18,7 @@ export default function QuestionCard({ q, showCategory = false }: { q: Question;
         <h3 className="text-[15px] font-medium leading-snug text-slate-100 group-hover:text-brand-200">
           {q.question}
         </h3>
-        <span className="mt-1 block text-xs text-slate-500">
+        <span className="mt-1 block text-xs text-slate-400">
           {category ? `${category} · ${q.topic}` : q.topic}
         </span>
       </span>

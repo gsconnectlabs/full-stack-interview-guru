@@ -70,7 +70,7 @@ export default function Home() {
               Interviewer Mode
             </Link>
           </div>
-          <p className="mt-4 text-xs text-slate-500">Free to read · No login required</p>
+          <p className="mt-4 text-xs text-slate-400">Free to read · No login required</p>
         </div>
 
         <div className="lg:border-l lg:border-ink-700/60 lg:pl-10">

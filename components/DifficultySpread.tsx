@@ -14,7 +14,7 @@ export default function DifficultySpread({ spread }: { spread: Spread }) {
           <span key={d} className={difficultyDot[d]} style={{ width: `${(spread[d] / total) * 100}%` }} />
         ))}
       </span>
-      <span className="text-[11px] text-slate-500">
+      <span className="text-[11px] text-slate-400">
         {present.map((d) => `${spread[d]} ${d.toLowerCase()}`).join(" · ")}
       </span>
     </span>

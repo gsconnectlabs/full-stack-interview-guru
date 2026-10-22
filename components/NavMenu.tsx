@@ -7,7 +7,7 @@ import { usePathname } from "next/navigation";
 interface NavItem {
   href: string;
   label: string;
-  /** Inline-nav visibility: always from md, or only from lg (always in the mobile menu). */
+  /** Inline from md, or only from lg; below that breakpoint the link lives in the disclosure menu. */
   from: "md" | "lg";
 }
 
@@ -27,7 +27,8 @@ function isActive(pathname: string, href: string): boolean {
 }
 
 /**
- * Primary navigation links (inline on md+, disclosure menu below md). The only client JS in the
+ * Primary navigation links: inline from md (all of them from lg); below lg a disclosure menu lists
+ * whatever is not inline — everything below md, the lg-only links from md to lg. The only client JS in the
  * header: it needs the pathname for `aria-current` and state for the mobile menu. The menu closes
  * on route change, on Escape (returning focus to the toggle), and on outside click.
  */
@@ -35,6 +36,7 @@ export default function NavMenu() {
   const pathname = usePathname() ?? "/";
   const [open, setOpen] = useState(false);
   const menuId = useId();
+  const overflowActive = ITEMS.some((item) => item.from === "lg" && isActive(pathname, item.href));
   const wrapRef = useRef<HTMLDivElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
 
@@ -60,7 +62,7 @@ export default function NavMenu() {
   }, [open]);
 
   return (
-    <div ref={wrapRef} className="flex items-center">
+    <div ref={wrapRef} className="flex items-center gap-2">
       <ul className="hidden items-center gap-1 md:flex">
         {ITEMS.map((item) => {
           const active = isActive(pathname, item.href);
@@ -88,7 +90,7 @@ export default function NavMenu() {
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => setOpen((o) => !o)}
-        className="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-white/10 px-3 text-sm font-medium text-slate-200 transition-colors hover:border-brand-500/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 md:hidden"
+        className="inline-flex min-h-[44px] items-center gap-2 rounded-md border border-white/10 px-3 text-sm font-medium text-slate-200 transition-colors hover:border-brand-500/40 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/70 lg:hidden"
       >
         <span aria-hidden="true" className="flex w-4 flex-col gap-[3px]">
           <span className={`h-0.5 rounded bg-current transition-transform ${open ? "translate-y-[5px] rotate-45" : ""}`} />
@@ -96,18 +98,22 @@ export default function NavMenu() {
           <span className={`h-0.5 rounded bg-current transition-transform ${open ? "-translate-y-[5px] -rotate-45" : ""}`} />
         </span>
         Menu
+        {/* md–lg: the current page is one of the links tucked into this menu */}
+        {overflowActive && (
+          <span aria-hidden="true" className="hidden h-1.5 w-1.5 rounded-full bg-gold-400 md:inline-block" />
+        )}
       </button>
 
       <div
         id={menuId}
         hidden={!open}
-        className="absolute inset-x-0 top-full border-b border-ink-700/60 bg-ink-950 shadow-lg shadow-black/40 md:hidden"
+        className="absolute inset-x-0 top-full border-b border-ink-700/60 bg-ink-950 shadow-lg shadow-black/40 lg:hidden"
       >
-        <ul className="mx-auto max-w-6xl px-4 py-2">
+        <ul className="mx-auto max-w-6xl px-4 py-2 sm:px-6">
           {ITEMS.map((item) => {
             const active = isActive(pathname, item.href);
             return (
-              <li key={item.href}>
+              <li key={item.href} className={item.from === "md" ? "md:hidden" : undefined}>
                 <Link
                   href={item.href}
                   aria-current={active ? "page" : undefined}

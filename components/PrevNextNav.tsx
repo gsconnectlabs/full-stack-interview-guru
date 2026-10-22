@@ -64,7 +64,7 @@ function NavLink({ question, direction }: { question: Question; direction: "prev
         isPrev ? "sm:text-left" : "sm:items-end sm:text-right"
       }`}
     >
-      <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">
+      <span className="text-xs font-semibold uppercase tracking-wider text-slate-400">
         <span aria-hidden="true">{isPrev ? "← " : ""}</span>
         {isPrev ? "Previous" : "Next"}
         <span aria-hidden="true">{isPrev ? "" : " →"}</span>

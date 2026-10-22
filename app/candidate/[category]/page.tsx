@@ -117,7 +117,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
             {covered.map((t) => (
               <li key={t.topic} className="chip">
                 {t.topic}
-                <span className="text-slate-500">{t.count}</span>
+                <span className="text-slate-400">{t.count}</span>
               </li>
             ))}
           </ul>
@@ -138,7 +138,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                   >
                     <span aria-hidden="true" className={`h-1.5 w-1.5 rounded-full ${difficultyDot[g.difficulty]}`} />
                     {STAGE_LABEL[g.difficulty]}
-                    <span className="ml-auto pl-2 text-xs tabular-nums text-slate-500">{g.questions.length}</span>
+                    <span className="ml-auto pl-2 text-xs tabular-nums text-slate-400">{g.questions.length}</span>
                   </a>
                 </li>
               ))}
@@ -164,7 +164,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                   >
                     {STAGE_LABEL[g.difficulty]}
                   </h2>
-                  <span className="text-xs text-slate-500">
+                  <span className="text-xs text-slate-400">
                     {g.difficulty} · {g.questions.length} question{g.questions.length === 1 ? "" : "s"}
                   </span>
                 </div>
@@ -177,7 +177,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
           ) : (
             <div className="card p-8 text-center">
               <p className="text-slate-300">More {cat.name} questions are being written.</p>
-              <p className="mt-1 text-sm text-slate-500">In the meantime, explore a topic with live samples below.</p>
+              <p className="mt-1 text-sm text-slate-400">In the meantime, explore a topic with live samples below.</p>
               <div className="mt-5 flex flex-wrap justify-center gap-2">
                 {categories
                   .filter((c) => questionsByCategory(c.id).length > 0)
@@ -198,7 +198,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
               <div className="mt-3 grid gap-3 sm:grid-cols-2">
                 {prevTopic ? (
                   <Link href={`/candidate/${prevTopic.id}`} className="card card-hover block p-4">
-                    <span className="text-xs text-slate-500">← Before this</span>
+                    <span className="text-xs text-slate-400">← Before this</span>
                     <span className="mt-1 block font-semibold text-slate-100">{prevTopic.name}</span>
                   </Link>
                 ) : (
@@ -206,7 +206,7 @@ export default async function CategoryPage({ params }: { params: Promise<{ categ
                 )}
                 {nextTopic && (
                   <Link href={`/candidate/${nextTopic.id}`} className="card card-hover block p-4 sm:text-right">
-                    <span className="text-xs text-slate-500">Next topic →</span>
+                    <span className="text-xs text-slate-400">Next topic →</span>
                     <span className="mt-1 block font-semibold text-slate-100">{nextTopic.name}</span>
                   </Link>
                 )}

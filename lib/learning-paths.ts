@@ -1,5 +1,5 @@
 import { listedCategories } from "./category-visibility";
-import { questionsByCategory } from "./questions";
+import { DIFFICULTY_ORDER, questionsByCategory } from "./questions";
 import type { Category, Difficulty, Question } from "./types";
 
 /**
@@ -52,7 +52,7 @@ const TRACKS: TrackDefinition[] = [
   },
 ];
 
-export const DIFFICULTY_ORDER: Difficulty[] = ["Easy", "Medium", "Hard"];
+export { DIFFICULTY_ORDER };
 
 /** Reader-facing stage names for each difficulty level (topic-page groupings). */
 export const STAGE_LABEL: Record<Difficulty, string> = {
@@ -108,7 +108,8 @@ export function difficultySpread(qs: Question[]): DifficultySpread {
   return spread;
 }
 
-/** Questions grouped by difficulty (original order kept within a group); empty groups omitted. */
+/** Questions grouped by difficulty (original order kept within a group); empty groups omitted.
+ *  Flattened, this is exactly `questionsInStudyOrder`, which drives prev/next on question pages. */
 export function groupByDifficulty(qs: Question[]): { difficulty: Difficulty; questions: Question[] }[] {
   return DIFFICULTY_ORDER.map((difficulty) => ({
     difficulty,

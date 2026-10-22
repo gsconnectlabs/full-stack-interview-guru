@@ -12,7 +12,7 @@ export default function CodeBlock({
   return (
     <figure className="overflow-hidden rounded-lg border border-ink-700/70 bg-[#07100e]">
       <figcaption className="flex items-center justify-between border-b border-ink-800 bg-ink-900/60 py-1.5 pl-4 pr-2">
-        <span className="font-mono text-xs uppercase tracking-wider text-slate-500">{lang ?? "code"}</span>
+        <span className="font-mono text-xs uppercase tracking-wider text-slate-400">{lang ?? "code"}</span>
         <CopyButton
           value={code}
           label="Copy code"

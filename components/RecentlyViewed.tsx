@@ -28,7 +28,7 @@ export default function RecentlyViewed() {
             clearRecent();
             setItems([]);
           }}
-          className="rounded text-xs text-slate-500 underline-offset-2 hover:text-slate-300 hover:underline"
+          className="rounded text-xs text-slate-400 underline-offset-2 hover:text-slate-200 hover:underline"
         >
           Clear history
         </button>
@@ -43,7 +43,7 @@ export default function RecentlyViewed() {
               <span className="block text-sm font-medium leading-snug text-slate-200 group-hover:text-brand-200">
                 {r.title}
               </span>
-              {r.category && <span className="text-xs text-slate-500">{r.category}</span>}
+              {r.category && <span className="text-xs text-slate-400">{r.category}</span>}
             </Link>
           </li>
         ))}

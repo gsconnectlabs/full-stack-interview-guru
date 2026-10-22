@@ -13,7 +13,8 @@
   the existing architecture. Dark-only theme kept — the light-default migration (ROADMAP H3/H4) remains a
   separate item.
 - **Release Status:** ✅ **Committed on branch `feat/editorial-redesign`** (owner approved after reviewing
-  the report). **Not merged to `main`, not pushed, not deployed.**
+  the report), then **pre-merge review fixes committed on the same branch** (see below). **Not merged to
+  `main`, not pushed, not deployed.**
 
 ---
 
@@ -41,6 +42,19 @@
   (~23px) — grid items lacked `min-w-0`.
 - **Privacy:** new "Browser Storage" paragraph (helpful votes, ebook-reminder session flag, Continue reading).
 
+## Pre-merge review fixes (same branch)
+
+A read-only review against `main` (full-site HTML diff + 75 page/width browser checks) found four issues,
+now fixed (DECISIONS #050 follow-up):
+
+1. **Question-page sidebar hidden below 1024px** → restored: topic card + `AdSlot` stack under the article
+   at every width as on `main`; only the sidebar's "On this page" list is desktop-only.
+2. **Tablet header gap (768–1023px)** → `NavMenu` shows its menu button below 1024px; from 768px it lists
+   only the links not inline (Environment / Transition / Real World), gold dot when one is the current page.
+3. **Prev/next vs topic-page order** → `questionsInStudyOrder` (`lib/questions.ts`) drives `getQuestionNav`;
+   0 of 316 positions now differ (was 157 of 308 in listed topics).
+4. **Label contrast** → `.eyebrow` and the redesign's small labels `slate-500` → `slate-400` (3.91:1 → ≥6.58:1).
+
 ---
 
 # Verification Summary
@@ -58,8 +72,20 @@
   untouched.
 - ✅ **Interaction:** mobile menu opens, Escape closes and returns focus; Continue reading appears after a
   question visit; fresh loads show no failed requests.
+- ✅ **Pre-merge review (full site):** a separate build of `main` vs this branch — all 352 prerendered HTML
+  pages have identical title, description, canonical, robots, OG/Twitter, JSON-LD, H1, Amazon URLs and
+  disclosure; no internal links lost; sitemap differs only in build-time `lastmod`; robots identical.
+- ✅ **After the review fixes:** `tsc` clean; build green (361 pages, shared 102 kB). 12 pages × 5 widths: no
+  overflow, one `<h1>`, no heading-level skips, all six header destinations reachable at every width,
+  sidebar ad slot + topic card present at every width, one visible contents list; tablet menu opens, marks
+  the current page, Escape returns focus; contrast re-measured ≥6.58:1; prev/next verified for all 316
+  questions plus in-browser (`what-is-hashmap` = "Question 1 of 29" → `what-is-arraylist`); no console errors.
 - **Not verified:** real iOS/Android devices or Safari; a screen-reader pass; GA4 event delivery (GA not
   configured locally; event code unchanged); Lighthouse / Core Web Vitals.
+- **Known minor items (not fixed):** "Clear history", "View all →", "All topics with details →" and breadcrumb
+  links are 16–20px tall (<24px target); every code block is a tab stop even when it doesn't scroll; a
+  question can appear in both Continue reading and Popular; headings nested inside `<span>` in
+  `QuestionCard`/`TopicIndex` (renders fine, invalid HTML); `CLAUDE.md` testing checklist still says 355 pages.
 
 ---
 

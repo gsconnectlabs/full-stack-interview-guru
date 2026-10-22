@@ -58,7 +58,7 @@
   }
   /* Small uppercase label that introduces a section or groups metadata. */
   .eyebrow {
-    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-500;
+    @apply text-[11px] font-semibold uppercase tracking-[0.14em] text-slate-400;
   }
   /* Editorial section heading (serif) for top-level page sections. */
   .section-title {

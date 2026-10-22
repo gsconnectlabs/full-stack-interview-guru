@@ -27,7 +27,7 @@ export default function FeaturedProducts() {
             className="flex items-center justify-between gap-3 rounded-lg border border-ink-700/60 bg-ink-900/40 p-3 md:flex-col md:items-stretch md:gap-4 md:p-4"
           >
             <div className="min-w-0">
-              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-500">{p.categoryLabel}</span>
+              <span className="text-[11px] font-medium uppercase tracking-wider text-slate-400">{p.categoryLabel}</span>
               <h3 className="mt-1 text-sm font-semibold leading-snug text-slate-100 md:text-[15px]">{p.name}</h3>
             </div>
             <AffiliateProductLink product={p} />

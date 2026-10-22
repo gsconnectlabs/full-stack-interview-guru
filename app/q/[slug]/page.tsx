@@ -310,7 +310,7 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
             {/* Byline — subtle authorship signal, not a card. Date only shown when the
                 question actually has an `updated` value; never fabricated. */}
-            <p className="mt-3 text-sm text-slate-500">
+            <p className="mt-3 text-sm text-slate-400">
               Reviewed by{" "}
               <Link href="/about" className="text-slate-300 hover:text-brand-300 hover:underline">
                 {founderName}
@@ -600,11 +600,12 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
           </div>
         </article>
 
-        {/* Sidebar (desktop): sticky contents + topic link, then the sidebar ad slot */}
-        <aside className="hidden flex-col gap-8 lg:flex">
-          <div className="flex-1">
-            <div className="sticky top-24 space-y-6">
-              <nav aria-labelledby="toc-title">
+        {/* Sidebar: sticky contents + topic link on desktop, then the sidebar ad slot. Below lg it stacks
+            under the article (topic link + ad slot); small screens get the collapsible contents above. */}
+        <aside className="flex flex-col gap-8">
+          <div className="lg:flex-1">
+            <div className="space-y-6 lg:sticky lg:top-24">
+              <nav aria-labelledby="toc-title" className="hidden lg:block">
                 <h2 id="toc-title" className="eyebrow">
                   On this page
                 </h2>

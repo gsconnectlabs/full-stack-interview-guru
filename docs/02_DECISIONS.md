@@ -2003,6 +2003,24 @@ analytics event, affiliate link and existing feature.
   close it), and Environment / Transition / Real World reachable on phones for the first time.
 - `TopicCard` deleted (replaced by `TopicIndex`); `QuestionCard` is now a list row used through `QuestionList`.
 
+### Follow-up after pre-merge review (2026-10-22, same branch)
+
+A review against `main` found two regressions and two should-fix items; all four are fixed:
+
+- **Question-page sidebar was hidden below 1024px** (`hidden lg:flex`), dropping the `AdSlot` and the topic card
+  on phones/tablets, where `main` stacks them under the article. The sidebar now renders at every width; only its
+  "On this page" list is desktop-only (small screens keep the collapsible copy above the answer).
+- **Tablet header gap (768–1023px):** Environment / Transition / Real World were inline only from 1024px and the
+  menu button was hidden from 768px. The menu button now shows below 1024px; from 768px it lists only the links
+  not shown inline, and a gold dot on it marks when the current page is one of them.
+- **Prev/next order:** `getQuestionNav` used document order while topic pages list Easy → Medium → Hard (157 of
+  308 positions differed). New `questionsInStudyOrder` in `lib/questions.ts` (sharing `DIFFICULTY_ORDER` with
+  `lib/learning-paths.ts`) now drives prev/next and "Question N of M"; all 316 questions match the topic page.
+  `rel="prev"/"next"` targets change accordingly; no URL changes.
+- **Contrast:** `.eyebrow` and the redesign's small labels moved from `slate-500` (3.91:1 on ink-950) to `slate-400`
+  (6.6–7.2:1 measured). Pre-existing `slate-500` text outside the redesign (navbar tagline, footer copyright line,
+  `/environment` and `/transition` headings, search-result meta) is unchanged.
+
 ---
 
 # End of Document

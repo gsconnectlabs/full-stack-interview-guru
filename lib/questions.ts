@@ -1,4 +1,4 @@
-import type { Question } from "./types";
+import type { Difficulty, Question } from "./types";
 import { extraQuestions } from "./questions-extra";
 
 const baseQuestions: Question[] = [
@@ -1423,9 +1423,18 @@ export function questionsByCategory(categoryId: string): Question[] {
   return questions.filter((q) => q.categoryId === categoryId);
 }
 
+export const DIFFICULTY_ORDER: Difficulty[] = ["Easy", "Medium", "Hard"];
+
+/** A category's questions in study order: Easy → Medium → Hard, document order within each level.
+ *  This is the order the category page renders, so prev/next must use it too. */
+export function questionsInStudyOrder(categoryId: string): Question[] {
+  const qs = questionsByCategory(categoryId);
+  return DIFFICULTY_ORDER.flatMap((d) => qs.filter((q) => q.difficulty === d));
+}
+
 /** Sequential position of a question within its category, plus its neighbours.
- *  Order matches `questionsByCategory` (document order) — the same order the
- *  category page renders — so "Question N of M" and prev/next stay consistent. */
+ *  Order matches `questionsInStudyOrder` — the same order the category page
+ *  renders — so "Question N of M" and prev/next stay consistent. */
 export interface QuestionNav {
   /** 1-based position within the category */
   index: number;
@@ -1438,7 +1447,7 @@ export interface QuestionNav {
 export function getQuestionNav(slug: string): QuestionNav | undefined {
   const q = questionMap.get(slug);
   if (!q) return undefined;
-  const siblings = questionsByCategory(q.categoryId);
+  const siblings = questionsInStudyOrder(q.categoryId);
   const i = siblings.findIndex((s) => s.slug === slug);
   if (i === -1) return undefined;
   return {

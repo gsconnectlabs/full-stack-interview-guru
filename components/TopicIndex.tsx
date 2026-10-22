@@ -59,7 +59,7 @@ export default function TopicIndex({
                           <span aria-hidden="true" className="mr-1.5 text-sm">{c.icon}</span>
                           {c.name}
                         </TopicHeading>
-                        <span className="shrink-0 text-xs tabular-nums text-slate-500">
+                        <span className="shrink-0 text-xs tabular-nums text-slate-400">
                           {qs.length} <span className="sr-only">questions</span>
                           <span aria-hidden="true">Qs</span>
                         </span>

@@ -53,7 +53,7 @@ app/                         Routes (App Router)
   globals.css                Tailwind layers + design tokens/components
 
 components/                  Reusable UI (32 components)
-  Navbar (+ NavMenu client island: aria-current + mobile menu), Footer, SearchBar,
+  Navbar (+ NavMenu client island: aria-current; disclosure menu below lg), Footer, SearchBar,
   QuestionCard (server; one question as a list row) + QuestionList, TopicIndex (server; listed topics as
   learning tracks from lib/learning-paths.ts — homepage compact, candidate index detailed), DifficultySpread,
   TableOfContents (server; question-page anchors), RecentlyViewed + RecordVisit (client; localStorage-only
@@ -84,7 +84,8 @@ lib/                         Data + utilities (types live in lib/types.ts; /cons
   types.ts                   Question, Category, AnswerBlock types
   categories.ts              Category catalog (19 categories)
   questions.ts               Base question bank (32) + merges questions-extra; getQuestion,
-                             questionsByCategory, getQuestionNav (category position + prev/next)
+                             questionsByCategory, questionsInStudyOrder (Easy→Medium→Hard, the topic-page
+                             order), getQuestionNav (study-order position + prev/next)
   questions-extra/           Expansion bank (280 questions, 13 files + index):
                              9 flagship categories × 20 + Python × 25 + JSON × 25 + Advanced Java × 25 +
                              Java 8+/CE4 × 25 (content expansion, split across java-8.ts (new, 8) plus
