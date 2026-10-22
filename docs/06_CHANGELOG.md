@@ -50,6 +50,22 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (`/feedback` crawl exposure, feedback events, content accuracy — DECISIONS #048) — 2026-10-22
+**Uncommitted working-tree changes.** Prompted by a GA4/GSC review: ~1.5k Singapore "direct" users with
+0s engagement concentrated on `/feedback`. Cause is **not confirmed** as bots; confirmed facts are the
+crawl exposure (`Allow: /`, `/feedback` in the sitemap, ~316 distinct `/feedback?context=` links) and
+that the production bundle has no `NEXT_PUBLIC_FEEDBACK_ENDPOINT`.
+- `app/robots.ts`: `disallow: "/feedback"`. `app/sitemap.ts`: `/feedback` removed.
+- Report-issue links: `rel="nofollow"` (+ `prefetch={false}` on the question-page link).
+- `components/FeedbackForm.tsx`: `feedback_submit` only on confirmed endpoint success; `mailto:` path
+  fires new `feedback_email_opened`; params are `type` + sanitized `page` path only. The UI no longer
+  says "Thank you!" for a mailto hand-off: success is shown only after endpoint success; otherwise the
+  form says nothing has been sent until the visitor presses Send in their mail app, with a copy-message
+  fallback. No endpoint is configured in production, so feedback is still not stored on the site.
+- `rest-idempotency`: PUT-vs-POST table + DELETE status-code note. `dynamodb-partition-key`: corrected
+  partition-count claims to documented per-partition limits.
+- Ebook CTA, titles/metadata and all other pages unchanged.
+
 ### Added (`feedback_submit` GA4 event + key events, DECISIONS #047) — 2026-09-15
 A GA4 traffic analysis this session found zero configured "key events" (conversions) — the ebook CTA's
 three events (`ebook_cta_impression`/`_click`/`_dismiss`) were already firing in production but never
@@ -1258,7 +1274,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-09-15 (feedback_submit GA4 event + key events, DECISIONS #047)
+- **Last Updated:** 2026-10-22 (/feedback crawl fix, honest feedback events — DECISIONS #048)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -304,7 +304,7 @@ print(greet("john"))`,
     tags: ["idempotent", "idempotency", "http methods", "safe methods", "put", "delete", "post", "patch", "idempotency-key", "rest"],
     shortAnswer:
       "An operation is idempotent when making the same request multiple times has the same intended effect on server state as making it once. GET, PUT, and DELETE are idempotent. POST is not inherently idempotent. PATCH isn't necessarily idempotent — it depends on what the patch operation does.",
-    updated: "2026-08-24",
+    updated: "2026-10-22",
     mindMap: [
       {
         type: "text",
@@ -348,6 +348,23 @@ Content-Type: application/json
 
 # Call this 5 times in a row -> 5 new user resources are created.
 # POST is not inherently idempotent - each call has an additional effect.`,
+      },
+      {
+        type: "table",
+        headers: ["", "PUT", "POST"],
+        tableRows: [
+          ["Idempotent?", "Yes", "Not inherently"],
+          ["Typical use", "Create or replace the resource at a URI the client already knows (PUT /users/101)", "Create a new subordinate resource where the server picks the id (POST /users), or trigger an action"],
+          ["Who chooses the URI?", "The client", "The server"],
+          ["Request body", "The full replacement representation", "Whatever the operation needs"],
+          ["Repeat it 5 times", "Same final state as calling it once", "Possibly 5 new resources or 5 side effects"],
+          ["Safe to retry automatically?", "Yes", "Only with an Idempotency-Key"],
+        ],
+      },
+      {
+        type: "text",
+        content:
+          "**DELETE is idempotent in terms of state, not status code.** The first `DELETE /users/101` typically returns `204 No Content`; repeating it usually returns `404 Not Found` because the user is already gone. The responses differ, but the server ends up in the same state either way (user 101 doesn't exist), and that end state is what idempotency measures.",
       },
       {
         type: "text",

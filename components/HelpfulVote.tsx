@@ -44,7 +44,7 @@ export default function HelpfulVote({ slug }: { slug: string }) {
       {voted ? (
         <p className="text-sm text-slate-300">
           {voted === "up" ? "🙌 Glad it helped!" : "🙏 Thanks — noted."}{" "}
-          <Link href={`/feedback?context=${encodeURIComponent("/q/" + slug)}`} className="text-brand-300 underline">
+          <Link href={`/feedback?context=${encodeURIComponent("/q/" + slug)}`} rel="nofollow" className="text-brand-300 underline">
             {voted === "up" ? "Suggest an addition" : "Tell us what was missing"}
           </Link>
         </p>

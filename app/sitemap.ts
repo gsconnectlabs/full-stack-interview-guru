@@ -13,7 +13,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     "/real-world",
     "/store",
     "/donate",
-    "/feedback",
     "/about",
     "/contact",
     "/privacy",

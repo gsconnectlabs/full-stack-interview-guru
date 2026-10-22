@@ -1,7 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
+import Link from "next/link";
 import { sendGAEvent } from "@next/third-parties/google";
+import CopyButton from "@/components/CopyButton";
 import { contactEmail, feedbackEndpoint } from "@/lib/site";
 
 const TYPES = [
@@ -11,37 +13,57 @@ const TYPES = [
   { id: "praise", label: "🙌 Praise", hint: "Tell us what you love" },
 ];
 
-type Status = "idle" | "sending" | "sent" | "error";
+// "sent" = the configured endpoint confirmed receipt. "email" = a mailto: draft was opened; that is a
+// hand-off to the visitor's mail app, NOT a submission, so it must never be shown as one.
+type Status = "idle" | "sending" | "sent" | "error" | "email";
+
+// `context` comes from the URL query string, so only a recognizable /q/<slug> path is sent to
+// analytics — never free text, and never anything the visitor typed into the form.
+function pageFromContext(context?: string): string {
+  const match = context?.match(/\/q\/[a-z0-9-]{1,80}/);
+  return match ? match[0] : "";
+}
 
 export default function FeedbackForm({ context }: { context?: string }) {
   const [type, setType] = useState("content");
   const [message, setMessage] = useState("");
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState<Status>("idle");
+  const inFlight = useRef(false);
+  const emailOpened = useRef(false);
 
   const canSend = message.trim().length >= 3 && status !== "sending";
 
+  const draftText = `Type: ${type}\n${context ? `Page: ${context}\n` : ""}From: ${email || "anonymous"}\n\n${message}`;
+
   function mailtoFallback() {
+    // One hand-off per draft: released again only by "Back to edit", so a rapid double activation
+    // can't open two drafts or log feedback_email_opened twice.
+    if (emailOpened.current) return;
+    emailOpened.current = true;
     const to = contactEmail || "";
     const subject = encodeURIComponent(`[Interview Guru] ${type} feedback`);
-    const body = encodeURIComponent(
-      `Type: ${type}\n${context ? `Page: ${context}\n` : ""}From: ${email || "anonymous"}\n\n${message}`,
-    );
     // If no contact email is configured, still surface the content so it isn't lost.
-    window.location.href = `mailto:${to}?subject=${subject}&body=${body}`;
-    sendGAEvent("event", "feedback_submit", { type, context: context || "", method: "mailto" });
+    window.location.href = `mailto:${to}?subject=${subject}&body=${encodeURIComponent(draftText)}`;
+    setStatus("email");
+    // A mailto: link only hands off to the visitor's mail app — we can't know the email was sent,
+    // so this is deliberately NOT feedback_submit (which means a confirmed submission).
+    sendGAEvent("event", "feedback_email_opened", { type, page: pageFromContext(context) });
   }
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!canSend) return;
+    // The ref (not just `status`) blocks a second submit fired before React re-renders the disabled button.
+    if (!canSend || inFlight.current) return;
+    inFlight.current = true;
     setStatus("sending");
 
     const payload = { type, message, email, context: context || "", at: new Date().toISOString() };
 
     if (!feedbackEndpoint) {
+      // Lock stays held while the email draft is showing (released by "Back to edit"), so a second
+      // submit can't flip the form back to "sending" and strand it there.
       mailtoFallback();
-      setStatus("sent");
       return;
     }
 
@@ -51,11 +73,55 @@ export default function FeedbackForm({ context }: { context?: string }) {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify(payload),
       });
-      if (res.ok) sendGAEvent("event", "feedback_submit", { type, context: context || "", method: "endpoint" });
+      if (res.ok) sendGAEvent("event", "feedback_submit", { type, page: pageFromContext(context) });
       setStatus(res.ok ? "sent" : "error");
     } catch {
       setStatus("error");
+    } finally {
+      inFlight.current = false;
     }
+  }
+
+  if (status === "email") {
+    return (
+      <div className="card p-6 text-center sm:p-8" role="status">
+        <span className="text-4xl" aria-hidden="true">
+          ✉️
+        </span>
+        <h3 className="mt-3 text-lg font-bold text-white">Email draft opened — nothing has been sent yet</h3>
+        <p className="mx-auto mt-2 max-w-md text-sm text-slate-300">
+          This site can&apos;t receive or store feedback directly right now. Your email app should have opened
+          with your message ready — you still need to press <strong>Send</strong> there.
+        </p>
+        <p className="mx-auto mt-3 max-w-md text-sm text-slate-400">
+          Nothing opened? Copy your message and email it to{" "}
+          {contactEmail ? (
+            <a href={`mailto:${contactEmail}`} className="text-brand-300 underline">
+              {contactEmail}
+            </a>
+          ) : (
+            <Link href="/contact" className="text-brand-300 underline">
+              the address on our Contact page
+            </Link>
+          )}
+          .
+        </p>
+        <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
+          <CopyButton value={draftText} label="Copy my message" copiedLabel="✓ Copied" className="btn-secondary" />
+          <button
+            type="button"
+            onClick={() => {
+              emailOpened.current = false;
+              inFlight.current = false;
+              setStatus("idle");
+            }}
+            className="btn-secondary"
+          >
+            Back to edit
+          </button>
+        </div>
+      </div>
+    );
   }
 
   if (status === "sent") {
@@ -127,6 +193,13 @@ export default function FeedbackForm({ context }: { context?: string }) {
 
       {context && <p className="mt-3 text-xs text-slate-500">Attached context: {context}</p>}
 
+      {!feedbackEndpoint && (
+        <p className="mt-4 rounded-lg border border-amber-500/30 bg-amber-500/10 px-3 py-2 text-sm text-amber-200">
+          Heads up: this form doesn&apos;t save feedback on the website. It opens a draft in your email app, and
+          the message is only delivered if you press Send there.
+        </p>
+      )}
+
       {status === "error" && (
         <p className="mt-4 rounded-lg border border-rose-500/30 bg-rose-500/10 px-3 py-2 text-sm text-rose-200">
           Couldn&apos;t send right now.{" "}
@@ -140,7 +213,7 @@ export default function FeedbackForm({ context }: { context?: string }) {
       <div className="mt-5 flex items-center justify-between gap-3">
         <p className="text-xs text-slate-500">No login. We read every message.</p>
         <button type="submit" disabled={!canSend} className="btn-primary disabled:opacity-50">
-          {status === "sending" ? "Sending…" : "Send feedback"}
+          {status === "sending" ? "Sending…" : feedbackEndpoint ? "Send feedback" : "Open email draft"}
         </button>
       </div>
     </form>

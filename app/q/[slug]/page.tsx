@@ -321,6 +321,8 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
             <ShareButton url={shareUrl} title={q.question} />
             <Link
               href={reportHref}
+              rel="nofollow"
+              prefetch={false}
               className="btn-pill"
               aria-label="Report issue with this question"
             >

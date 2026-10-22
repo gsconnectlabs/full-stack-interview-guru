@@ -1810,6 +1810,69 @@ on the first real submission after this deploys; `ebook_cta_click` has been firi
 
 ---
 
+# Decision #048
+
+## Title
+
+Stop Crawling `/feedback` Variants; Make Feedback Events Honest; Two Targeted Content Accuracy Fixes
+
+### Status
+
+✅ Approved (Owner-directed 2026-10-22) — implemented in the working tree, not yet committed
+
+### Reason
+
+A GA4 + Search Console review (22 Sep – 21 Oct 2026) showed ~1.6k "users" of which ~1.5k were
+Singapore, 100% "direct", 0s engagement, concentrated on `/feedback` (614 views). **Confirmed from the
+repo/live bundle:** `/feedback` was in the sitemap, `robots.txt` was `Allow: /` with no exclusions, and
+every question page links to `/feedback?context=<question>` — ~316 distinct crawlable URLs.
+**Not confirmed:** that the traffic is bots. The repo cannot establish that; the pattern is
+consistent with automated crawling, nothing more. Separately, the live JS bundle shows
+`NEXT_PUBLIC_FEEDBACK_ENDPOINT` is unset in production, so every submission takes the `mailto:`
+fallback — which only opens the visitor's mail app but shows "Thank you!". `feedback_submit` (DECISIONS
+#047) fired on that path, so it would have recorded a hand-off as a submission.
+
+### Implementation
+
+- **`app/robots.ts`** — `disallow: "/feedback"` (prefix match covers `?context=` variants). Crawler
+  hint only, not security. **`app/sitemap.ts`** — `/feedback` removed (a sitemap entry that robots.txt
+  blocks is contradictory). No `noindex` added: a robots-blocked page can't be read for its `noindex`.
+  Trade-off: if `/feedback` is already indexed it may linger as "indexed, though blocked" — check in GSC.
+- **Report-issue links** (`app/q/[slug]/page.tsx`) — `rel="nofollow"` + `prefetch={false}` (stops
+  Next.js prefetching a distinct `/feedback?context=…` per question page); `HelpfulVote.tsx` link gets
+  `rel="nofollow"`. Destinations and `context` parameters unchanged.
+- **`components/FeedbackForm.tsx`** — `feedback_submit` now fires only on confirmed endpoint success;
+  the `mailto:` path fires new `feedback_email_opened`. Params are `type` and `page` (a `/q/<slug>` path
+  extracted from `context`, else empty) — no free text, no form content. A `useRef` in-flight guard
+  stops a second submit before React re-renders the disabled button (a scripted double-click had fired
+  two requests and two events). **Follow-up in the same working tree:** the form no longer claims
+  success on the `mailto:` path. "Thank you!" now appears only after a configured endpoint returns OK;
+  without an endpoint the button reads "Open email draft", an amber notice says the site doesn't save
+  feedback, and after the draft opens a panel says "Email draft opened — nothing has been sent yet"
+  (press Send in the mail app; copy-message button; contact address as fallback; "Back to edit" keeps the
+  text). A second ref locks the email hand-off so a rapid double activation can't open two drafts, log
+  two events, or strand the form in "sending" (caught in browser testing).
+- **Ebook CTA left unchanged.** Code review found the click handler correct on both mobile and desktop
+  (one `ebook_cta_click` was recorded). Low counts are consistent with few real visitors reaching the
+  10-second timer. Known pre-existing quirk, not changed: the impression timer re-arms on every client
+  route change, so one visible CTA can log repeated `ebook_cta_impression` events.
+- **Content** — `rest-idempotency`: explicit PUT-vs-POST comparison table and a "DELETE is idempotent in
+  state, not status code" note (top queries: PUT vs POST, idempotent DELETE). `dynamodb-partition-key`:
+  replaced "hundreds of partitions" and the "only 3 physical partitions" claim with the documented
+  per-partition limits (3,000 RCU / 1,000 WCU per second), plus a short, caveated note that the partition
+  count isn't user-configurable. `hashmap-resize-load-factor` and all titles/metadata left unchanged.
+
+### Manual actions (not doable from the repo)
+
+1. Set `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (e.g. Formspree) in Vercel and redeploy — until then no feedback
+   is stored and `feedback_submit` cannot fire.
+2. GA4 (needs Editor): mark `ebook_cta_click`/`feedback_submit` as key events; consider an Internal-traffic
+   or data filter only after the traffic is validated by landing-page path, source/medium, engagement,
+   event sequences and Vercel logs — never a blanket Singapore exclusion. Filters don't repair history.
+3. GSC: check whether `/feedback` is indexed; request re-crawl of robots.txt.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1821,7 +1884,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-09-15 (Decision #047 — feedback_submit GA4 event + ebook CTA/feedback key events)
+- **Last Updated:** 2026-10-22 (Decision #048 — /feedback crawl fix, honest feedback events, content accuracy fixes)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

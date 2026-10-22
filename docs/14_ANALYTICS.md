@@ -138,7 +138,8 @@ Array.from(document.querySelectorAll('script[src]'))
 | **`ebook_cta_impression`** | The floating ebook CTA (`components/EbookFloatingCta.tsx`) becomes visible (10s after page load, any page except `/store`) | `location` (pathname) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_click`** | The floating ebook CTA's link is clicked | `location` (pathname), `destination` (`"/store"`) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_dismiss`** | The floating ebook CTA's close button is clicked | `location` (pathname) | DECISIONS #041, 2026-08-21 |
-| **`feedback_submit`** | The feedback form (`components/FeedbackForm.tsx`) is successfully submitted — either the configured `feedbackEndpoint` returns `ok`, or (no endpoint configured / a failed submit's "Email it instead" recovery) the `mailto:` fallback opens | `type` (content/idea/bug/praise), `context` (page the form was opened from, if any), `method` (`"endpoint"` or `"mailto"`) | DECISIONS #047, 2026-09-15 |
+| **`feedback_submit`** | The feedback form (`components/FeedbackForm.tsx`) submission is confirmed — the configured `feedbackEndpoint` returned `ok` | `type` (content/idea/bug/praise), `page` (`/q/<slug>` or empty) | DECISIONS #047 (narrowed to endpoint-success-only in #048, 2026-10-22) |
+| **`feedback_email_opened`** | The feedback form's `mailto:` fallback opened (no endpoint configured, or "Email it instead" after a failure). Not a confirmed send | `type`, `page` | DECISIONS #048, 2026-10-22 |
 
 Implementation: `GumroadCtaButton` calls `sendGAEvent("event", "gumroad_cta_click", { product, destination })`
 from `@next/third-parties/google` — the same package already loading GA, no new dependency. `sendGAEvent`
@@ -152,11 +153,18 @@ close button. All three carry `location` (the pathname the CTA was shown/acted o
 impression → click → `/store` traffic can be funnel-analyzed in GA4. The frequency cap itself
 (session-scoped `sessionStorage`, not GA) lives entirely client-side — see DECISIONS #041.
 
-`FeedbackForm` fires `feedback_submit` once per successful submission, at the two points the
-component already treats as "sent": inside `mailtoFallback()` (covers both the no-endpoint-configured
-path and the error state's "Email it instead" recovery) and right after a configured endpoint responds
-`ok`. `method` distinguishes which path fired it. No event fires on a failed/pending submission — only
-on the ones the user actually completed. This does **not** cover the separate 👍/👎 "Was this helpful?"
+`FeedbackForm` fires `feedback_submit` only when a configured `feedbackEndpoint` responds `ok` — the
+one case where a submission is actually confirmed. When no endpoint is configured (or the visitor
+picks "Email it instead" after a failure) the form falls back to a `mailto:` link, which only hands
+off to the visitor's mail app; that path fires a separate **`feedback_email_opened`** event instead,
+because we can't know the email was sent. Params on both: `type` and `page` (a `/q/<slug>` path
+extracted from the `context` query string, or empty — never free text or anything typed into the
+form). Nothing fires on validation failure or a failed request. The form UI matches the events: the
+"Thank you!" confirmation appears only after endpoint success; the `mailto:` path shows an "Email draft
+opened — nothing has been sent yet" panel (with a copy-message button and a fallback address) and the
+submit button reads "Open email draft". **As of 2026-10-22 the production build
+has no `NEXT_PUBLIC_FEEDBACK_ENDPOINT` set, so only `feedback_email_opened` can fire until one is
+configured in Vercel.** This does **not** cover the separate 👍/👎 "Was this helpful?"
 widget (`components/HelpfulVote.tsx`) — that stays `localStorage`-only, unchanged; only the text
 feedback form was in scope for this event (owner-approved 2026-09-15).
 
@@ -203,7 +211,7 @@ islands (no new always-on client JS); and document each event here as it ships.
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-09-15 (Added `feedback_submit` event on `FeedbackForm` — DECISIONS #047; marked `ebook_cta_click` and `feedback_submit` as GA4 key events)
+- **Last Updated:** 2026-10-22 (`feedback_submit` narrowed to confirmed endpoint success; new `feedback_email_opened` for the mailto fallback — DECISIONS #048)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

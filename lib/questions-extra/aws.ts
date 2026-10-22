@@ -397,7 +397,7 @@ export const awsExtra: Question[] = [
         headers: ["", "Bad key: status (3 values)", "Good key: userId (millions of values)"],
         tableRows: [
           ["Distinct key values", "3", "~1 per user — millions"],
-          ["Where traffic lands", "Every request collapses onto one of 3 partitions", "Requests spread across hundreds of partitions"],
+          ["Where traffic lands", "Every request collapses onto one of 3 partitions", "Requests spread across many partitions"],
           ["Per-partition ceiling", "Hit almost immediately, no matter total provisioned capacity", "Each partition stays well under AWS's per-partition throughput ceiling"],
           ["Result at scale", "Throttled (ProvisionedThroughputExceededException) even with capacity to spare table-wide", "Throughput scales close to linearly with provisioned capacity"],
         ],
@@ -410,7 +410,12 @@ export const awsExtra: Question[] = [
       {
         type: "text",
         content:
-          "**Adaptive capacity helps, but only up to a point.** DynamoDB continuously monitors traffic per partition and, when it detects a hot partition, transparently isolates that partition's keys and boosts throughput toward it — instantly for isolated hot keys since 2019, without any table resizing or manual intervention. What it **can't** do is rescue a pathologically low-cardinality key design: adaptive capacity can boost one hot partition's share of the table's **total** provisioned throughput, but it can't manufacture throughput the table doesn't have, and a 3-value partition key still means only 3 physical partitions exist to receive that boosted share, capping how far it can stretch. Adaptive capacity buys headroom for **uneven** access on an otherwise reasonable key; it's not a substitute for high-cardinality key design.",
+          "**Adaptive capacity helps, but only up to a point.** DynamoDB continuously monitors traffic per partition and, when it detects a hot partition, transparently isolates that partition's keys and boosts throughput toward it — instantly for isolated hot keys since 2019, without any table resizing or manual intervention. What it **can't** do is rescue a pathologically low-cardinality key design: adaptive capacity can boost one hot partition's share of the table's **total** provisioned throughput, but it can't manufacture throughput the table doesn't have, and a single partition is still bounded by DynamoDB's documented per-partition limits (up to 3,000 read request units and 1,000 write request units per second), so a design that funnels traffic through a handful of key values hits that ceiling however the table is provisioned. Adaptive capacity buys headroom for **uneven** access on an otherwise reasonable key; it's not a substitute for high-cardinality key design.",
+      },
+      {
+        type: "text",
+        content:
+          "**You don't calculate or configure the number of partitions — DynamoDB manages it.** It places each item by hashing its partition key, and splits partitions automatically as data grows or traffic rises (on-demand tables also adapt to traffic on their own). The figure worth designing around is the per-partition limit above. As a rough back-of-envelope check, peak writes per second ÷ 1,000 and peak reads per second ÷ 3,000 give a lower bound on how many evenly-used partition key values you need in play at once. It's an estimate for judging key spread, not a formula DynamoDB exposes or guarantees.",
       },
       {
         type: "text",
