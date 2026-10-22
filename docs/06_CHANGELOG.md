@@ -50,6 +50,30 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Fixed (question pages scrolled horizontally on mobile, DECISIONS #049 follow-up) — 2026-10-22
+**Uncommitted.** `/q/[slug]` `<article>` now has `min-w-0`. As a grid item it defaulted to `min-width: auto`, so
+wide tables/code stretched the column past the viewport (article 708–764px at 375px; also overflowing at 390px,
+768px on `dynamodb-partition-key`, and 1024px with the sidebar pushed off-screen). One class, no global overflow
+hiding; tables and code blocks still scroll inside their own boxes. Verified on `rest-idempotency`, `what-is-queue`
+and `dynamodb-partition-key` at 375/390/768/1024/1280px.
+
+### Changed (Amazon Associates affiliate products replace Featured Products, DECISIONS #049) — 2026-10-22
+**Uncommitted.** The Featured Products section (home + every question page) now shows the three supplied
+Amazon affiliate products instead of the three old amazon.in placeholders. Text-only cards (no images,
+prices, ratings or availability), the Associates disclosure above the links, exact `link.amazon/...` URLs
+rendered verbatim with `rel="sponsored nofollow noopener noreferrer"`, and a new `affiliate_product_click`
+GA4 event. `components/AmazonProductCard.tsx` deleted (it rewrote URLs and could append a tag);
+`NEXT_PUBLIC_AMAZON_TAG` removed from `.env.example`. Ad slots, the ebook CTA and the Ebook Store are
+unchanged. See DECISIONS #049 for the open Amazon-compliance questions.
+
+**Follow-up the same day (still uncommitted), after a read-only review:** disclosure changed to Amazon's exact
+"As an Amazon Associate I earn from qualifying purchases."; all copied listing descriptions and the "From the
+Amazon listing" label removed (cards are now name + category chip + link: BenQ EW2790U 27-inch Monitor, Acer Aspire
+One Laptop, Wakefit Gravita Ergonomic Office Chair); compact mobile rows — section height at 375px 1,229px → 438px
+on the home page. URLs, `rel`, placement and `affiliate_product_click` unchanged (its `product_name` values are the
+shorter names). A pre-existing question-page overflow at 375px (article grid column lacks `min-w-0`) was found and
+**not** fixed; see DECISIONS #049.
+
 ### Changed (prepare for a real form endpoint: `HelpfulVote` no longer POSTs, DECISIONS #048 follow-up) — 2026-10-22
 **Uncommitted.** Groundwork for setting `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (e.g. Formspree). `HelpfulVote`
 used to POST every 👍/👎 to that same endpoint; once configured, each vote would have become an emailed
@@ -1293,7 +1317,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-10-22 (/feedback crawl fix, honest feedback events — DECISIONS #048)
+- **Last Updated:** 2026-10-22 (Amazon affiliate products replace Featured Products — DECISIONS #049)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

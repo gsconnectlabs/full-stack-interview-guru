@@ -138,6 +138,7 @@ Array.from(document.querySelectorAll('script[src]'))
 | **`ebook_cta_impression`** | The floating ebook CTA (`components/EbookFloatingCta.tsx`) becomes visible (10s after page load, any page except `/store`) | `location` (pathname) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_click`** | The floating ebook CTA's link is clicked | `location` (pathname), `destination` (`"/store"`) | DECISIONS #041, 2026-08-21 |
 | **`ebook_cta_dismiss`** | The floating ebook CTA's close button is clicked | `location` (pathname) | DECISIONS #041, 2026-08-21 |
+| **`affiliate_product_click`** | A "View on Amazon" link in the affiliate products section (`components/FeaturedProducts.tsx` → `AffiliateProductLink.tsx`) is clicked, on the home page and question pages | `product_id`, `product_name`, `product_category` (monitor / laptop / office-chair) | DECISIONS #049, 2026-10-22 |
 | **`feedback_submit`** | The feedback form (`components/FeedbackForm.tsx`) submission is confirmed — the configured `feedbackEndpoint` returned `ok` | `type` (content/idea/bug/praise), `page` (`/q/<slug>` or empty) | DECISIONS #047 (narrowed to endpoint-success-only in #048, 2026-10-22) |
 | **`feedback_email_opened`** | The feedback form's `mailto:` fallback opened (no endpoint configured, or "Email it instead" after a failure). Not a confirmed send | `type`, `page` | DECISIONS #048, 2026-10-22 |
 
@@ -168,6 +169,12 @@ configured in Vercel.** This does **not** cover the separate 👍/👎 "Was this
 widget (`components/HelpfulVote.tsx`) — that stays `localStorage`-only, unchanged; only the text
 feedback form was in scope for this event (owner-approved 2026-09-15).
 
+`affiliate_product_click` fires from `AffiliateProductLink`'s `onClick` — one event per primary click, with
+product metadata only (nothing about the visitor), and it never delays or intercepts navigation. Known
+limits: middle-click / "open in new tab" via the context menu don't trigger `onClick` and so aren't counted;
+ad blockers and consent settings can suppress GA entirely; and GA4 counts clicks *out*, not Amazon
+conversions (those are only visible in Amazon Associates reporting).
+
 ## GA4 "Key events" (conversions) — NOT yet marked, blocked on permissions
 
 Firing a GA4 event does not make it a **key event** (GA4's term for a conversion) — that's a separate,
@@ -196,7 +203,6 @@ performance or the reading experience):
 | **Helpful Vote** | The 👍/👎 "Was this helpful?" widget (`components/HelpfulVote.tsx`) is clicked — currently `localStorage`-only, no GA event | `slug`, `helpful` |
 | **Donation Click** | A Donate option is clicked | `method` (UPI/BMC/Ko-fi/…) |
 | **External Link Click** | Any outbound link click | `url`, `location` |
-| **Amazon Affiliate Click** | A Featured Product card click | `product`, `tag` |
 | **Outbound Link** | Non-affiliate outbound navigation | `url` |
 | **Scroll Depth** | 25/50/75/100% of an article read | `percent`, `slug` |
 | **Session Engagement** | Engaged-time / return visit signals | GA4 built-ins where possible |
@@ -211,7 +217,7 @@ islands (no new always-on client JS); and document each event here as it ships.
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-10-22 (`feedback_submit` narrowed to confirmed endpoint success; new `feedback_email_opened` for the mailto fallback — DECISIONS #048)
+- **Last Updated:** 2026-10-22 (new `affiliate_product_click` — DECISIONS #049; earlier today: `feedback_submit` narrowed, `feedback_email_opened` added — #048)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

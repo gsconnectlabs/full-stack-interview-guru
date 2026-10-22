@@ -1882,6 +1882,86 @@ fallback — which only opens the visitor's mail app but shows "Thank you!". `fe
 
 ---
 
+# Decision #049
+
+## Title
+
+Replace the Featured Products section with three Amazon Associates affiliate products
+
+### Status
+
+✅ Owner-directed 2026-10-22 — implemented in the working tree, not yet committed
+
+### Reason
+
+The Amazon Associates account was approved; the owner supplied three affiliate links (BenQ EW2790U
+monitor, Acer Aspire One laptop, Wakefit Gravita chair) to replace the three placeholder amazon.in
+product links that had been shown since the original Featured Products feature.
+
+### Implementation
+
+- **Where it renders (unchanged placement):** `components/FeaturedProducts.tsx` on the home page and after
+  the answer on every `/q/[slug]` page — updated in place, no new competing section. The dashed
+  "Advertise With Us" slot (`AdvertisementPlaceholder`) beneath it, the `AdSlot` units, the ebook CTA and
+  the Ebook Store (own products) were left untouched.
+- **`lib/products.ts`** — now `{ id, name, category, categoryLabel, url }`. URLs are the exact
+  supplied `link.amazon/...` links and are rendered verbatim.
+- **`components/AmazonProductCard.tsx` deleted** (no remaining references). It parsed an ASIN, rebuilt a
+  `https://www.<host>/dp/<ASIN>` URL and could append `?tag=` from `NEXT_PUBLIC_AMAZON_TAG`, which would
+  have rewritten the supplied short links; it also attempted iframe previews. `NEXT_PUBLIC_AMAZON_TAG` was
+  removed from `.env.example` since nothing reads it.
+- **Presentation:** name + neutral category chip + link only — no Amazon images, prices, ratings, discounts,
+  availability, listing descriptions/specs, or warranty/promotional claims. (First pass showed the supplied
+  listing text under a "From the Amazon listing" label; removed in the follow-up below.) Existing
+  `card`/`chip`/`btn-secondary` tokens, teal accent (gold stays accent-only, DECISIONS #036).
+- **Heading:** "Tools for Your Developer Workspace" rather than the suggested "Recommended Tools…", because
+  "Recommended" implies FIG endorsed or tested the products, which the brief said not to imply.
+- **Disclosure:** Amazon's exact wording, "As an Amazon Associate I earn from qualifying purchases.", directly
+  above the links (not a footnote). Replaces the old, differently-worded footnote.
+- **Links:** `target="_blank"` (as before) with `rel="sponsored nofollow noopener noreferrer"`; visible label
+  "View on Amazon ↗" with the product name and "opens in a new tab" for screen readers.
+- **Analytics:** new `affiliate_product_click` (`product_id`, `product_name`, `product_category`) from a
+  small client component, `AffiliateProductLink`; the rest of the section is server-rendered.
+
+### Follow-up after a read-only review (2026-10-22, same working tree)
+
+A review against Amazon's India Associates Operating Agreement (read via a summarising fetch tool — verify in
+Associates Central) flagged: (a) the disclosure wording differed from the required "As an Amazon Associate I
+earn from qualifying purchases."; (b) §11.3 restricts product titles/descriptions/images/prices to the Product
+Advertising API/Data Feed, bars altering that content, and limits caching of non-image content to 24 hours —
+hand-copied, reformatted listing text on a static page is the likeliest problem. Changes made:
+
+- Disclosure now uses the exact sentence, once per section, immediately before the links (14px, ≥14:1 contrast).
+- All copied descriptions and the "From the Amazon listing" label (3.7:1 contrast) removed. Names are now
+  "BenQ EW2790U 27-inch Monitor", "Acer Aspire One Laptop", "Wakefit Gravita Ergonomic Office Chair" with chips
+  Monitor / Laptop / Office Chair. `affiliate_product_click`'s `product_name` therefore carries these shorter names.
+- Compact layout: mobile rows (name left, 44px-tall link right, 343px wide at 375px viewport) and 3 columns on
+  md+. Mobile section height 1,229px → 438px on the home page (a true 375px viewport).
+
+### Open compliance questions and remaining issues
+
+1. Not verified: that the disclosure is sufficient everywhere the programme requires (site-wide, /disclaimer).
+   `/privacy` mentions affiliate pages generally; no other disclosure exists.
+2. Not verified: that `link.amazon` short links are acceptable under the programme terms (the agreement text
+   read does not mention them) and carry your tag — they were deliberately never fetched (self-click risk).
+3. Even product names alone are Amazon-listing-derived text; whether that is acceptable without the Product
+   Advertising API is unverified. Full Amazon Associates compliance is **not** claimed.
+4. **Pre-existing layout bug — fixed afterwards (see below).** On `/q/*` pages the `<article>` grid column had no
+   `min-w-0`, so it grew to its widest content and the page scrolled sideways; the product rows inherited that width.
+
+### Follow-up: question-page horizontal overflow (2026-10-22)
+
+`app/q/[slug]/page.tsx` — `<article>` (a grid item of `grid gap-8 lg:grid-cols-[1fr_300px]`) gained `className="min-w-0"`.
+A grid item defaults to `min-width: auto`, i.e. its widest unbreakable content, so wide tables/code stretched the
+column past the viewport. Measured before the fix (iframe widths): `rest-idempotency` overflowed at 375/390/1024px
+(article 708px), `what-is-queue` at 375px (362px), `dynamodb-partition-key` at 375/390/768/1024px (764px). After:
+no document overflow on any of the three at 375/390/768/1024/1280px; article 333/348/710/634/772px. Code blocks and
+tables scroll inside their own boxes (existing `overflow-x-auto`); sidebar stacks below under 1024px and is a sticky
+300px column from 1024px. No global `overflow-x: hidden`, no content truncated. At 375px the affiliate section is
+477px tall on question pages (438px at 390px; 288–312px on desktop) with links inside the viewport.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1893,7 +1973,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-10-22 (Decision #048 — /feedback crawl fix, honest feedback events, content accuracy fixes)
+- **Last Updated:** 2026-10-22 (Decision #049 — Amazon Associates affiliate products replace Featured Products)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

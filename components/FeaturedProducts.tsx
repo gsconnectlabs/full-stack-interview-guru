@@ -1,35 +1,39 @@
 import { products } from "@/lib/products";
-import AmazonProductCard from "./AmazonProductCard";
+import AffiliateProductLink from "./AffiliateProductLink";
 
 /**
- * Reusable "Featured Products" section, driven entirely by Amazon URLs in
- * lib/products.ts — add a product by pasting its URL, no images or data required.
- *
- * Layout: 3-up responsive grid on desktop, swipeable snap carousel on mobile.
+ * Amazon affiliate equipment section, driven by lib/products.ts. Shown on the home page and after
+ * the answer on question pages. Name + neutral category + link only (no listing copy, images, prices,
+ * ratings or availability). The Amazon Associates disclosure sits directly above the links.
+ * Mobile: three compact rows (name left, link right). md+: three columns.
  */
 export default function FeaturedProducts() {
   return (
     <section aria-labelledby="featured-products-title">
-      <div className="flex flex-col gap-1">
-        <h2 id="featured-products-title" className="text-2xl font-bold text-white">
-          ⭐ Featured Products
-        </h2>
-        <p className="text-sm text-slate-400">Support our platform by exploring our recommended products.</p>
-      </div>
-
-      {/* Mobile: horizontal snap carousel · sm+: 3-up grid */}
-      <div className="mt-6 flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 sm:grid sm:grid-cols-3 sm:overflow-visible sm:pb-0 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-        {products.map((p) => (
-          <div key={p.url} className="flex min-w-[82%] snap-start sm:min-w-0">
-            <AmazonProductCard url={p.url} title={p.title} badge={p.badge} className="w-full" />
-          </div>
-        ))}
-      </div>
-
-      <p className="mt-3 text-center text-xs text-slate-600 sm:text-left">
-        As an Amazon affiliate, purchases through these links may earn us a small commission — at no extra cost
-        to you. It helps keep Full Stack Interview Guru free.
+      <h2 id="featured-products-title" className="text-2xl font-bold text-white">
+        Tools for Your Developer Workspace
+      </h2>
+      <p className="mt-1 text-sm text-slate-400">Equipment for a comfortable, productive setup.</p>
+      <p className="mt-3 text-sm font-medium text-slate-200">
+        As an Amazon Associate I earn from qualifying purchases.
       </p>
+
+      <ul className="mt-3 grid gap-2 md:grid-cols-3 md:gap-4">
+        {products.map((p) => (
+          <li
+            key={p.id}
+            className="card card-hover flex items-center justify-between gap-3 p-3 md:flex-col md:items-stretch md:gap-4 md:p-5"
+          >
+            <div className="min-w-0">
+              <span className="chip">{p.categoryLabel}</span>
+              <h3 className="mt-1.5 text-sm font-semibold leading-snug text-slate-100 md:mt-3 md:text-base">
+                {p.name}
+              </h3>
+            </div>
+            <AffiliateProductLink product={p} />
+          </li>
+        ))}
+      </ul>
     </section>
   );
 }

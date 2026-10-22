@@ -249,8 +249,9 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
       />
 
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_300px]">
-        {/* Main */}
-        <article>
+        {/* Main. `min-w-0`: a grid item defaults to min-width:auto (its widest content), so without it
+            wide tables/code stretched this column past the viewport and the page scrolled sideways. */}
+        <article className="min-w-0">
           {/* Meta row */}
           <div className="flex flex-wrap items-center gap-2">
             <DifficultyBadge level={q.difficulty} />
