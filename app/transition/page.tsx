@@ -40,7 +40,7 @@ export default function TransitionPage() {
 
       {/* Active path */}
       <div className="mt-8 grid gap-5 lg:grid-cols-[1fr_1.3fr]">
-        <div className="card bg-gradient-to-br from-brand-500/10 to-sky-500/[0.04] p-6">
+        <div className="card min-w-0 bg-gradient-to-br from-brand-500/10 to-sky-500/[0.04] p-6">
           <span className="text-4xl">{active.icon}</span>
           <h2 className="mt-3 text-xl font-bold text-white">{active.background}</h2>
           <p className="mt-2 text-slate-300">{active.pitch}</p>
@@ -59,7 +59,7 @@ export default function TransitionPage() {
         </div>
 
         {/* Roadmap */}
-        <div className="card p-6">
+        <div className="card min-w-0 p-6">
           <h3 className="text-sm font-semibold uppercase tracking-wider text-slate-500">Your roadmap</h3>
           <ol className="mt-4 space-y-3">
             {active.roadmap.map((catId, i) => {

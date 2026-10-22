@@ -2,104 +2,88 @@
 
 # Session Summary
 
-- **Session Name:** Content depth on 15 thin, GSC-trafficked pages — AdSense "Low value content"
-  remediation, round 2 (DECISIONS #046)
-- **Date:** 2026-09-15
-- **Overall Progress:** AdSense's "Low value content" flag was still active after DECISIONS #045
-  (real named authorship) shipped — confirming that session's own prediction that the next lever would
-  be per-question content depth, not E-E-A-T. Owner supplied a fresh 28-day Search Console export. Full
-  audit of the content model found it is **316 typed `Question` objects** (not the ~1,970 the owner
-  initially estimated — each object renders exactly one `/q/` page), already emitting correct `QAPage`
-  JSON-LD (not `FAQPage` — confirmed firing via GSC's "Q&A rich results" Search Appearance row), with a
-  median of **~240 prose words per page**. Cross-referencing the thin-page list against GSC impressions
-  produced a 15-page priority list — thin pages that are also actually ranking with real traffic — and
-  the owner approved starting there.
-- **Release Status:** ✅ **Shipped.** Owner reviewed the audit + priority list, made three scoping calls
-  (skip "Real Talk from Guru" fabricated anecdotes; use the 15-page GSC-cross-referenced list; skip the
-  `hashmap-resize-load-factor` title/meta rewrite since it was already strong), then asked to commit as
-  one commit and update the release docs. Code + docs committed together to `main` in a single commit;
-  **not yet pushed** — owner has not asked for a push this session.
+- **Session Name:** Editorial redesign — home, candidate, topic and question pages, nav/footer
+  (DECISIONS #050)
+- **Date:** 2026-10-22
+- **Overall Progress:** The owner supplied a detailed redesign brief: replace generic landing-page
+  patterns with a content-first, editorial layout; improve reading, navigation, discovery, mobile UX and
+  accessibility; keep the teal + gold identity, every URL, SEO signal, analytics event, affiliate link and
+  existing feature; no fabricated content or engagement tricks. The repo was inspected first (routes,
+  shared components, tokens, analytics, SEO, ads, affiliate section, docs), then the redesign was built on
+  the existing architecture. Dark-only theme kept — the light-default migration (ROADMAP H3/H4) remains a
+  separate item.
+- **Release Status:** ✅ **Committed on branch `feat/editorial-redesign`** (owner approved after reviewing
+  the report). **Not merged to `main`, not pushed, not deployed.**
 
 ---
 
 # Implementation Summary
 
-- **`lib/questions.ts`** — `what-is-jwt` (HS256 vs RS256, expiry/revocation, `shortAnswer`, new
-  followUps/commonMistakes/bestPractices, 1 reference), `aws-lambda` (cold-start mechanics, memory↔CPU
-  coupling, `shortAnswer`, new followUps/commonMistakes/bestPractices, 1 reference), `two-sum`
-  (`shortAnswer`, duplicates/no-solution edge cases, new two-pointer code variant, 1 reference).
-- **`lib/questions-extra/java-collections.ts`** — `hashmap-resize-load-factor` (treeification,
-  ConcurrentHashMap resize contrast, 1 reference).
-- **`lib/questions-extra/aws.ts`** — `dynamodb-partition-key` (write-sharding — new Java code example,
-  1 reference), `dynamodb-single-table` (overloaded GSIs — new Java code example, 1 reference).
-- **`lib/questions-extra/multithreading.ts`** — `thread-interruption-cooperative-cancellation`
-  (`isInterrupted()` vs `Thread.interrupted()`), `daemon-threads-jvm-exit` (GC threads as daemon,
-  `ExecutorService` workers as non-daemon by default), `producer-consumer-wait-notify` (why `wait()`
-  requires the lock, spurious wakeups).
-- **`lib/questions-extra/jvm.ts`** — `stop-the-world-gc-tuning` (safepoints/time-to-safepoint, why
-  concurrent collectors still pause, allocation-rate vs. pause-frequency, new GC-logging command
-  example, 1 reference), `shutdown-hooks-graceful-drain` (uncaught exception inside a shutdown hook),
-  `g1-gc-internals` (`MaxGCPauseMillis` mechanics, humongous-object cost, `G1HeapRegionSize` tuning, new
-  GC command example, 1 reference).
-- **`lib/questions-extra/json.ts`** — `what-is-json` (strict-JSON-vs-JS-object-literal code comparison,
-  stringify/parse round-trip gotchas, 1 reference).
-- **`lib/questions-extra/core-java.ts`** — `java-memory-leak-diagnosis` (leak vs. under-sized-heap
-  GC-log test, shallow vs. retained size in MAT).
-- **`lib/questions-extra/advanced-java.ts`** — `dynamic-proxy` (why CGLIB can't proxy `final`,
-  `InvocationHandler` exception propagation, 1 reference).
-- Every addition specifically answers a `followUps` entry the page already listed but never answered in
-  prose — checked against the prior content-depth session (`9aad1fc`) so nothing already covered
-  (`dynamodb-partition-key`'s before/after table, `hashmap-resize-load-factor`'s iteration-order note)
-  was duplicated.
-- No new `Question` schema fields — all additions use existing optional fields (`mindMap`, `handsOn`,
-  `followUps`, `commonMistakes`, `bestPractices`, `references`, `shortAnswer`). No URLs changed, no
-  existing `seoTitle`/`seoDescription`/`heading` overrides touched, no page outside `/q/` touched.
+- **Home (`app/page.tsx`):** left-aligned hero (same H1/tagline), search, value statement with live counts;
+  "Continue reading" (localStorage) + numbered Popular questions; "Learning paths" section replaces the
+  Revision Mode cards, metric tiles and Top-25 tiles; Beyond-the-questions as a ruled list; Ebook +
+  Feedback band; affiliate section + "Advertise With Us" moved to the end.
+- **Candidate index (`app/candidate/page.tsx`):** `TopicIndex detailed` — tracks with blurbs, live counts
+  and difficulty mix.
+- **Topic pages (`app/candidate/[category]/page.tsx`):** grouped Foundations / Core concepts / Advanced
+  (Easy / Medium / Hard) with jump links, real sub-topics covered, difficulty mix, previous/next topic in
+  the track. Emoji kept outside `<h1>` so its text is unchanged.
+- **Question pages (`app/q/[slug]/page.tsx`):** 46rem reading column; working "On this page" anchors
+  (sticky desktop rail + mobile `<details>`); gold-ruled short answer; larger prose; kv rows stack on
+  mobile; tables are focusable scroll regions; related questions add same-sub-topic links; affiliate block
+  moved after related + prev/next. Metadata, `QAPage` and `BreadcrumbList` code untouched.
+- **New:** `lib/learning-paths.ts`, `lib/recently-viewed.ts`, `components/NavMenu.tsx`, `TopicIndex.tsx`,
+  `QuestionList.tsx`, `TableOfContents.tsx`, `DifficultySpread.tsx`, `RecentlyViewed.tsx`,
+  `RecordVisit.tsx`. **Deleted:** `components/TopicCard.tsx`. **Restyled:** `QuestionCard` (list row),
+  `CodeBlock`, `DifficultyBadge` (+ compact), `FeaturedProducts`, `HelpfulVote`, `PrevNextNav`,
+  `SearchBar` (+ `align`), `Navbar` (opaque header), `Footer`, `globals.css` tokens.
+- **Fixed (pre-existing):** horizontal overflow on `/transition` (~600px at 375px) and `/environment`
+  (~23px) — grid items lacked `min-w-0`.
+- **Privacy:** new "Browser Storage" paragraph (helpful votes, ebook-reminder session flag, Continue reading).
 
 ---
 
 # Verification Summary
 
-- ✅ **TypeScript:** clean (`npx tsc --noEmit`), checked after every page edited.
-- ✅ **Production build:** green — all **316** `/q/` pages present, shared First Load JS unchanged at
-  **102 kB**.
-- ✅ **ESLint:** not configured in this project — `tsc` + `build` remain the standing gates.
-- ✅ **Word count:** measured consistently before/after with the same script (prose only — excludes
-  code so the figure can't be inflated by snippets): **5,762 → 8,908 words across the 15 pages (+55%)**.
-- ⚠️ **Not uniformly 800+ words per page, by design.** 6 of 15 cross 800 words once code examples are
-  counted too; the rest (460–650 words) had genuinely no further non-duplicative substance to add.
-  Flagged explicitly to the owner rather than padding to hit the number.
-- **Not verified this session:** no browser/dev-server check (this is a data-model content change with
-  no new UI, template logic, or schema shape — the existing `/q/[slug]/page.tsx` renders these fields
-  unconditionally already, exercised continuously by the 90%+ of pages that already populate them).
+- ✅ **TypeScript:** `npx tsc --noEmit` clean.
+- ✅ **Production build:** green — **361** static pages (unchanged vs `main`), shared First Load JS **102 kB**
+  (unchanged). Home 398 → 399 kB first load, `/q/[slug]` route JS 2.49 → 2.82 kB (measured against a
+  build of `main`).
+- ✅ **Responsive:** 17 key pages at 375 / 390 / 768 / 1024 / 1440px — no document-level horizontal
+  overflow; exactly one `<h1>` on each. Tables and code scroll inside their own boxes.
+- ✅ **SEO regression check:** saved HTML of 7 pages before editing and diffed after — title, description,
+  canonical, robots, OG, JSON-LD and H1 identical (after the H1-emoji fix); no internal links lost.
+- ✅ **Affiliate:** three `link.amazon` URLs unchanged, exact disclosure sentence present,
+  `rel="sponsored nofollow noopener noreferrer"`, `AffiliateProductLink` (GA4 `affiliate_product_click`)
+  untouched.
+- ✅ **Interaction:** mobile menu opens, Escape closes and returns focus; Continue reading appears after a
+  question visit; fresh loads show no failed requests.
+- **Not verified:** real iOS/Android devices or Safari; a screen-reader pass; GA4 event delivery (GA not
+  configured locally; event code unchanged); Lighthouse / Core Web Vitals.
 
 ---
 
 # Current Architecture Status
 
-- **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG.
-- **This session touched:** `lib/questions.ts` + 7 files under `lib/questions-extra/` (content only, no
-  schema/type changes), plus this doc set (`02_DECISIONS.md`, `06_CHANGELOG.md`, this file). No new
-  routes, no new component, no new dependency, no `lib/types.ts` change.
-- **Content model reality check (worth keeping in `01_PROJECT_CONTEXT.md`/marketing copy accurate):**
-  the site has **316** `/q/` questions, not "1,970+" — that figure was the owner's estimate going into
-  this session and doesn't match the actual `lib/questions.ts` + `lib/questions-extra/*.ts` content bank.
+- **Stack:** Next.js 15.5.19 (App Router) · TypeScript (strict) · React 19 · Tailwind v3 · SSG. No new
+  dependency, no route change, no `lib/types.ts` change.
+- **New client islands:** `NavMenu` (layout), `RecentlyViewed` (home), `RecordVisit` (question pages).
+- **Known pre-existing cost:** home and `/candidate` ship ~400 kB first load because `SearchBar` →
+  `lib/search.ts` bundles every question for client search. Not introduced by this work.
 
 ---
 
 # Current Roadmap Status
 
-- **This session — ✅ shipped.** Code + docs committed together to `main` in a single commit; **not
-  pushed** (owner did not ask for a push). See [06_CHANGELOG.md](./06_CHANGELOG.md) "Unreleased" →
-  "Improved (Content depth on 15 thin, GSC-trafficked pages...)" and
-  [02_DECISIONS.md](./02_DECISIONS.md) Decision #046 for full detail.
-- **Follow-up (owner's call, not code-blocking):**
-  1. Push to `origin/main` when the owner is ready.
-  2. Add `seoTitle`/`seoDescription` to `java-memory-leak-diagnosis` and `aws-lambda` (currently
-     without overrides) if desired.
-  3. Push the remaining 9 (of 15) pages further toward a literal 800+ words, if strict numeric
-     compliance matters more than genuinely-exhausted per-page depth.
-  4. The other ~300 questions not in this batch were explicitly out of scope this session — a
-     full-bank pass, if AdSense re-review still flags the site, is the likely next step.
-  5. Re-check the AdSense dashboard after the next crawl/review cycle to see whether "Low value
-     content" clears; if not, the next lever is probably the remaining ~300 pages' depth, or
-     investigating what else an automated content classifier weighs beyond prose length.
+- **This session — ✅ committed on `feat/editorial-redesign`.** See [06_CHANGELOG.md](./06_CHANGELOG.md)
+  "Unreleased" → "Changed (editorial redesign …)" and [02_DECISIONS.md](./02_DECISIONS.md) Decision #050.
+- **Follow-up (owner's call):**
+  1. Review the branch in a preview deploy or locally, then merge to `main` and push when ready.
+  2. Content-quality review: "Asked in" company tags appear on nearly every question (Amazon on 262 of
+     316) without a stated source — a credibility/AdSense risk.
+  3. Decide on the visible placeholder ad boxes (`AdSlot` "Google AdSense slot", 600px sidebar) and the
+     "Advertise With Us" box — they can read as unfinished to an AdSense reviewer.
+  4. "Two Sum" is a homepage Popular question but its category (Coding Challenges) has one question and is
+     unlisted.
+  5. Consider lazy-loading the search index to cut the ~400 kB first load on home/candidate.
+  6. ROADMAP H3/H4 (light default + `prefers-color-scheme`) is still open.

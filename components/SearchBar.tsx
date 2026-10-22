@@ -7,7 +7,14 @@ import { searchQuestions } from "@/lib/search";
 
 const EXAMPLES = ["hashmap", "stream api", "optional", "jwt", "docker", "lambda", "json", "python list"];
 
-export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }) {
+export default function SearchBar({
+  autoFocus = false,
+  align = "center",
+}: {
+  autoFocus?: boolean;
+  /** Alignment of the example-query chips under the input. */
+  align?: "center" | "start";
+}) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState(0);
@@ -71,12 +78,12 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
           aria-activedescendant={
             showResults && results[active] ? `search-opt-${results[active].slug}` : undefined
           }
-          className="w-full rounded-xl border border-white/10 bg-ink-900/80 py-4 pl-12 pr-4 text-base text-slate-100 shadow-sm outline-none ring-brand-500/0 transition placeholder:text-slate-500 focus:border-brand-500/50 focus:ring-4 focus:ring-brand-500/10"
+          className="w-full rounded-lg border border-white/10 bg-ink-900/80 py-4 pl-12 pr-4 text-base text-slate-100 shadow-sm outline-none ring-brand-500/0 transition placeholder:text-slate-500 focus:border-brand-400/70 focus:ring-2 focus:ring-brand-400/30"
         />
       </div>
 
       {open && query.trim() !== "" && (
-        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-xl border border-white/10 bg-ink-850 shadow-md shadow-black/30">
+        <div className="absolute left-0 right-0 top-full z-50 mt-2 overflow-hidden rounded-lg border border-white/10 bg-ink-850 shadow-md shadow-black/30">
           {results.length === 0 ? (
             <p className="px-4 py-6 text-center text-sm text-slate-400">
               No matches for “{query}”. Try <span className="text-brand-300">hashmap</span> or{" "}
@@ -113,7 +120,7 @@ export default function SearchBar({ autoFocus = false }: { autoFocus?: boolean }
       )}
 
       {!query && (
-        <div className="mt-3 flex flex-wrap items-center justify-center gap-2">
+        <div className={`mt-3 flex flex-wrap items-center gap-2 ${align === "center" ? "justify-center" : "justify-start"}`}>
           <span className="text-xs text-slate-500">Try:</span>
           {EXAMPLES.map((ex) => (
             <button

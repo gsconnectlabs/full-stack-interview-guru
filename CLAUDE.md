@@ -56,7 +56,7 @@ via `lib/site.ts`. Routing details in [docs/04_ARCHITECTURE.md](docs/04_ARCHITEC
 - **Server components by default.** Add `"use client"` only for genuine interactivity (copy/share,
   search box, AI section, forms). Keep components small, typed, and reusable — prefer composition over
   duplication (DECISIONS #022/#028).
-- Reuse existing pieces: `QuestionCard`, `TopicCard`, `Breadcrumb`, `JsonLd`, `CopyButton`,
+- Reuse existing pieces: `QuestionCard`/`QuestionList`, `TopicIndex`, `TableOfContents`, `Breadcrumb`, `JsonLd`, `CopyButton`,
   `ShareButton`, `AISection`, `PrevNextNav`, `LegalPage`, `ContactForm`, `FeedbackForm`, `Analytics`.
 
 ### Shared utilities & configuration files
@@ -204,7 +204,7 @@ Full catalogue + implementation guidance: [docs/14_ANALYTICS.md](docs/14_ANALYTI
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-08-12 (CE4 Java content batch — 25 questions, +java-8.ts; testing-checklist page count 330 → 355)
+- **Last Updated:** 2026-10-22 (Editorial redesign, DECISIONS #050 — reusable-components list updated)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

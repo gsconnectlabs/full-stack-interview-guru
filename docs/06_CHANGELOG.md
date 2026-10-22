@@ -50,6 +50,25 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (editorial redesign — home, candidate, topic, question pages, nav/footer; DECISIONS #050) — 2026-10-22
+**Uncommitted, branch `feat/editorial-redesign`.** No URL, title, description, canonical, robots or JSON-LD changes.
+- **Home:** left-aligned hero (same H1), search, "Continue reading" (localStorage) + numbered Popular questions;
+  "Learning paths" built from live data replaces the Revision Mode cards, metric tiles and Top-25 tiles; affiliate +
+  ad placeholder moved to the end.
+- **Candidate index:** `TopicIndex` — tracks with blurbs, live counts and difficulty mix (replaces `TopicCard` grid).
+- **Topic pages:** questions grouped Foundations / Core concepts / Advanced with jump links, real sub-topics covered,
+  difficulty mix, previous/next topic in the track. Emoji kept outside the `<h1>` so its text is unchanged.
+- **Question pages:** 46rem reading column; working "On this page" anchors (sticky desktop rail, mobile `<details>`);
+  short answer as a gold-ruled callout; prose at 16–17px/1.75; kv rows stack on mobile; tables are focusable
+  scroll regions; code blocks lose the faux window dots, gain a labelled "Copy code" and keyboard-scrollable `<pre>`;
+  related questions add same-sub-topic links; affiliate section moved after related + prev/next.
+- **Nav/footer:** `NavMenu` (aria-current, mobile menu, Escape to close); opaque header; footer headings are `h2`
+  (were `h4` with no parent heading), larger tap targets.
+- **Fixed:** pre-existing horizontal overflow on `/transition` (≈600px at 375px) and `/environment` (≈23px at 375px)
+  — grid items lacked `min-w-0`.
+- **Privacy:** new "Browser Storage" paragraph covering helpful votes, the ebook-reminder session flag and
+  "Continue reading".
+
 ### Fixed (question pages scrolled horizontally on mobile, DECISIONS #049 follow-up) — 2026-10-22
 **Uncommitted.** `/q/[slug]` `<article>` now has `min-w-0`. As a grid item it defaulted to `min-width: auto`, so
 wide tables/code stretched the column past the viewport (article 708–764px at 375px; also overflowing at 390px,
@@ -1317,7 +1336,7 @@ Comprehensive audit; repaired only what was necessary (no redesign, no behavior/
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-10-22 (Amazon affiliate products replace Featured Products — DECISIONS #049)
+- **Last Updated:** 2026-10-22 (Editorial redesign — DECISIONS #050)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

@@ -32,7 +32,7 @@ export default function HelpfulVote({ slug }: { slug: string }) {
   }
 
   return (
-    <div className="card mt-12 flex flex-col items-center gap-3 p-6 text-center sm:flex-row sm:justify-between sm:text-left">
+    <div className="mt-12 flex flex-col items-center gap-3 rounded-lg border border-ink-700/60 px-5 py-4 text-center sm:flex-row sm:justify-between sm:text-left">
       {voted ? (
         <p className="text-sm text-slate-300">
           {voted === "up" ? "🙌 Glad it helped!" : "🙏 Thanks — noted."}{" "}
@@ -47,6 +47,7 @@ export default function HelpfulVote({ slug }: { slug: string }) {
       {!voted && (
         <div className="flex gap-2">
           <button
+            type="button"
             onClick={() => vote("up")}
             className="btn-secondary px-4 py-2 text-sm"
             aria-label="Yes, helpful"
@@ -54,6 +55,7 @@ export default function HelpfulVote({ slug }: { slug: string }) {
             👍 Yes
           </button>
           <button
+            type="button"
             onClick={() => vote("down")}
             className="btn-secondary px-4 py-2 text-sm"
             aria-label="Not really, this wasn't helpful"

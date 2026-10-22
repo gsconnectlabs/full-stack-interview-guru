@@ -9,16 +9,18 @@ import CodeBlock from "@/components/CodeBlock";
 import CopyButton from "@/components/CopyButton";
 import ShareButton from "@/components/ShareButton";
 import { readingTimeMinutes } from "@/lib/reading-time";
-import QuestionCard from "@/components/QuestionCard";
+import QuestionList from "@/components/QuestionList";
 import AdSlot from "@/components/AdSlot";
 import HelpfulVote from "@/components/HelpfulVote";
 import FeaturedProducts from "@/components/FeaturedProducts";
 import AdvertisementPlaceholder from "@/components/AdvertisementPlaceholder";
+import TableOfContents, { type TocItem } from "@/components/TableOfContents";
+import RecordVisit from "@/components/RecordVisit";
 import { absoluteUrl, siteName, siteUrl, authorPerson, founderName } from "@/lib/site";
 import Breadcrumb from "@/components/Breadcrumb";
 import AISection from "@/components/AISection";
 import { buildAiPrompts } from "@/lib/ai-prompts";
-import type { AnswerBlock } from "@/lib/types";
+import type { AnswerBlock, Question } from "@/lib/types";
 
 export function generateStaticParams() {
   return questions.map((q) => ({ slug: q.slug }));
@@ -75,25 +77,32 @@ function plainAnswer(q: NonNullable<ReturnType<typeof getQuestion>>): string {
   return parts.join(" ").replace(/[*`]/g, "").trim();
 }
 
+/** Long-form body copy: comfortable size and line height for sustained reading. */
+const PROSE = "text-base leading-[1.75] text-slate-300 sm:text-[1.0625rem]";
+const INLINE_CODE =
+  "[&_code]:rounded [&_code]:bg-ink-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-brand-200";
+
 function Section({
+  id,
   emoji,
   title,
   subtitle,
   children,
 }: {
+  id: string;
   emoji: string;
   title: string;
   subtitle?: string;
   children: React.ReactNode;
 }) {
   return (
-    <section className="mt-8">
-      <h2 className="flex items-center gap-2 font-serif text-lg font-bold text-white">
-        <span className="text-xl">{emoji}</span>
+    <section id={id} aria-labelledby={`${id}-title`} className="mt-12 border-t border-ink-700/60 pt-8">
+      {subtitle && <p className="eyebrow">{subtitle}</p>}
+      <h2 id={`${id}-title`} className="mt-1.5 flex items-center gap-2.5 font-serif text-xl font-bold text-white sm:text-[1.375rem]">
+        <span aria-hidden="true" className="text-lg">{emoji}</span>
         {title}
       </h2>
-      {subtitle && <p className="mt-1 text-sm font-medium text-slate-400">{subtitle}</p>}
-      <div className="mt-3">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }
@@ -102,38 +111,39 @@ function MindMapBlock({ block }: { block: AnswerBlock }) {
   if (block.type === "text") {
     return (
       <p
-        className="mb-3 leading-relaxed text-slate-300 [&_code]:rounded-md [&_code]:bg-ink-800 [&_code]:px-1.5 [&_code]:py-0.5 [&_code]:font-mono [&_code]:text-[0.85em] [&_code]:text-brand-200"
+        className={`mb-5 ${PROSE} ${INLINE_CODE}`}
         dangerouslySetInnerHTML={{ __html: inlineCode(block.content ?? "") }}
       />
     );
   }
   if (block.type === "kv" && block.rows) {
     return (
-      <div className="my-3 overflow-hidden rounded-xl border border-white/10">
+      <dl className="my-6 divide-y divide-ink-800 border-y border-ink-700/60">
         {block.rows.map((row, i) => (
-          <div
-            key={i}
-            className="flex items-center gap-3 border-b border-white/[0.06] bg-white/[0.02] px-4 py-2.5 last:border-0"
-          >
-            <span className="w-40 shrink-0 font-mono text-sm font-semibold text-brand-300">{row.k}</span>
-            <span className="text-slate-400">→</span>
-            <span className="text-sm text-slate-200">{row.v}</span>
+          <div key={i} className="flex flex-col gap-1 py-3 sm:flex-row sm:gap-6">
+            <dt className="shrink-0 break-words font-mono text-sm font-semibold text-brand-300 sm:w-44">{row.k}</dt>
+            <dd className="min-w-0 text-[15px] leading-relaxed text-slate-200">{row.v}</dd>
           </div>
         ))}
-      </div>
+      </dl>
     );
   }
   if (block.type === "table" && block.headers && block.tableRows) {
     return (
-      <div className="my-3 overflow-x-auto rounded-xl border border-white/10">
+      <div
+        role="region"
+        aria-label="Comparison table (scrolls horizontally)"
+        tabIndex={0}
+        className="my-6 overflow-x-auto rounded-lg border border-ink-700/70"
+      >
         <table className="w-full min-w-[560px] border-collapse text-left text-sm">
           <thead>
-            <tr className="bg-white/[0.04]">
+            <tr className="bg-ink-850">
               {block.headers.map((h, i) => (
                 <th
                   key={i}
                   scope="col"
-                  className="border-b border-white/10 px-4 py-2.5 font-semibold text-slate-200"
+                  className="border-b border-ink-700/70 px-4 py-2.5 font-semibold text-slate-100"
                 >
                   {h}
                 </th>
@@ -142,14 +152,14 @@ function MindMapBlock({ block }: { block: AnswerBlock }) {
           </thead>
           <tbody>
             {block.tableRows.map((row, i) => (
-              <tr key={i} className="border-b border-white/[0.06] bg-white/[0.02] last:border-0">
+              <tr key={i} className="border-b border-ink-800 last:border-0 even:bg-white/[0.015]">
                 {row.map((cell, j) => (
                   <td
                     key={j}
                     className={
                       j === 0
-                        ? "px-4 py-2.5 font-mono font-semibold text-brand-300"
-                        : "px-4 py-2.5 text-slate-300"
+                        ? "px-4 py-2.5 align-top font-mono font-semibold text-brand-300"
+                        : "px-4 py-2.5 align-top leading-relaxed text-slate-300"
                     }
                   >
                     {cell}
@@ -164,7 +174,7 @@ function MindMapBlock({ block }: { block: AnswerBlock }) {
   }
   if (block.type === "code" && block.content) {
     return (
-      <div className="my-3">
+      <div className="my-6">
         <CodeBlock code={block.content} lang={block.lang ?? "text"} />
       </div>
     );
@@ -190,13 +200,39 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
   const cat = getCategory(q.categoryId);
   const catCount = cat ? questionsByCategory(cat.id).length : 0;
-  const related = (q.related ?? []).map(getQuestion).filter(Boolean);
+  const related = (q.related ?? []).map(getQuestion).filter((r): r is Question => Boolean(r));
   const shareUrl = absoluteUrl(`/q/${q.slug}`);
   const readMins = readingTimeMinutes(q);
   const aiPrompts = buildAiPrompts(q, cat?.name);
   const updatedLabel = q.updated ? formatUpdated(q.updated) : null;
   const reportHref = `/feedback?context=${encodeURIComponent(`Question: "${q.question}" (/q/${q.slug})`)}`;
   const nav = getQuestionNav(q.slug);
+
+  // Same sub-topic within the category, excluding anything already linked as related.
+  const linked = new Set([q.slug, ...related.map((r) => r.slug)]);
+  const sameTopic = cat
+    ? questionsByCategory(cat.id)
+        .filter((s) => s.topic === q.topic && !linked.has(s.slug))
+        .slice(0, 4)
+    : [];
+
+  const toc: TocItem[] = [
+    ...(q.shortAnswer ? [{ id: "short-answer", label: "Short answer" }] : []),
+    { id: "coffee-chat", label: "Coffee Chat Question" },
+    { id: "mind-map", label: "Mind Map Answer" },
+    ...(q.handsOn ? [{ id: "hands-on", label: "Hands-on Keyboard" }] : []),
+    ...(q.whatIf ? [{ id: "what-if", label: "What If?" }] : []),
+    ...(q.realWorld ? [{ id: "real-world", label: "Real World" }] : []),
+    ...(q.guruTake ? [{ id: "guru-take", label: "Real Talk from Guru" }] : []),
+    ...(q.interviewerExpectation?.length ? [{ id: "interviewer-expectation", label: "Interviewer's Expectation" }] : []),
+    ...(q.commonMistakes?.length ? [{ id: "common-mistakes", label: "Common Mistakes" }] : []),
+    ...(q.bestPractices?.length ? [{ id: "best-practices", label: "Best Practices" }] : []),
+    ...(q.followUps?.length ? [{ id: "follow-ups", label: "Follow-up Questions" }] : []),
+    ...(q.relatedTech?.length ? [{ id: "related-tech", label: "Related Technologies" }] : []),
+    ...(q.references?.length ? [{ id: "references", label: "References" }] : []),
+    { id: "continue-with-ai", label: "Continue Learning with AI" },
+    ...(related.length || sameTopic.length ? [{ id: "related", label: "Related Questions" }] : []),
+  ];
 
   // Google's structured-data parser expects a full datetime with an explicit timezone
   // offset, not a bare `YYYY-MM-DD` — append midnight UTC once the date has been validated.
@@ -233,12 +269,14 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
     },
   };
 
+
   return (
-    <div className="mx-auto max-w-6xl px-4 py-10 sm:px-6">
+    <div className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
       <script
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      <RecordVisit slug={q.slug} title={q.question} category={cat?.name} />
       {/* Breadcrumb */}
       <Breadcrumb
         items={[
@@ -248,186 +286,207 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
         ]}
       />
 
-      <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_300px]">
+      <div className="mt-6 grid gap-12 lg:grid-cols-[minmax(0,1fr)_15rem] xl:gap-16">
         {/* Main. `min-w-0`: a grid item defaults to min-width:auto (its widest content), so without it
             wide tables/code stretched this column past the viewport and the page scrolled sideways. */}
-        <article className="min-w-0">
-          {/* Meta row */}
-          <div className="flex flex-wrap items-center gap-2">
-            <DifficultyBadge level={q.difficulty} />
-            {q.experience.map((e) => (
-              <span key={e} className="chip">
-                👤 {e}
+        <article className="min-w-0 max-w-[46rem]">
+          <header>
+            {/* Meta row */}
+            <div className="flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-slate-400">
+              <DifficultyBadge level={q.difficulty} />
+              <span>
+                <span className="sr-only">Experience level: </span>
+                {q.experience.join(" · ")}
               </span>
-            ))}
-            <span className="chip">
-              <span aria-hidden="true">⏱️</span> {readMins} min read
-            </span>
-            {updatedLabel && (
-              <span className="chip">
-                <span aria-hidden="true">🗓️</span> Updated {updatedLabel}
+              <span aria-hidden="true" className="text-slate-600">
+                /
               </span>
-            )}
-          </div>
-
-          <h1 className="mt-4 font-serif text-2xl font-black leading-tight text-white sm:text-3xl">{q.heading ?? q.question}</h1>
-
-          {/* Byline — subtle authorship signal, not a card. Date only shown when the
-              question actually has an `updated` value; never fabricated. */}
-          <p className="mt-2 text-xs text-slate-500">
-            Reviewed by{" "}
-            <Link href="/about" className="text-slate-400 hover:text-brand-300 hover:underline">
-              {founderName}
-            </Link>
-            {updatedLabel && <> · Updated {updatedLabel}</>}
-          </p>
-
-          {/* Asked In */}
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500">Asked in</span>
-            {q.askedIn.map((co) => (
-              <span key={co} className="rounded-md bg-white/[0.04] px-2 py-0.5 text-xs text-slate-300">
-                {co}
-              </span>
-            ))}
-          </div>
-
-          {/* Tags */}
-          {q.tags && q.tags.length > 0 && (
-            <div className="mt-3 flex flex-wrap gap-1.5">
-              {q.tags.map((t) => (
-                <span key={t} className="rounded-md bg-brand-500/10 px-2 py-0.5 text-[11px] font-medium text-brand-300">
-                  #{t}
-                </span>
-              ))}
+              <span>{readMins} min read</span>
             </div>
-          )}
 
-          {/* Share actions — copy link (Web Share fallback) + native share */}
-          <div className="mt-5 flex flex-wrap items-center gap-2">
-            <CopyButton
-              value={shareUrl}
-              className="btn-pill"
-              label={
-                <>
-                  <span aria-hidden="true">🔗 </span>Copy link
-                </>
-              }
-              copiedLabel={
-                <>
-                  <span aria-hidden="true">✓ </span>Link copied
-                </>
-              }
-            />
-            <ShareButton url={shareUrl} title={q.question} />
-            <Link
-              href={reportHref}
-              rel="nofollow"
-              prefetch={false}
-              className="btn-pill"
-              aria-label="Report issue with this question"
-            >
-              <span aria-hidden="true">🚩</span> Report issue
-            </Link>
-          </div>
+            <h1 className="mt-4 font-serif text-[1.75rem] font-black leading-tight tracking-tight text-white sm:text-4xl">
+              {q.heading ?? q.question}
+            </h1>
+
+            {/* Byline — subtle authorship signal, not a card. Date only shown when the
+                question actually has an `updated` value; never fabricated. */}
+            <p className="mt-3 text-sm text-slate-500">
+              Reviewed by{" "}
+              <Link href="/about" className="text-slate-300 hover:text-brand-300 hover:underline">
+                {founderName}
+              </Link>
+              {updatedLabel && <> · Updated {updatedLabel}</>}
+            </p>
+
+            {/* Asked In + tags */}
+            <div className="mt-5 space-y-2.5 border-y border-ink-800 py-4">
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-1.5">
+                <span className="eyebrow mr-1">Asked in</span>
+                {q.askedIn.map((co) => (
+                  <span key={co} className="rounded bg-white/[0.04] px-2 py-0.5 text-xs text-slate-300">
+                    {co}
+                  </span>
+                ))}
+              </div>
+              {q.tags && q.tags.length > 0 && (
+                <div className="flex flex-wrap gap-x-2.5 gap-y-1">
+                  {q.tags.map((t) => (
+                    <span key={t} className="text-xs text-brand-300/90">
+                      #{t}
+                    </span>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Share actions — copy link (Web Share fallback) + native share */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <CopyButton
+                value={shareUrl}
+                className="btn-pill"
+                label={
+                  <>
+                    <span aria-hidden="true">🔗 </span>Copy link
+                  </>
+                }
+                copiedLabel={
+                  <>
+                    <span aria-hidden="true">✓ </span>Link copied
+                  </>
+                }
+              />
+              <ShareButton url={shareUrl} title={q.question} />
+              <Link
+                href={reportHref}
+                rel="nofollow"
+                prefetch={false}
+                className="btn-pill"
+                aria-label="Report issue with this question"
+              >
+                <span aria-hidden="true">🚩</span> Report issue
+              </Link>
+            </div>
+          </header>
 
           {/* ⚡ TL;DR / Short Answer */}
           {q.shortAnswer && (
-            <div className="mt-6 rounded-xl border border-brand-500/30 bg-brand-500/[0.06] p-5">
-              <p className="text-xs font-semibold uppercase tracking-wider text-brand-300">⚡ Short Answer</p>
-              <p className="mt-2 leading-relaxed text-slate-200">{q.shortAnswer}</p>
-            </div>
+            <section
+              id="short-answer"
+              aria-labelledby="short-answer-title"
+              className="mt-8 border-l-2 border-gold-400 bg-ink-900/60 py-5 pl-5 pr-5 sm:pl-6"
+            >
+              <h2 id="short-answer-title" className="eyebrow text-gold-300">
+                <span aria-hidden="true">⚡ </span>Short Answer
+              </h2>
+              <p className="mt-2 text-[1.0625rem] leading-relaxed text-slate-100 sm:text-lg">{q.shortAnswer}</p>
+            </section>
           )}
 
+          {/* On this page — collapsible on small screens; the desktop copy lives in the sidebar */}
+          <details className="group mt-6 rounded-lg border border-ink-700/60 lg:hidden">
+            <summary className="flex min-h-[48px] cursor-pointer list-none items-center justify-between px-4 text-sm font-semibold text-slate-200 [&::-webkit-details-marker]:hidden">
+              On this page
+              <span aria-hidden="true" className="text-slate-500 transition-transform group-open:rotate-180">
+                ▾
+              </span>
+            </summary>
+            <nav aria-label="On this page" className="border-t border-ink-800 px-4 pb-3 pt-2">
+              <TableOfContents items={toc} />
+            </nav>
+          </details>
+
           {/* ☕ Coffee Chat */}
-          <Section emoji="☕" title="Coffee Chat Question" subtitle="Concept Made Simple">
-            <div className="card border-l-2 border-l-brand-500/60 p-4">
-              <p className="text-slate-200">“{q.question}”</p>
-            </div>
+          <Section id="coffee-chat" emoji="☕" title="Coffee Chat Question" subtitle="Concept Made Simple">
+            <blockquote className="border-l-2 border-brand-500/70 pl-5 font-serif text-lg italic leading-relaxed text-slate-200 sm:text-xl">
+              “{q.question}”
+            </blockquote>
           </Section>
 
           {/* 🧠 Mind Map */}
-          <Section emoji="🧠" title="Mind Map Answer" subtitle="Remember It Faster">
-            <div className="card p-5">
-              {q.mindMap.map((b, i) => (
-                <MindMapBlock key={i} block={b} />
-              ))}
-            </div>
+          <Section id="mind-map" emoji="🧠" title="Mind Map Answer" subtitle="Remember It Faster">
+            {q.mindMap.map((b, i) => (
+              <MindMapBlock key={i} block={b} />
+            ))}
           </Section>
 
           {/* ⌨ Hands-on Keyboard */}
           {q.handsOn && (
-            <Section emoji="⌨️" title="Hands-on Keyboard" subtitle="Learn by Doing">
+            <Section id="hands-on" emoji="⌨️" title="Hands-on Keyboard" subtitle="Learn by Doing">
               <CodeBlock code={q.handsOn.code} lang={q.handsOn.lang} output={q.handsOn.output} />
               {(q.handsOn.time || q.handsOn.space) && (
-                <div className="mt-3 flex flex-wrap gap-2">
+                <dl className="mt-3 flex flex-wrap gap-x-6 gap-y-1 text-sm text-slate-400">
                   {q.handsOn.time && (
-                    <span className="chip">⏱️ Time: <span className="font-mono text-slate-200">{q.handsOn.time}</span></span>
+                    <div className="flex gap-1.5">
+                      <dt>Time:</dt>
+                      <dd className="font-mono text-slate-200">{q.handsOn.time}</dd>
+                    </div>
                   )}
                   {q.handsOn.space && (
-                    <span className="chip">💾 Space: <span className="font-mono text-slate-200">{q.handsOn.space}</span></span>
+                    <div className="flex gap-1.5">
+                      <dt>Space:</dt>
+                      <dd className="font-mono text-slate-200">{q.handsOn.space}</dd>
+                    </div>
                   )}
-                </div>
+                </dl>
               )}
             </Section>
           )}
 
           {/* 🔥 What If */}
           {q.whatIf && (
-            <Section emoji="🔥" title="What If?" subtitle="Think Beyond the Expected">
-              <div className="card overflow-hidden">
-                <div className="border-b border-white/[0.06] bg-rose-500/[0.06] px-5 py-3">
-                  <p className="font-semibold text-rose-200">{q.whatIf.q}</p>
-                </div>
-                <p className="px-5 py-4 leading-relaxed text-slate-300">{q.whatIf.a}</p>
+            <Section id="what-if" emoji="🔥" title="What If?" subtitle="Think Beyond the Expected">
+              <div className="rounded-lg border border-ink-700/70">
+                <p className="border-b border-ink-800 bg-rose-500/[0.06] px-5 py-3.5 font-semibold leading-snug text-rose-100">
+                  {q.whatIf.q}
+                </p>
+                <p className={`px-5 py-4 ${PROSE}`}>{q.whatIf.a}</p>
               </div>
             </Section>
           )}
 
           {/* 😂 Real World */}
           {q.realWorld && (
-            <Section emoji="😂" title="Real World">
-              <div className="card border-l-2 border-l-amber-500/60 p-5">
-                <p className="leading-relaxed text-slate-300">{q.realWorld}</p>
-              </div>
+            <Section id="real-world" emoji="😂" title="Real World">
+              <p className={`border-l-2 border-amber-500/60 pl-5 ${PROSE}`}>{q.realWorld}</p>
             </Section>
           )}
 
           {/* 🗣️ Real Talk from Guru */}
           {q.guruTake && (
-            <Section emoji="🗣️" title="Real Talk from Guru">
+            <Section id="guru-take" emoji="🗣️" title="Real Talk from Guru">
               <div className="card-premium p-5">
-                <p className="leading-relaxed text-slate-300">{q.guruTake}</p>
+                <p className={PROSE}>{q.guruTake}</p>
               </div>
             </Section>
           )}
 
           {/* 🎯 Interviewer's Expectation */}
           {q.interviewerExpectation && q.interviewerExpectation.length > 0 && (
-            <Section emoji="🎯" title="Interviewer's Expectation">
-              <div className="card p-5">
-                <p className="mb-3 text-sm text-slate-400">Keywords they're listening for:</p>
-                <div className="flex flex-wrap gap-2">
-                  {q.interviewerExpectation.map((kw) => (
-                    <span
-                      key={kw}
-                      className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-200"
-                    >
-                      ✓ {kw}
-                    </span>
-                  ))}
-                </div>
-              </div>
+            <Section id="interviewer-expectation" emoji="🎯" title="Interviewer's Expectation">
+              <p className="mb-3 text-sm text-slate-400">Keywords they&apos;re listening for:</p>
+              <ul className="flex flex-wrap gap-2">
+                {q.interviewerExpectation.map((kw) => (
+                  <li
+                    key={kw}
+                    className="rounded-full border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-200"
+                  >
+                    <span aria-hidden="true">✓ </span>
+                    {kw}
+                  </li>
+                ))}
+              </ul>
             </Section>
           )}
 
           {/* ⚠️ Common Mistakes */}
           {q.commonMistakes && q.commonMistakes.length > 0 && (
-            <Section emoji="⚠️" title="Common Mistakes">
-              <ul className="card space-y-2 p-5">
+            <Section id="common-mistakes" emoji="⚠️" title="Common Mistakes">
+              <ul className="space-y-3">
                 {q.commonMistakes.map((m, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-slate-300">
-                    <span className="select-none text-rose-400">✗</span>
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-slate-300">
+                    <span aria-hidden="true" className="select-none pt-px font-bold text-rose-400">
+                      ✗
+                    </span>
                     <span>{m}</span>
                   </li>
                 ))}
@@ -437,11 +496,13 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
           {/* ✅ Best Practices */}
           {q.bestPractices && q.bestPractices.length > 0 && (
-            <Section emoji="✅" title="Best Practices">
-              <ul className="card space-y-2 p-5">
+            <Section id="best-practices" emoji="✅" title="Best Practices">
+              <ul className="space-y-3">
                 {q.bestPractices.map((b, i) => (
-                  <li key={i} className="flex gap-2 text-sm text-slate-300">
-                    <span className="select-none text-emerald-400">✓</span>
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-slate-300">
+                    <span aria-hidden="true" className="select-none pt-px font-bold text-emerald-400">
+                      ✓
+                    </span>
                     <span>{b}</span>
                   </li>
                 ))}
@@ -451,46 +512,45 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
 
           {/* 🔁 Follow-up Questions */}
           {q.followUps && q.followUps.length > 0 && (
-            <Section emoji="🔁" title="Follow-up Questions">
-              <ul className="card space-y-2.5 p-5">
+            <Section id="follow-ups" emoji="🔁" title="Follow-up Questions">
+              <ol className="space-y-3">
                 {q.followUps.map((f, i) => (
-                  <li key={i} className="flex gap-2.5 text-sm text-slate-300">
-                    <span className="grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-500/15 text-[11px] font-bold text-brand-300">
+                  <li key={i} className="flex gap-3 text-[15px] leading-relaxed text-slate-300">
+                    <span
+                      aria-hidden="true"
+                      className="grid h-6 w-6 shrink-0 place-items-center rounded-full bg-brand-500/15 text-xs font-bold text-brand-300"
+                    >
                       {i + 1}
                     </span>
                     <span>{f}</span>
+                  </li>
+                ))}
+              </ol>
+            </Section>
+          )}
+
+          {/* 🧩 Related Technologies */}
+          {q.relatedTech && q.relatedTech.length > 0 && (
+            <Section id="related-tech" emoji="🧩" title="Related Technologies">
+              <ul className="flex flex-wrap gap-2">
+                {q.relatedTech.map((t) => (
+                  <li key={t} className="chip">
+                    {t}
                   </li>
                 ))}
               </ul>
             </Section>
           )}
 
-          {/* 🧩 Related Technologies */}
-          {q.relatedTech && q.relatedTech.length > 0 && (
-            <Section emoji="🧩" title="Related Technologies">
-              <div className="flex flex-wrap gap-2">
-                {q.relatedTech.map((t) => (
-                  <span key={t} className="chip">
-                    {t}
-                  </span>
-                ))}
-              </div>
-            </Section>
-          )}
-
           {/* 📚 References */}
           {q.references && q.references.length > 0 && (
-            <Section emoji="📚" title="References">
-              <ul className="card space-y-2 p-5">
+            <Section id="references" emoji="📚" title="References">
+              <ul className="space-y-2">
                 {q.references.map((r) => (
                   <li key={r.url}>
-                    <a
-                      href={r.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-sm text-brand-300 underline underline-offset-2 hover:text-brand-200"
-                    >
-                      {r.label} ↗
+                    <a href={r.url} target="_blank" rel="noopener noreferrer" className="text-link text-sm">
+                      {r.label} <span aria-hidden="true">↗</span>
+                      <span className="sr-only"> (opens in a new tab)</span>
                     </a>
                   </li>
                 ))}
@@ -499,58 +559,74 @@ export default async function QuestionPage({ params }: { params: Promise<{ slug:
           )}
 
           {/* 🤖 Continue Learning with AI — single client island (prompts precomputed above) */}
-          <AISection prompts={aiPrompts} />
+          <div id="continue-with-ai">
+            <AISection prompts={aiPrompts} />
+          </div>
 
           {/* Was this helpful? — real-time content signal */}
           <HelpfulVote slug={q.slug} />
 
-          {/* Featured products — after the answer, before related questions */}
-          <div className="mt-12">
-            <FeaturedProducts />
-            <div className="mt-6">
-              <AdvertisementPlaceholder />
-            </div>
-          </div>
-
-          {/* Related */}
-          {related.length > 0 && (
-            <section className="mt-12">
-              <h2 className="text-lg font-bold text-white">Related Questions</h2>
-              <div className="mt-4 grid gap-4 sm:grid-cols-2">
-                {related.map((r) => r && <QuestionCard key={r.slug} q={r} />)}
-              </div>
+          {/* Related — curated links first, then other questions on the same sub-topic */}
+          {(related.length > 0 || sameTopic.length > 0) && (
+            <section id="related" aria-labelledby="related-title" className="mt-14">
+              <h2 id="related-title" className="font-serif text-xl font-bold text-white">
+                Related Questions
+              </h2>
+              {related.length > 0 && (
+                <div className="mt-4">
+                  <QuestionList questions={related} showCategory />
+                </div>
+              )}
+              {sameTopic.length > 0 && (
+                <div className="mt-8">
+                  <h3 className="eyebrow">More on {q.topic}</h3>
+                  <div className="mt-2">
+                    <QuestionList questions={sameTopic} />
+                  </div>
+                </div>
+              )}
             </section>
           )}
 
           {/* Previous / Next within the category + position + "View all" */}
           {nav && (nav.prev || nav.next) && <PrevNextNav nav={nav} category={cat} />}
+
+          {/* Affiliate products + sponsor slot — after all learning content and navigation */}
+          <div className="mt-16 border-t border-ink-700/60 pt-10">
+            <FeaturedProducts />
+            <div className="mt-6">
+              <AdvertisementPlaceholder />
+            </div>
+          </div>
         </article>
 
-        {/* Sidebar */}
-        <aside className="space-y-5 lg:sticky lg:top-20 lg:self-start">
-          <div className="card p-5">
-            <h3 className="text-sm font-semibold text-white">On this page</h3>
-            <ul className="mt-3 space-y-2 text-sm text-slate-400">
-              <li>☕ Coffee Chat Question</li>
-              <li>🧠 Mind Map Answer</li>
-              {q.handsOn && <li>⌨️ Hands-on Keyboard</li>}
-              {q.whatIf && <li>🔥 What If?</li>}
-              {q.realWorld && <li>😂 Real World</li>}
-              {q.guruTake && <li>🗣️ Real Talk from Guru</li>}
-              {q.interviewerExpectation && <li>🎯 Interviewer&apos;s Expectation</li>}
-              <li>🤖 Continue Learning with AI</li>
-            </ul>
-          </div>
+        {/* Sidebar (desktop): sticky contents + topic link, then the sidebar ad slot */}
+        <aside className="hidden flex-col gap-8 lg:flex">
+          <div className="flex-1">
+            <div className="sticky top-24 space-y-6">
+              <nav aria-labelledby="toc-title">
+                <h2 id="toc-title" className="eyebrow">
+                  On this page
+                </h2>
+                <div className="mt-3">
+                  <TableOfContents items={toc} />
+                </div>
+              </nav>
 
-          {cat && (
-            <Link href={`/candidate/${cat.id}`} className="card card-hover block p-5">
-              <span className={`grid h-10 w-10 place-items-center rounded-xl bg-gradient-to-br ${cat.accent} text-lg`}>
-                {cat.icon}
-              </span>
-              <h3 className="mt-3 text-sm font-semibold text-white">More {cat.name}</h3>
-              <p className="mt-1 text-xs text-slate-400">{catCount} question{catCount === 1 ? "" : "s"} in this topic →</p>
-            </Link>
-          )}
+              {cat && (
+                <Link href={`/candidate/${cat.id}`} className="card card-hover block p-4">
+                  <span className="eyebrow">Topic</span>
+                  <span className="mt-1.5 flex items-center gap-2 font-semibold text-white">
+                    <span aria-hidden="true">{cat.icon}</span>
+                    {cat.name}
+                  </span>
+                  <span className="mt-1 block text-xs text-slate-400">
+                    {catCount} question{catCount === 1 ? "" : "s"} in this topic →
+                  </span>
+                </Link>
+              )}
+            </div>
+          </div>
 
           <AdSlot variant="sidebar" />
         </aside>

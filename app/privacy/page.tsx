@@ -58,6 +58,15 @@ export default function PrivacyPage() {
         settings; the core content of the site will continue to work.
       </p>
 
+      <h2>Browser Storage</h2>
+      <p>
+        A few small conveniences are remembered only in your own browser&apos;s storage and are never sent
+        to us: your &ldquo;Was this answer helpful?&rdquo; votes, whether you dismissed the ebook reminder
+        (for the current browser session only), and a short list of recently viewed questions shown as &ldquo;Continue reading&rdquo; on
+        the homepage. You can remove the reading list with its &ldquo;Clear history&rdquo; link, or clear all
+        of it through your browser&apos;s site-data settings.
+      </p>
+
       <h2>Google Analytics</h2>
       <p>
         We may use Google Analytics to understand, in aggregate, how the site is used so we can improve

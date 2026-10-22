@@ -28,7 +28,7 @@ export default function EnvironmentPage() {
       </h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {versionChecks.map((v) => (
-          <div key={v.tool} className="card p-5">
+          <div key={v.tool} className="card min-w-0 p-5">
             <div className="flex items-center gap-2">
               <span className="text-xl">{v.icon}</span>
               <h3 className="font-bold text-slate-100">{v.tool}</h3>
@@ -47,7 +47,7 @@ export default function EnvironmentPage() {
       </h2>
       <div className="mt-4 grid gap-4 md:grid-cols-2">
         {configGuides.map((g) => (
-          <div key={g.title} className="card p-5">
+          <div key={g.title} className="card min-w-0 p-5">
             <h3 className="flex items-center gap-2 font-bold text-white">
               <span className="text-xl">{g.icon}</span>
               {g.title}

@@ -1,27 +1,30 @@
 import Link from "next/link";
 import type { Question } from "@/lib/types";
+import { getCategory } from "@/lib/categories";
 import DifficultyBadge from "./DifficultyBadge";
 
-export default function QuestionCard({ q }: { q: Question }) {
+/**
+ * One question as a compact, scannable row (title, sub-topic, difficulty). Designed to sit in a
+ * divided list (see `QuestionList`) rather than a grid of boxes, so long lists read like an index.
+ */
+export default function QuestionCard({ q, showCategory = false }: { q: Question; showCategory?: boolean }) {
+  const category = showCategory ? getCategory(q.categoryId)?.name : undefined;
   return (
-    <Link href={`/q/${q.slug}`} className="card card-hover group block p-5">
-      <div className="flex items-start justify-between gap-3">
-        <span className="chip">{q.topic}</span>
-        <DifficultyBadge level={q.difficulty} />
-      </div>
-      <h3 className="mt-3 text-[15px] font-semibold leading-snug text-slate-100 group-hover:text-brand-200">
-        {q.question}
-      </h3>
-      <div className="mt-4 flex flex-wrap items-center gap-2">
-        {q.askedIn.slice(0, 3).map((co) => (
-          <span key={co} className="text-xs text-slate-500">
-            {co}
-          </span>
-        ))}
-        <span className="ml-auto text-xs font-medium text-brand-400 opacity-0 transition-opacity group-hover:opacity-100">
-          Read →
+    <Link
+      href={`/q/${q.slug}`}
+      className="group -mx-3 flex items-start gap-4 rounded-md px-3 py-3.5 transition-colors hover:bg-white/[0.03]"
+    >
+      <span className="min-w-0 flex-1">
+        <h3 className="text-[15px] font-medium leading-snug text-slate-100 group-hover:text-brand-200">
+          {q.question}
+        </h3>
+        <span className="mt-1 block text-xs text-slate-500">
+          {category ? `${category} · ${q.topic}` : q.topic}
         </span>
-      </div>
+      </span>
+      <span className="shrink-0 pt-0.5">
+        <DifficultyBadge level={q.difficulty} compact />
+      </span>
     </Link>
   );
 }

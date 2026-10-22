@@ -1962,6 +1962,49 @@ tables scroll inside their own boxes (existing `overflow-x-auto`); sidebar stack
 
 ---
 
+# Decision #050
+
+## Title
+
+Editorial redesign of the home, candidate, topic and question pages (dark theme kept)
+
+### Status
+
+✅ Owner-requested 2026-10-22 (detailed redesign brief) — implemented on branch `feat/editorial-redesign`, not committed
+
+### Reason
+
+The brief asked for a content-first, editorial layout in place of generic landing-page patterns, with better
+reading, navigation, discovery and mobile UX, while keeping the teal + gold identity, every URL, SEO signal,
+analytics event, affiliate link and existing feature.
+
+### Decisions
+
+- **Theme stays dark-only.** The light-default token migration (ROADMAP H3/H4, DECISIONS #029) is still a
+  separate item; this work only refines the existing tokens (flat background, `rounded-lg`, new `.eyebrow`,
+  `.section-title`, `.text-link` utilities).
+- **Learning paths are derived, not authored.** `lib/learning-paths.ts` orders the listed categories into four
+  tracks (Java & JVM, APIs & distributed systems, Data & cloud, Python). Only listed categories appear, empty
+  tracks drop out, and newly listed categories fall into a "More topics" track automatically. Each track's
+  "Start with" link is the first Easy question of its first topic.
+- **Topic pages group by difficulty** (Foundations / Core concepts / Advanced = Easy / Medium / Hard), with
+  jump links, the real sub-topics covered (from question data, not the aspirational `category.topics`), the
+  difficulty mix, and previous/next topic within the track. Within a group, question order is unchanged.
+- **Removed from the homepage:** the "24h Revision Mode" metric tiles and the three "Revision Mode" cards (all
+  linked to `/candidate` and promised pacing the site does not do), and the "Top 25 …" tiles (duplicated the
+  topic links; anchors still reachable through the learning paths). No route or feature was removed.
+- **"Continue reading"** is a localStorage-only list of the last five questions (`lib/recently-viewed.ts`),
+  shown on the homepage with a "Clear history" control and disclosed in `/privacy`. Nothing is sent anywhere.
+- **Question page:** reading column capped at 46rem; "On this page" became real anchor links (sticky sidebar on
+  desktop, collapsible `<details>` on mobile); related questions now add up to four same-sub-topic questions;
+  affiliate products + "Advertise With Us" moved below related questions and prev/next so learning content and
+  navigation come first. The sidebar `AdSlot` stays in the sidebar but now sits below the sticky contents.
+- **Navigation:** new `NavMenu` client island — `aria-current`, a mobile disclosure menu (Escape/outside click
+  close it), and Environment / Transition / Real World reachable on phones for the first time.
+- `TopicCard` deleted (replaced by `TopicIndex`); `QuestionCard` is now a list row used through `QuestionList`.
+
+---
+
 # End of Document
 
 This document should be updated whenever a major architectural or product decision is approved.
@@ -1973,7 +2016,7 @@ All AI assistants and future contributors should follow these decisions unless e
 ## Version Information
 
 - **Version:** 1.0.0
-- **Last Updated:** 2026-10-22 (Decision #049 — Amazon Associates affiliate products replace Featured Products)
+- **Last Updated:** 2026-10-22 (Decision #050 — editorial redesign of home, candidate, topic and question pages)
 - **Project:** FullStackInterviewGuru (FIG)
 - **Status:** Active
 - **Owner:** Gurusankar M

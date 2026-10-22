@@ -1,18 +1,19 @@
 import Image from "next/image";
 import Link from "next/link";
+import NavMenu from "./NavMenu";
 
 export default function Navbar() {
   return (
-    <header className="sticky top-0 z-40 border-b border-ink-700/40 bg-ink-950/80 backdrop-blur-lg">
-      <nav aria-label="Primary" className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
-        <Link href="/" title="Full Stack Interview Guru" className="group flex items-center gap-2.5">
+    <header className="sticky top-0 z-40 border-b border-ink-700/50 bg-ink-950">
+      <nav aria-label="Primary" className="relative mx-auto flex h-16 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
+        <Link href="/" title="Full Stack Interview Guru" className="group flex shrink-0 items-center gap-2.5">
           <Image
             src="/icon.png"
             alt=""
             width={512}
             height={512}
             priority
-            className="h-9 w-9 shrink-0 transition-transform group-hover:scale-105"
+            className="h-9 w-9 shrink-0"
           />
           <span className="flex flex-col leading-tight">
             <span className="text-[15px] font-extrabold tracking-tight text-white">
@@ -26,38 +27,7 @@ export default function Navbar() {
           </span>
         </Link>
 
-        <div className="flex items-center gap-1 sm:gap-2">
-          <Link
-            href="/candidate"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
-          >
-            Candidate
-          </Link>
-          <Link
-            href="/interviewer"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
-          >
-            Interviewer
-          </Link>
-          <Link
-            href="/store"
-            className="rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white"
-          >
-            📘 Ebook Store
-          </Link>
-          <Link
-            href="/environment"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white md:block"
-          >
-            Environment
-          </Link>
-          <Link
-            href="/transition"
-            className="hidden rounded-lg px-3 py-2 text-sm font-medium text-slate-300 transition-colors hover:bg-white/[0.05] hover:text-white md:block"
-          >
-            Transition
-          </Link>
-        </div>
+        <NavMenu />
       </nav>
     </header>
   );

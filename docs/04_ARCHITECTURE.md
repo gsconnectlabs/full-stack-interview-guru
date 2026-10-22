@@ -52,9 +52,12 @@ app/                         Routes (App Router)
   manifest.ts                Web app manifest (auto-linked at /manifest.webmanifest)
   globals.css                Tailwind layers + design tokens/components
 
-components/                  Reusable UI (25 components)
-  Navbar, Footer, SearchBar, QuestionCard, TopicCard (server; category card reused by
-  homepage + candidate index), DifficultyBadge,
+components/                  Reusable UI (32 components)
+  Navbar (+ NavMenu client island: aria-current + mobile menu), Footer, SearchBar,
+  QuestionCard (server; one question as a list row) + QuestionList, TopicIndex (server; listed topics as
+  learning tracks from lib/learning-paths.ts — homepage compact, candidate index detailed), DifficultySpread,
+  TableOfContents (server; question-page anchors), RecentlyViewed + RecordVisit (client; localStorage-only
+  "Continue reading" via lib/recently-viewed.ts), DifficultyBadge,
   PrevNextNav (server; sequential prev/next + "Question N of M" + "View all"),
   CodeBlock (server; delegates copy to CopyButton),
   CopyButton (client; clipboard write + "Copied" feedback),
@@ -254,8 +257,8 @@ Resolved so far: #3, #4, **#6 (fully)**, **#7 (prev/next)**, #8 and #5. Remainin
 
 ---
 
-## Version Information
-
+- **Last Updated:** 2026-10-22 (Decision #050 — editorial redesign: NavMenu, TopicIndex, QuestionList,
+  TableOfContents, RecentlyViewed/RecordVisit, lib/learning-paths.ts, lib/recently-viewed.ts; TopicCard removed)
 - **Version:** 1.0.0
 - **Last Updated:** 2026-08-30 (Decision #045 — real named `Person` authorship added alongside the
   FIG `Organization` in structured data, `/about`, and question-page bylines)

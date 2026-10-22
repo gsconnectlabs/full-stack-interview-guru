@@ -19,7 +19,7 @@ export default function PrevNextNav({
   const { prev, next, index, total } = nav;
 
   return (
-    <nav aria-label="Question navigation" className="mt-12 border-t border-white/10 pt-6">
+    <nav aria-label="Question navigation" className="mt-12 border-t border-ink-700/60 pt-6">
       <div className="grid items-stretch gap-3 sm:grid-cols-3">
         {/* Previous */}
         {prev ? (
