@@ -1867,6 +1867,10 @@ fallback — which only opens the visitor's mail app but shows "Thank you!". `fe
   been sent yet" panel otherwise; guards), and `app/contact/page.tsx`'s unconditional "The form below
   sends to the same inbox" is now conditional on an endpoint being configured. No analytics added.
 
+- **`HelpfulVote`** no longer POSTs votes to `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (a form inbox shared by
+  feedback and contact): configured, each vote would be an emailed submission eating the plan's quota,
+  and nothing reads the data. Votes stay `localStorage`-only.
+
 ### Manual actions (not doable from the repo)
 
 1. Set `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (e.g. Formspree) in Vercel and redeploy — until then no feedback

@@ -50,6 +50,14 @@ SEO-optimized MVP and a large curated question bank.
 Phase 2 work is logged here as it is approved and implemented, one feature at a time,
 per the workflow in [13_CONTRIBUTING.md](./13_CONTRIBUTING.md).
 
+### Changed (prepare for a real form endpoint: `HelpfulVote` no longer POSTs, DECISIONS #048 follow-up) — 2026-10-22
+**Uncommitted.** Groundwork for setting `NEXT_PUBLIC_FEEDBACK_ENDPOINT` (e.g. Formspree). `HelpfulVote`
+used to POST every 👍/👎 to that same endpoint; once configured, each vote would have become an emailed
+form submission and consumed the plan's monthly quota, with nothing able to read the data. It now
+records the vote in `localStorage` only (unchanged for visitors; verified: vote stored, no network
+request). `.env.example` now documents the endpoint's format and what it is/isn't used for. **No
+endpoint has been created or set** — that needs a Formspree account and the Vercel dashboard.
+
 ### Fixed (`ContactForm` no longer claims delivery on the mailto fallback, DECISIONS #048 follow-up) — 2026-10-22
 **Uncommitted.** `components/ContactForm.tsx` showed "Thanks for reaching out" with a ✅ after merely
 opening a `mailto:` draft. Now "Thanks" appears only after the configured endpoint returns OK; without

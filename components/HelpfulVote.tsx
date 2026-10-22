@@ -2,12 +2,12 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { feedbackEndpoint } from "@/lib/site";
 
 /**
  * Lightweight per-question content signal. Records the vote in localStorage so the
- * user isn't asked twice, and (if a form endpoint is configured) fires a fire-and-forget
- * POST so the owner can see which answers underperform. No backend required.
+ * user isn't asked twice. Deliberately does NOT POST to NEXT_PUBLIC_FEEDBACK_ENDPOINT: that
+ * endpoint is a form inbox (feedback + contact), and every 👍/👎 would become an emailed
+ * submission that eats the form plan's monthly quota. No backend required.
  */
 export default function HelpfulVote({ slug }: { slug: string }) {
   const [voted, setVoted] = useState<"up" | "down" | null>(null);
@@ -28,14 +28,6 @@ export default function HelpfulVote({ slug }: { slug: string }) {
       localStorage.setItem(key, value);
     } catch {
       /* ignore */
-    }
-    if (feedbackEndpoint) {
-      // best-effort; never blocks the UI
-      fetch(feedbackEndpoint, {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Accept: "application/json" },
-        body: JSON.stringify({ type: "vote", slug, value, at: new Date().toISOString() }),
-      }).catch(() => {});
     }
   }
 
